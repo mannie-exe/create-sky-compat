@@ -1,0 +1,11 @@
+{
+  "sky_village_neighbors.configuration.title": "Sky Village Neighbors",
+  "sky_village_neighbors.config.enabled": "Enable placement filter",
+  "sky_village_neighbors.config.minimumGap": "Minimum terrain gap",
+  "sky_village_neighbors.config.maximumGap": "Maximum island distance",
+  "sky_village_neighbors.config.minimumIslandRadius": "Minimum host island radius",
+  "sky_village_neighbors.config.enabled.tooltip": "Filter new village layouts. Existing villages are unchanged. Restart the world to apply.",
+  "sky_village_neighbors.config.minimumGap.tooltip": "Minimum horizontal distance from the full village footprint to island terrain, in block columns. Overlap is always rejected.",
+  "sky_village_neighbors.config.maximumGap.tooltip": "Maximum distance to a sampled host island. Must be at least the minimum terrain gap.",
+  "sky_village_neighbors.config.minimumIslandRadius.tooltip": "Minimum native radius of the host island. This does not change island generation."
+}

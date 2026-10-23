@@ -1,0 +1,102 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+version = mod_version
+group = 'design.inherent'
+base.archivesName = 'sky-village-neighbors'
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+repositories {
+    mavenCentral()
+    maven {
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
+    maven { url = 'https://maven.architectury.dev' }
+}
+neoForge {
+    version = '21.1.264'
+    runs {
+        client { client(); gameDirectory = file('runs/client') }
+        server { server(); gameDirectory = file('runs/server'); programArgument '--nogui' }
+    }
+    mods { sky_village_neighbors { sourceSet(sourceSets.main) } }
+}
+configurations {
+    localRuntime
+    runtimeClasspath.extendsFrom localRuntime
+}
+sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
+sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
+dependencies {
+    implementation('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
+    localRuntime('maven.modrinth:sky-villages:3InSHTOp') { transitive = false }
+    localRuntime('dev.architectury:architectury-neoforge:13.0.11') { transitive = false }
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+tasks.withType(AbstractArchiveTask).configureEach {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+tasks.named('jar', Jar) {
+    archiveFileName = "sky-village-neighbors-${version}-mc1.21.1-neoforge.jar"
+    from 'LICENSE'
+}
+tasks.named('sourcesJar', Jar) { from 'LICENSE' }
+tasks.named('processResources', ProcessResources) {
+    inputs.property 'version', project.version
+    filesMatching('META-INF/neoforge.mods.toml') { expand version: project.version }
+}
+tasks.named('test', Test) { useJUnitPlatform() }
+tasks.register('verifyUpstream') {
+    inputs.files(configurations.runtimeClasspath)
+    doLast {
+        def pins = [
+            'sky-archipelago': '6bc4deeb1bc2be716d29e76837b179104009a73e9a32d6d097a415b08ac174e1',
+            'sky-villages': '5ef7b63c6f1999a632085975afa14f00146369c142fd72980d760cbb617dd52f'
+        ]
+        pins.each { name, expected ->
+            def artifact = configurations.runtimeClasspath.resolvedConfiguration.resolvedArtifacts.find {
+                it.moduleVersion.id.group == 'maven.modrinth' && it.name == name
+            }?.file
+            if (artifact == null) throw new GradleException("Missing pinned ${name}")
+            def actual = java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString()
+            if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
+        }
+    }
+}
+tasks.named('check') { dependsOn 'verifyUpstream' }
+
+// Opt-in instrumentation is never included in release artifacts or normal runs.
+tasks.register('compileProbeJava', JavaCompile) {
+    dependsOn classes
+    source fileTree('src/probe/java') { include '**/*.java' }
+    classpath = sourceSets.main.output + sourceSets.main.runtimeClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/probe')
+    options.compilerArgs.add('-proc:none')
+}
+tasks.register('probeJar', Jar) {
+    dependsOn compileProbeJava
+    archiveFileName = 'sky-village-neighbors-probe.jar'
+    destinationDirectory = layout.buildDirectory.dir('probe')
+    from layout.buildDirectory.dir('classes/probe')
+    from 'src/probe/resources'
+}
+
+tasks.register('verifyPackage', Exec) {
+    dependsOn jar
+    commandLine 'python3', 'tools/verify_package.py', project.version.toString()
+}
+tasks.register('releaseToolTest', Exec) {
+    commandLine 'python3', '-m', 'unittest', 'discover', '-s', 'tools/tests'
+}
+tasks.named('check') { dependsOn 'verifyPackage', 'releaseToolTest' }

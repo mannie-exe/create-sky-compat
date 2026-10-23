@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "design.inherent.skyvillageneighbors.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": ["StructureSupportMixin"],
+  "injectors": {"defaultRequire": 1}
+}
