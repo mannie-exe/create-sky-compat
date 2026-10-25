@@ -2,6 +2,6 @@ modLoader="javafml"
 loaderVersion="[4,)"
 license="MIT"
 [[mods]]
-modId="sky_village_neighbors_probe"
+modId="create_sky_compat_probe"
 version="1.0.0"
-displayName="Sky Village Neighbors test fixture"
+displayName="Create Sky Compat test fixture"

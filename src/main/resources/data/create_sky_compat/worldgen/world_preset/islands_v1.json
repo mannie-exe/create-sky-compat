@@ -1,0 +1,159 @@
+{
+  "dimensions": {
+    "minecraft:overworld": {
+      "type": "create_sky_compat:islands_v1",
+      "generator": {
+        "type": "sky_archipelago:sky_island",
+        "biome_source": {
+          "type": "minecraft:multi_noise",
+          "preset": "minecraft:overworld"
+        },
+        "settings": "create_sky_compat:islands_v1",
+        "sky_island_settings": {
+          "small_sky": {
+            "max_ground_gap_blocks": 1,
+            "min_host_island_radius": 22,
+            "min_host_stable_top_cells": 7,
+            "local_search_step_blocks": 4,
+            "local_search_radius_blocks": 14,
+            "grounded_sample_threshold": 0.75,
+            "search_radius_chunks": 8,
+            "min_stable_top_cells": 5,
+            "top_offset": 1,
+            "support_threshold": 0.32,
+            "footprint_inset_ratio": 0.28
+          },
+          "default_surface": {
+            "throttle_site_offsets_threshold": 48,
+            "throttle_reduced_max_site_offsets": 16,
+            "throttle_region_size_chunks": 32,
+            "throttle_attempt_threshold": 8,
+            "throttle_duration_ms_threshold": 25.0,
+            "local_search_step_blocks": 8,
+            "local_search_radius_blocks": 24,
+            "large_structure_local_search_radius_blocks": 48,
+            "max_site_offsets": 40
+          },
+          "advanced": {
+            "structure_denylist": [],
+            "structure_category_overrides": [
+              "minecraft:pillager_outpost=MEDIUM_GROUND",
+              "minecraft:ruined_portal_desert=SMALL_GROUND",
+              "mostructures:villager_market=MEDIUM_GROUND",
+              "mostructures:villager_tower=MEDIUM_GROUND",
+              "mvs:large_warped_tower=LARGE_GROUND",
+              "repurposed_structures:outpost_oak=MEDIUM_GROUND",
+              "valhelsia_structures:big_tree=SMALL_GROUND",
+              "valhelsia_structures:desert_house=SMALL_GROUND",
+              "valhelsia_structures:forge=SMALL_GROUND",
+              "valhelsia_structures:player_house=SMALL_GROUND",
+              "valhelsia_structures:tower_ruin=SMALL_GROUND"
+            ],
+            "structure_whitelist": [
+              "create_structures_arise:pillagersteampunkairship",
+              "mostructures:the_castle_in_the_sky",
+              "shellbound_for_airship:airship_ship1",
+              "shellbound_for_airship:airship_ship10",
+              "shellbound_for_airship:airship_ship2",
+              "shellbound_for_airship:airship_ship3",
+              "shellbound_for_airship:airship_ship4",
+              "shellbound_for_airship:airship_ship5",
+              "shellbound_for_airship:airship_ship6",
+              "shellbound_for_airship:airship_ship7",
+              "shellbound_for_airship:airship_ship8",
+              "shellbound_for_airship:airship_ship9",
+              "sky_whale_ship:whale",
+              "sky_whale_ship:whalearena",
+              "sky_whale_ship:whalelight",
+              "sky_whale_ship:whaleship"
+            ],
+            "disable_islands_over_ocean_biomes": true,
+            "deepslate_start_y": 0
+          },
+          "terrain": {
+            "cluster_spacing_mode": "consistent",
+            "cluster_spacing": 1600,
+            "min_cluster_spacing": 1600,
+            "max_cluster_spacing": 1600,
+            "terrain_relief_scale": 1.0,
+            "ocean_enabled": false,
+            "ocean_level_y": 0,
+            "ocean_floor_noise_enabled": true,
+            "ocean_floor_base_offset": 18,
+            "ocean_floor_noise_amplitude": 10,
+            "ocean_floor_noise_scale": 0.05,
+            "ocean_floor_min_depth": 8,
+            "ocean_floor_max_depth": 40,
+            "mid_high_band_weight": 0.75,
+            "very_high_band_weight": 0.1,
+            "low_band_center_offset": -18,
+            "very_high_band_center_offset": 12,
+            "min_island_y": 470,
+            "max_island_y": 490,
+            "max_island_thickness_blocks": 400,
+            "low_band_weight": 0.15,
+            "island_density": 0.85,
+            "min_island_radius": 270,
+            "max_island_radius": 370,
+            "island_size_bands": {
+              "small": {
+                "min_radius": 10,
+                "max_radius": 173,
+                "weight": 0.34
+              },
+              "medium": {
+                "min_radius": 174,
+                "max_radius": 336,
+                "weight": 0.33
+              },
+              "large": {
+                "min_radius": 337,
+                "max_radius": 500,
+                "weight": 0.33
+              }
+            }
+          },
+          "structure_support": {
+            "support_check_depth": 48,
+            "support_sample_grid_size": 5,
+            "support_threshold": 0.6
+          },
+          "surface_sky": {
+            "max_ground_gap_blocks": 1,
+            "min_host_island_radius": 26,
+            "min_host_stable_top_cells": 10,
+            "local_search_step_blocks": 8,
+            "local_search_radius_blocks": 24,
+            "grounded_sample_threshold": 0.7,
+            "search_radius_chunks": 3,
+            "min_stable_top_cells": 12,
+            "top_offset": 1,
+            "support_threshold": 0.42,
+            "footprint_inset_ratio": 0.18
+          }
+        }
+      }
+    },
+    "minecraft:the_nether": {
+      "type": "minecraft:the_nether",
+      "generator": {
+        "type": "minecraft:noise",
+        "biome_source": {
+          "type": "minecraft:multi_noise",
+          "preset": "minecraft:nether"
+        },
+        "settings": "minecraft:nether"
+      }
+    },
+    "minecraft:the_end": {
+      "type": "minecraft:the_end",
+      "generator": {
+        "type": "minecraft:noise",
+        "biome_source": {
+          "type": "minecraft:the_end"
+        },
+        "settings": "minecraft:end"
+      }
+    }
+  }
+}

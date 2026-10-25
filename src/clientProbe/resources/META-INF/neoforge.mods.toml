@@ -1,0 +1,7 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="create_sky_client_probe"
+version="1.0.0"
+displayName="Create Sky client test fixture"

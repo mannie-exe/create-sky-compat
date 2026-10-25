@@ -4,7 +4,7 @@ plugins {
 }
 version = mod_version
 group = 'design.inherent'
-base.archivesName = 'sky-village-neighbors'
+base.archivesName = 'create-sky-compat'
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
@@ -23,7 +23,7 @@ neoForge {
         client { client(); gameDirectory = file('runs/client') }
         server { server(); gameDirectory = file('runs/server'); programArgument '--nogui' }
     }
-    mods { sky_village_neighbors { sourceSet(sourceSets.main) } }
+    mods { create_sky_compat { sourceSet(sourceSets.main) } }
 }
 configurations {
     localRuntime
@@ -32,6 +32,8 @@ configurations {
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    compileOnly('maven.modrinth:sable:fg9dTRz9') { transitive = false }
+    localRuntime('maven.modrinth:sable:fg9dTRz9') { transitive = false }
     implementation('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
     localRuntime('maven.modrinth:sky-villages:3InSHTOp') { transitive = false }
     localRuntime('dev.architectury:architectury-neoforge:13.0.11') { transitive = false }
@@ -48,7 +50,7 @@ tasks.withType(AbstractArchiveTask).configureEach {
     reproducibleFileOrder = true
 }
 tasks.named('jar', Jar) {
-    archiveFileName = "sky-village-neighbors-${version}-mc1.21.1-neoforge.jar"
+    archiveFileName = "create-sky-compat-${version}-mc1.21.1-neoforge.jar"
     from 'LICENSE'
 }
 tasks.named('sourcesJar', Jar) { from 'LICENSE' }
@@ -61,6 +63,7 @@ tasks.register('verifyUpstream') {
     inputs.files(configurations.runtimeClasspath)
     doLast {
         def pins = [
+            'sable': '9c199157843bf953a47dff625fc5bb41c01a90538d35ad18e6996bbcb8a617c2',
             'sky-archipelago': '6bc4deeb1bc2be716d29e76837b179104009a73e9a32d6d097a415b08ac174e1',
             'sky-villages': '5ef7b63c6f1999a632085975afa14f00146369c142fd72980d760cbb617dd52f'
         ]
@@ -80,16 +83,31 @@ tasks.named('check') { dependsOn 'verifyUpstream' }
 tasks.register('compileProbeJava', JavaCompile) {
     dependsOn classes
     source fileTree('src/probe/java') { include '**/*.java' }
-    classpath = sourceSets.main.output + sourceSets.main.runtimeClasspath
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
     destinationDirectory = layout.buildDirectory.dir('classes/probe')
     options.compilerArgs.add('-proc:none')
 }
 tasks.register('probeJar', Jar) {
     dependsOn compileProbeJava
-    archiveFileName = 'sky-village-neighbors-probe.jar'
+    archiveFileName = 'create-sky-compat-probe.jar'
     destinationDirectory = layout.buildDirectory.dir('probe')
     from layout.buildDirectory.dir('classes/probe')
     from 'src/probe/resources'
+}
+
+tasks.register('compileClientProbeJava', JavaCompile) {
+    dependsOn classes
+    source fileTree('src/clientProbe/java') { include '**/*.java' }
+    classpath = sourceSets.main.output + sourceSets.main.runtimeClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/clientProbe')
+    options.compilerArgs.add('-proc:none')
+}
+tasks.register('clientProbeJar', Jar) {
+    dependsOn compileClientProbeJava
+    archiveFileName = 'create-sky-client-probe.jar'
+    destinationDirectory = layout.buildDirectory.dir('probe')
+    from layout.buildDirectory.dir('classes/clientProbe')
+    from 'src/clientProbe/resources'
 }
 
 tasks.register('verifyPackage', Exec) {

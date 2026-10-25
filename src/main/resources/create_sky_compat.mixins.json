@@ -1,0 +1,33 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "design.inherent.createskycompat.mixin",
+  "plugin": "design.inherent.createskycompat.OptionalMixinPlugin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "GeneratorProfileMixin",
+    "IslandFieldMixin",
+    "ClusterSamplerMixin",
+    "DescriptorFactoryMixin",
+    "TerrainMaterialMixin",
+    "GeologicalMaterialMixin",
+    "OreHeightMixin",
+    "SurfaceClimateMixin",
+    "SurfaceTemperatureMixin",
+    "FreezeClimateMixin",
+    "LevelClimateMixin",
+    "ServerClimateMixin",
+    "CarvingContextMixin",
+    "CarverHeightMixin",
+    "CarverLavaMixin",
+    "DeepDarkContextAccessor",
+    "CaveBiomeMixin",
+    "PortalClimateMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "client.WeatherClimateMixin"
+  ]
+}

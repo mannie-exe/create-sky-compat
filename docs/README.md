@@ -2,4 +2,5 @@
 
 - [Configuration](configuration.md): placement controls and world behavior
 - [Development](development/README.md): implementation, checks and evidence
+- [Island generation](development/terrain.md): preset, geology and saved-world boundaries
 - [Publishing](publishing.md): GitHub and Modrinth release setup

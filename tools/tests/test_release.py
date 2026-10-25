@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PROJECT = 'sky-village-neighbors'
+PROJECT = 'create-sky-compat'
 
 
 class ReleaseTest(unittest.TestCase):

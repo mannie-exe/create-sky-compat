@@ -27,8 +27,8 @@ if head != tag_head:
 destination = root / "build/release"
 destination.mkdir(parents=True, exist_ok=False)
 for filename in [
-    f"sky-village-neighbors-{version}-mc1.21.1-neoforge.jar",
-    f"sky-village-neighbors-{version}-sources.jar",
+    f"create-sky-compat-{version}-mc1.21.1-neoforge.jar",
+    f"create-sky-compat-{version}-sources.jar",
 ]:
     builds = [
         root / "build/ci" / f"build-{runner}" / "libs" / filename
@@ -40,8 +40,8 @@ for filename in [
     shutil.copyfile(builds[0], destination / filename)
 
 subprocess.run([
-    "git", "archive", "--format=zip", f"--prefix=sky-village-neighbors-{version}/",
-    f"--output={destination / f'sky-village-neighbors-{version}-source.zip'}", head,
+    "git", "archive", "--format=zip", f"--prefix=create-sky-compat-{version}/",
+    f"--output={destination / f'create-sky-compat-{version}-source.zip'}", head,
 ], cwd=root, check=True)
 assets = sorted(destination.iterdir())
 for algorithm in ["sha256", "sha512"]:
@@ -56,7 +56,7 @@ if args.stage_only:
 subprocess.run([
     "gh", "release", "create", tag,
     *map(str, sorted(destination.iterdir())),
-    "--verify-tag", "--draft", "--prerelease", "--title", f"Sky Village Neighbors {version}",
+    "--verify-tag", "--draft", "--prerelease", "--title", f"Create Sky Compat {version}",
     "--notes-file", "RELEASE_NOTES.md",
 ], cwd=root, check=True)
 subprocess.run(["gh", "release", "edit", tag, "--draft=false"], cwd=root, check=True)

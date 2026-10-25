@@ -1,19 +1,41 @@
-# Sky Village Neighbors
+# Create Sky Compat
 
-Keeps Sky Villages floating beside Sky Archipelago islands, with a configurable
-horizontal gap. Villages above island terrain or far out in the void are rejected.
+Integrates Sky Archipelago terrain and floating villages for Create Sky.
+The island preset adds deeper terrain and relative geology; see the
+[terrain contract](docs/development/terrain.md) for scope and verification limits.
+The existing village rule keeps structures beside islands with a configurable
+horizontal gap.
 
 ## Installation
 
-For **Minecraft 1.21.1 with NeoForge**, install this mod with:
+For **Minecraft 1.21.1 with NeoForge 21.1.264 or later in the 21.1 series**,
+install Sky Archipelago **1.3.6** and this mod on both client and server.
 
-- Sky Archipelago **1.3.6**
-- Sky Villages **1.0.6** and its Architectury API dependency
+Optional integrations activate when their dependencies are installed:
 
-Install on the server, or in your client instance for singleplayer. Multiplayer
-clients do not need this compatibility mod. Use the Sky Archipelago world preset
-and leave its custom structure rules enabled. Other versions of the two mods are
-intentionally rejected until their placement implementation has been checked.
+| Integration | Supported version | Behavior |
+| --- | --- | --- |
+| Sky Villages and Architectury API | 1.0.6 and Architectury 13.x (tested 13.0.11) | Floating-village clearance, altitude and cluster allowance; both mods must be present |
+| Sable | 2.0.6 | Island-altitude pressure profile for its physics system |
+| Aeronautics Delivery Quests | 1.1.1 | Structure-route loading and distance fixes; village surface retry also requires Sky Villages and Architectury |
+| Create | Installed feature IDs | Island-relative zinc and Overworld striated deposits |
+| Create Propulsion | Installed feature IDs | Island-relative platinum |
+
+Aeronautics uses the Sable pressure integration; this mod does not require
+Aeronautics or patch its controls. Optional integrations retain their own upstream
+dependencies. Missing Create/Propulsion features are skipped. Iris and Veil are not
+dependencies of this mod; the separate Veil Iris Fix owns the Ponder correction.
+
+Use the same version on client and server for the expanded preset.
+Create a new world with **Create Sky Islands**, or set
+`level-type=create_sky_compat:islands_v1` before creating a dedicated-server world.
+Do not change an existing world's generator. Ordinary Sky Archipelago worlds
+retain the neighbor filter without receiving the expanded terrain.
+
+Remove Sky Village Neighbors when installing this replacement. The old common
+configuration is copied only when the new configuration is absent. Leave Sky
+Archipelago's custom structure rules enabled. Unsupported versions of the pinned integrations are rejected when installed.
+The minimum installation needs no village, physics, Create or delivery mods.
 
 ## Placement
 
@@ -23,10 +45,12 @@ column within **512 blocks** belonging to an island with a native radius of at
 least **96 blocks**. These distances are measured between block columns, not from
 the village center.
 
-Villages keep their existing height, buildings and loot. The rule filters candidate
-layouts; it does not move them onto islands, create roads or guarantee a village
-count per cluster. Existing generated villages are unchanged. Other structures,
-including regular villages, are unaffected.
+The expanded preset shifts villages into its island altitude band and assigns
+each archipelago zero to three villages, weighted toward zero. Buildings and loot
+remain unchanged. Biome and terrain rejection can reduce the actual count. The
+neighbor rule does not move villages onto islands or create roads. Ordinary Sky
+Archipelago presets keep their original height and frequency. Existing generated
+villages and regular villages are unaffected by the neighbor rule.
 
 The host search uses a 16-block grid. It may miss a narrow eligible part of an
 island and reject that candidate. Clearance checks every column in the exclusion
@@ -35,8 +59,7 @@ predictions do not include later structures or player-built blocks.
 
 ## Configuration
 
-Edit `config/sky_village_neighbors-common.toml`, or use **Mods → Sky Village
-Neighbors → Config** in a client. Restart the world or server after changes.
+Edit `config/create_sky_compat-common.toml`, or use **Mods → Create Sky Compat → Config** in a client. Restart the world or server after changes.
 The server's configuration controls multiplayer generation.
 
 See [configuration](docs/configuration.md) for controls and limitations,

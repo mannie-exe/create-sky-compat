@@ -1,0 +1,12 @@
+{
+  "create_sky_compat.configuration.title": "Create Sky Compat",
+  "create_sky_compat.config.enabled": "Enable placement filter",
+  "create_sky_compat.config.minimumGap": "Minimum terrain gap",
+  "create_sky_compat.config.maximumGap": "Maximum island distance",
+  "create_sky_compat.config.minimumIslandRadius": "Minimum host island radius",
+  "create_sky_compat.config.enabled.tooltip": "Filter new village layouts. Existing villages are unchanged. Restart the world to apply.",
+  "create_sky_compat.config.minimumGap.tooltip": "Minimum horizontal distance from the full village footprint to island terrain, in block columns. Overlap is always rejected.",
+  "create_sky_compat.config.maximumGap.tooltip": "Maximum distance to a sampled host island. Must be at least the minimum terrain gap.",
+  "create_sky_compat.config.minimumIslandRadius.tooltip": "Minimum native radius of the host island. This does not change island generation.",
+  "generator.create_sky_compat.islands_v1": "Create Sky Islands"
+}

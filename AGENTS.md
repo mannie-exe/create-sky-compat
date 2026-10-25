@@ -1,7 +1,9 @@
-# Sky Village Neighbors
+# Create Sky Compat
 
-Keep Sky Villages floating beside Sky Archipelago terrain. Change only the
-placement of `skyvillages:skyvillage`; preserve other structures and saved worlds.
+Own Create Sky's island terrain, relative geology and targeted mod integration.
+Keep Sky Villages floating beside Sky Archipelago terrain. Preserve foreign
+generators and saved-world generation identity; never silently convert worlds.
+Keep the independent Veil Iris Fix and pack resources in their owning projects.
 Use Java 21, NeoForge and exact upstream dependency pins. Do not bundle upstream
 binaries, templates or decompiled sources.
 

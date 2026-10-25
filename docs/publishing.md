@@ -18,29 +18,32 @@ Create a project under **mannie-exe** using these fields:
 | Field | Selection |
 | --- | --- |
 | Project type | Mod |
-| Name | Sky Village Neighbors |
-| Slug | `sky-village-neighbors` |
-| Summary | Keeps Sky Villages floating beside Sky Archipelago islands, with configurable clearance and distance |
+| Name | Create Sky Compat |
+| Slug | `create-sky-compat` |
+| Summary | Deep sky islands with relative geology and optional village, physics and delivery integrations |
 | Category | World Generation; Utility as an optional second category |
-| Environment | Server-side only, works in singleplayer (`server_only`) |
+| Environment | Required on client and server for the expanded preset |
 | License | MIT |
-| Source | `https://github.com/mannie-exe/sky-village-neighbors` |
-| Issues | `https://github.com/mannie-exe/sky-village-neighbors/issues` |
+| Source | `https://github.com/mannie-exe/create-sky-compat` |
+| Issues | `https://github.com/mannie-exe/create-sky-compat/issues` |
 | Description | README installation, placement and configuration sections |
 
 For the first version, select **Beta**, **Minecraft 1.21.1**, and **NeoForge**.
-Upload `sky-village-neighbors-0.1.0-mc1.21.1-neoforge.jar` as the primary file.
-Required dependencies must pin these versions, not merely their project IDs:
+Upload `create-sky-compat-0.2.0-mc1.21.1-neoforge.jar` as the primary file.
+Declare Sky Archipelago required and the other integrations optional. Pin exact
+versions where the adapter targets internals:
 
-| Dependency | Version | Modrinth version ID |
+| Dependency | Version | Relationship |
 | --- | --- | --- |
-| Sky Archipelago | 1.3.6 | `RwLz4CJb` |
-| Sky Villages | 1.0.6, NeoForge | `3InSHTOp` |
+| Sky Archipelago | 1.3.6 (`RwLz4CJb`) | Required |
+| Sky Villages | 1.0.6, NeoForge (`3InSHTOp`) | Optional, requires Architectury |
+| Sable | 2.0.6 (`fg9dTRz9`) | Optional |
+| Aeronautics Delivery Quests | 1.1.1 | Optional |
 
 Sky Villages declares Architectury API as its own required dependency. Its
 13.0.11 release is the tested runtime. Do not upload dependency JARs or the test
-fixture. Multiplayer clients do not need this patch; they still need whatever
-their server's underlying mods require.
+fixture. Install the same Compat version and applicable integrations on client and
+server. Check client-only mixins and server startup before distributing an update.
 
 ## Upload process
 
@@ -71,7 +74,7 @@ identify that origin.
 
 The [current Modrinth rules](https://modrinth.com/legal/rules) prohibit public
 projects whose contents are primarily or entirely AI-generated. Disclosure alone
-does not make such a project eligible. Sky Village Neighbors' current code was
+does not make such a project eligible. Create Sky Compat's current code was
 written in this agent workflow and must not be presented as ready for public
 Modrinth submission under that rule. DH Polygon Fix combines an attributed
 upstream fix with agent-authored integration/tests; eligibility is not established

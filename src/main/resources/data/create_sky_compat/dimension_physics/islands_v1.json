@@ -1,0 +1,47 @@
+{
+  "dimension": "create_sky_compat:islands_v1",
+  "priority": 1000,
+  "base_pressure": 1.0,
+  "pressure_function": [
+    {
+      "altitude": -128,
+      "value": 1.5,
+      "slope": 0.0
+    },
+    {
+      "altitude": 180,
+      "value": 1.3,
+      "slope": -0.0007
+    },
+    {
+      "altitude": 400,
+      "value": 1.15,
+      "slope": -0.0015
+    },
+    {
+      "altitude": 508,
+      "value": 1.0,
+      "slope": -0.0018
+    },
+    {
+      "altitude": 600,
+      "value": 0.8,
+      "slope": -0.0025
+    },
+    {
+      "altitude": 680,
+      "value": 0.5,
+      "slope": -0.0045
+    },
+    {
+      "altitude": 728,
+      "value": 0.2,
+      "slope": -0.006
+    },
+    {
+      "altitude": 768,
+      "value": 0.0,
+      "slope": 0.0
+    }
+  ]
+}
