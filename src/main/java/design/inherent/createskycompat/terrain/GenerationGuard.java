@@ -39,7 +39,7 @@ public final class GenerationGuard {
         }
         var ops = RegistryOps.create(JsonOps.INSTANCE, server.registryAccess());
         var identity = new JsonObject();
-        identity.addProperty("algorithm", "islands_v1-prototype-7");
+        identity.addProperty("algorithm", "islands_v1-prototype-8");
         identity.addProperty("seed", server.getWorldData().worldGenOptions().seed());
         identity.add("villagePolicy", new Gson().toJsonTree(NeighborConfig.settings()));
         var villages = server.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(ResourceLocation.parse("skyvillages:skyvillage"));
@@ -49,6 +49,7 @@ public final class GenerationGuard {
         identity.add("profile", new Gson().toJsonTree(GenerationConfiguration.profile()));
         identity.addProperty("geologicalSurfaceReference", GeologicalFrame.REFERENCE_SURFACE);
         identity.addProperty("canyonOrigins", "local_surface");
+        identity.addProperty("spawnLanding", "generated_surface");
         identity.addProperty("climate", "biome_temperature_at_reference_surface");
         identity.add("biomes", net.minecraft.world.level.biome.BiomeSource.CODEC.encodeStart(ops, sky.getBiomeSource()).getOrThrow());
         identity.add("islands", SkyIslandGeneratorSettings.CODEC.encodeStart(ops,

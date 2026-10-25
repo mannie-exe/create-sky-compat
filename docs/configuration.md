@@ -44,21 +44,26 @@ the saved identity rejects changes to an existing world.
 
 | Fields | Defaults | Purpose |
 | --- | --- | --- |
-| `spacing`, `jitter` | 4100, 90 | Cell spacing and bounded center displacement |
+| `spacing`, `jitter` | 2400, 90 | Cell spacing and bounded center displacement |
 | `activation` | 0.85 | Native cluster activation before biome rejection |
 | `centerMinY`, `centerMaxY` | 200, 490 | Requested anchor-center band |
 | `anchorMinRadius`, `anchorMaxRadius` | 270, 370 | Anchor descriptor radii |
-| `anchorPlateau`, `anchorCliff` | 28, 290 | Anchor upper body and depth |
+| `anchorPlateau` | 28 | Native upper-body shape |
+| `anchorMinHeight`, `anchorMaxHeight` | 250, 400 | Uniform target total terrain height, before native relief and erosion |
+| `undersideTaper` | 80 | Curvature scale of the lower body; included in target thickness |
 | `companionMinRadius`, `companionMaxRadius` | 40, 110 | Companion radii; spires retain 12–28 |
 | `companionMinOrbit`, `companionMaxOrbit` | 470, 680 | Horizontal orbit around host |
 | `companionMinOffsetY`, `companionMaxOffsetY` | −60, 50 | Companion-center altitude relative to host |
-| `minimumClusterGap` | 1500 | Required separation of complete support envelopes |
+| `minimumClusterGap` | 350 | Required separation of complete support envelopes |
 | `floorClearance`, `buildingHeadroom` | 32, 200 | Terrain clearance inside build bounds |
 
 The loader rejects unknown/missing fields, nonintegral integer settings, impossible
 geometry and spacing that cannot maintain the requested gap. It does not silently
-repair input. The requested center band is intersected with safe shape placement:
-default anchors can use Y=242–490, with independently fitted companions. Relief
+repair input. Older profiles containing `anchorCliff` need the new height and taper
+fields before starting a fresh world; changing the JSON does not migrate a save. The requested center band is intersected with safe shape placement:
+each anchor derives its lower placement limit from its selected thickness. With
+defaults, short anchors can start at Y=200; the tallest require at least Y=268.
+The upper center limit remains Y=490, with independently fitted companions. Relief
 scale must remain between zero and one for the verified shape envelope.
 
 Geometry, activation, floor/headroom and gap controls have this single owner.

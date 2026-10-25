@@ -29,26 +29,56 @@ The spatial grid stays fixed. Its jitter changes center distances without breaki
 floor-division lookup or bounded neighboring-cell searches. Terrain fills, height
 queries, structure support and previews all consume the same descriptors.
 
-The current prototype increases the anchor's cliff/body depth. It leaves the
-upstream effective hanging-depth cap intact: the requested rock volume belongs to
-the main body, not an elongated tail. Crescents receive the same body dimensions
-as other anchors. `VOID` overlap remains selected; stacked terrain is not required.
+Main-island radii remain 270 to 370 blocks; companions retain radii 40 to 110
+and orbits 470 to 680. Spires retain their native smaller dimensions. Each cluster
+selects a uniform integer target height from 250 to 400 using its seed and a
+separate salt. The anchor's cliff depth is target height minus plateau height and
+32 blocks of relief/underside allowance. This is a target for the whole island,
+not every column or a promise of exact realized height. Native cutouts, relief
+and erosion still affect the measured extrema.
 
-`config/create_sky_compat-generation.json` owns geometry and activation. The profile
-is loaded once at startup, validated and captured by each field. The default grid
-is 4100 blocks with at most 90 blocks of center jitter per axis and activation 0.85.
-The requested center range is Y=200–490; complete shape bounds narrow it to
-242–490. Companions choose heights from host −60 through +50, intersected with
-their own safe placement range. Neither body nor geology is compressed to fit.
+Placement uses each selected depth. Requested centers remain Y=200 to 490, but
+tall bodies need a higher lower limit: at defaults a 400-block target requires
+Y>=268, while a 250-block target can start at Y=200. The complete shape reserves
+32 blocks above the floor and 200 above terrain. Companion elevations are fitted
+independently. Terrain and geology are not compressed to fit.
 
-The bounds reserve 32 blocks above the floor and 200 above terrain. They include
-native relief, shoulder, capped hanging depth and density fringes. The native
-circular column envelope is at most 1206 blocks from the cluster center, including
-companions and spires. Adjacent centers remain at least 3920 blocks apart, leaving
-a conservative 1508-block horizontal gap. This is a guaranteed support-envelope
-gap; actual shores can be considerably farther apart. It is not a guarantee of a
-1500–2500-block navigable route. Runtime descriptor checks reject unexpected
-upstream tail geometry that exceeds the bound.
+`IslandDensityMixin` configures only fields belonging to this preset. It prepares
+lower-body and horizontal bounds once per native column contribution, storing
+them on the prepared density object. No global coordinate cache or extra noise
+sampling per voxel is needed. The pinned upstream anchor rule subtracts a fixed
+0.55 plus a depth term below `underside - 4`; the adapter removes that jump and
+intersects the remaining native density with a continuous curved lower boundary.
+An elliptical quadratic term and bounded eight-block noise vary the underside.
+The existing native erosion and archetype coverage remain active. The taper stays
+inside the selected body rather than extending a long tail beneath it.
+
+All island families also have continuous radial support ending at
+`2 * maxRadius + 32`. This is an explicit shape bound, not an inference from a
+few sampled shores. It leaves nominal radii and companion orbits unchanged but
+can remove an unusually distant native fringe. The maximum complete-cluster
+reach is 933 blocks, including rounding of companion offsets. Spacing 2400 with
+jitter 90 leaves at least `2400 - 180 - 2 * 933 = 354` blocks between density
+supports, satisfying the configured 350-block minimum. This replaces the previous
+1500-block clearance requirement. Trees, structures and player construction are
+outside that terrain-density guarantee. Actual shore distances are measured
+separately, and missing clusters can create longer journeys.
+
+The new mixins depend on Sky Archipelago 1.3.6's `prepareDensity`,
+`samplePreparedDensity`, prepared-object lifetime, and underside penalty formula.
+An upstream update requires inspecting those methods, reproducing the native
+cutoff control, and rerunning bounds, silhouette, chunk/query and reopening checks.
+Matching signatures alone is insufficient. Ordinary presets retain native density.
+
+The native fresh-world fallback predicts a landing before carving/features have
+necessarily left the same surface. `SpawnFallbackMixin` validates only its final
+spawn assignment in this preset. `SpawnLanding` checks the generated chunk's
+motion-blocking height, solid support, clear feet/head and fluids, then searches
+bounded four-block offsets up to 16 blocks if necessary. It fails explicitly when
+no landing exists. Chunk loads occur only during startup, never in the terrain
+query path. Review the upstream fallback's event and saved-world guard when
+updating; this hook must not relocate existing worlds.
+
 
 Embedded settings retain biome eligibility, archetypes and structure policy.
 Their serialized spacing is a placeholder: upstream caps that field at 2000,

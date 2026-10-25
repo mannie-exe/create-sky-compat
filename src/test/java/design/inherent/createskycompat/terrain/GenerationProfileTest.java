@@ -31,8 +31,13 @@ class GenerationProfileTest {
         json.addProperty("centerMinY", 100);
         json.addProperty("centerMaxY", 700);
         var profile = GenerationConfiguration.parse(json.toString());
-        assertTrue(profile.safeMinimumY() - profile.anchorCliff() - 48 >= GenerationProfile.MIN_Y + profile.floorClearance());
+        assertTrue(profile.safeMinimumY() - profile.cliffDepth(profile.anchorMaxHeight()) - 24 >= GenerationProfile.MIN_Y + profile.floorClearance());
         assertTrue(profile.safeMaximumY() + profile.anchorPlateau() + 48 <= GenerationProfile.MAX_Y - 1 - profile.buildingHeadroom());
         assertTrue(profile.safeMaximumY() > profile.safeMinimumY());
+        assertTrue(profile.safeMinimumY(profile.anchorMinHeight()) < profile.safeMinimumY(profile.anchorMaxHeight()));
+        for (int height = profile.anchorMinHeight(); height <= profile.anchorMaxHeight(); height++) {
+            assertTrue(profile.safeMinimumY(height) - profile.cliffDepth(height) - 24
+                    >= GenerationProfile.MIN_Y + profile.floorClearance());
+        }
     }
 }

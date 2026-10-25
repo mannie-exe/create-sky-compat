@@ -28,6 +28,7 @@ mode.add_argument('--chunk-futures', action='store_true', help='Compare backgrou
 mode.add_argument('--terrain', action='store_true', help='Bounded native density survey without generating island chunks')
 parser.add_argument('--natural-profile', choices=['current', 'adapted'], default='current', help='Preset for the natural village survey')
 mode.add_argument('--natural', action='store_true', help='Generate natural starts and complete two villages')
+parser.add_argument('--generation-config', type=Path, help='Explicit candidate geometry profile; installed config remains read-only')
 parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--maximum-gap', type=int, default=512)
 parser.add_argument('--disable-carver-adapter', action='store_true',
@@ -91,6 +92,8 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
     (run / 'config').mkdir(exist_ok=True)
     (run / 'config/create_sky_compat-common.toml').write_text(
         f'enabled = true\nminimumGap = 64\nmaximumGap = {args.maximum_gap}\nminimumIslandRadius = 96\n')
+    if args.generation_config:
+        shutil.copy2(args.generation_config.expanduser().resolve(), run / 'config/create_sky_compat-generation.json')
     # Reuse the owner's existing EULA acceptance; never create acceptance implicitly.
     shutil.copy2(server / 'eula.txt', run / 'eula.txt')
     preset = {'current': 'sky_archipelago:sky_islands', 'adapted': 'create_sky_compat:islands_v1', 'vanilla': 'minecraft:normal'}.get(args.generation, ('create_sky_compat:islands_v1' if args.natural_profile == 'adapted' else 'sky_archipelago:sky_islands') if args.natural else 'minecraft:flat')

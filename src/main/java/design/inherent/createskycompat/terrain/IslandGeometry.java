@@ -15,7 +15,7 @@ public final class IslandGeometry {
                 + noise.sampleInt(source.seed(), 163, -profile.jitter(), profile.jitter());
         int z = source.cellZ() * profile.spacing() + profile.spacing() / 2
                 + noise.sampleInt(source.seed(), 197, -profile.jitter(), profile.jitter());
-        int y = noise.sampleInt(source.seed(), 223, profile.safeMinimumY(), profile.safeMaximumY());
+        int y = noise.sampleInt(source.seed(), 223, profile.safeMinimumY(targetHeight(source.seed(), profile)), profile.safeMaximumY());
         return new ClusterDescriptor(source.cellX(), source.cellZ(), x, y, z,
                 source.heightBand(), source.sizeBand(), source.tier(), source.baseRotation(),
                 source.archetype(), source.satelliteCount(), source.spireCount(), source.seed());
@@ -42,19 +42,21 @@ public final class IslandGeometry {
             y = noise.sampleInt(source.seed(), 17, lower, upper);
         }
         int plateau = anchor ? profile.anchorPlateau() : spire ? 6 : 14;
-        int cliff = anchor ? profile.anchorCliff() : spire ? 95 : noise.sampleInt(source.seed(), 31, 40, 90);
+        int cliff = anchor ? profile.cliffDepth(targetHeight(cluster.seed(), profile)) : spire ? 95 : noise.sampleInt(source.seed(), 31, 40, 90);
         var result = new IslandDescriptor(source.family(), x, y, z, rx, rz, Math.max(rx, rz),
                 source.rotation(), source.archetype(), plateau, cliff, anchor ? 48 : 28,
                 scale(source.hangOffsetX(), rx, source.radiusX()), scale(source.hangOffsetZ(), rz, source.radiusZ()),
                 scale(source.tailRadiusX(), rx, source.radiusX()), scale(source.tailRadiusZ(), rz, source.radiusZ()),
                 source.erosionStrength(), source.lobeCount(), source.peninsulaCount(), source.biteCount(), source.seed());
-        int nativeReach = Math.max(result.maxRadius() * 3 + 96,
-                Math.max(Math.abs(result.hangOffsetX()) + result.tailRadiusX() * 2,
-                        Math.abs(result.hangOffsetZ()) + result.tailRadiusZ() * 2) + 96);
-        if (Math.hypot(x - cluster.centerX(), z - cluster.centerZ()) + nativeReach > profile.clusterReach()) {
+        if (Math.hypot(x - cluster.centerX(), z - cluster.centerZ())
+                + GenerationProfile.supportRadius(result.maxRadius()) > profile.clusterReach()) {
             throw new IllegalStateException("Island descriptor exceeds the validated cluster envelope");
         }
         return result;
+    }
+
+    public static int targetHeight(long clusterSeed, GenerationProfile profile) {
+        return new IslandNoise(clusterSeed).sampleInt(clusterSeed, 241, profile.anchorMinHeight(), profile.anchorMaxHeight());
     }
 
     private static int scale(int value, int target, int original) {

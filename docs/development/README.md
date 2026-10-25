@@ -76,6 +76,10 @@ python3 tools/probe.py --server /path/to/server/game --java /path/to/java
 python3 tools/probe.py --natural --seed 1 --server /path/to/server/game --java /path/to/java
 ```
 
+Use `--generation-config /path/to/create_sky_compat-generation.json` to stage an
+authored candidate profile instead of the installed one. Strict profile parsing
+rejects obsolete fields; do not accidentally test against an older installed JSON.
+
 The runner reads installed libraries, mods, config and existing EULA acceptance.
 It creates a disposable world, binds loopback on an ephemeral port, and removes
 the temporary server on exit. It never mounts a live save. The probe waits for the first completed server tick, after all startup spawn

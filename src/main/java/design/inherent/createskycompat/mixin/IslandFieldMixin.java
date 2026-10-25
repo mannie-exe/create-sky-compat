@@ -22,6 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalField, VillageAnchors {
     @Shadow @Final private IslandClusterSampler clusterSampler;
     @Shadow @Final private IslandDescriptorFactory descriptorFactory;
+    @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandDensityEvaluator densityEvaluator;
     @Unique private volatile GenerationProfile createSky$profile;
 
     @Override public synchronized void createSky$configure(GenerationProfile profile) {
@@ -31,6 +32,7 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
         }
         ((ProfiledTerrain)(Object)clusterSampler).createSky$configure(profile);
         ((ProfiledTerrain)(Object)descriptorFactory).createSky$configure(profile);
+        ((ProfiledTerrain)(Object)densityEvaluator).createSky$configure(profile);
         createSky$profile = profile;
     }
     @Override public GenerationProfile createSky$profile() { return createSky$profile; }

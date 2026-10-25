@@ -26,7 +26,7 @@ public final class GenerationConfiguration {
             throw new IllegalArgumentException("Create Sky's verified terrain envelope requires terrain_relief_scale between 0 and 1");
         }
         var terrain = new TerrainSettings(p.activation(), p.anchorMinRadius(), p.anchorMaxRadius(), t.islandSize(),
-                p.safeMinimumY(), p.safeMaximumY(), t.maxIslandThicknessBlocks(),
+                p.safeMinimumY(p.anchorMinHeight()), p.safeMaximumY(), t.maxIslandThicknessBlocks(),
                 t.lowBandWeight(), t.midHighBandWeight(), t.veryHighBandWeight(), t.lowBandCenterOffset(), t.veryHighBandCenterOffset(),
                 // Upstream's serialized spacing is capped at 2000. IslandFieldMixin owns the actual grid.
                 t.spacing(),
