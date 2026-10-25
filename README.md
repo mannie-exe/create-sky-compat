@@ -1,14 +1,12 @@
 # Create Sky Compat
 
-Integrates Sky Archipelago terrain and floating villages for Create Sky.
-The island preset adds deeper terrain and relative geology; see the
-[terrain contract](docs/development/terrain.md) for scope and verification limits.
-The existing village rule keeps structures beside islands with a configurable
-horizontal gap.
+Adds a Sky Archipelago world preset with deep islands, island-relative geology
+and optional village, physics and delivery integrations. It can be installed on
+its own with the required dependencies; the Create Sky modpack is not required.
 
 ## Installation
 
-For **Minecraft 1.21.1 with NeoForge 21.1.264 or later in the 21.1 series**,
+For **Minecraft 1.21.1, Java 21 and NeoForge 21.1.264 or later in the 21.1 series**,
 install Sky Archipelago **1.3.6** and this mod on both client and server.
 
 Optional integrations activate when their dependencies are installed:
@@ -24,7 +22,7 @@ Optional integrations activate when their dependencies are installed:
 Aeronautics uses the Sable pressure integration; this mod does not require
 Aeronautics or patch its controls. Optional integrations retain their own upstream
 dependencies. Missing Create/Propulsion features are skipped. Iris and Veil are not
-dependencies of this mod; the separate Veil Iris Fix owns the Ponder correction.
+dependencies; this mod does not patch shader rendering or Ponder.
 
 Use the same version on client and server for the expanded preset.
 Create a new world with **Create Sky Islands**, or set
@@ -34,8 +32,23 @@ retain the neighbor filter without receiving the expanded terrain.
 
 Remove Sky Village Neighbors when installing this replacement. The old common
 configuration is copied only when the new configuration is absent. Leave Sky
-Archipelago's custom structure rules enabled. Unsupported versions of the pinned integrations are rejected when installed.
-The minimum installation needs no village, physics, Create or delivery mods.
+Archipelago's custom structure rules enabled. Unsupported versions of pinned
+integrations are rejected when installed.
+The minimum installation needs only Minecraft, NeoForge, Sky Archipelago and
+Create Sky Compat.
+
+## Island terrain
+
+**Create Sky Islands** uses a build range from Y=-128 through Y=767. Clusters have
+large anchor islands surrounded by smaller companions. Default anchor height
+targets are 250 to 400 blocks, with placement fitted to leave floor clearance and
+building headroom. Ore placement and classic cave carvers use island-relative
+heights rather than vanilla world altitude.
+
+The default cluster grid is 2400 blocks. This is center spacing, not a guaranteed
+shore-to-shore distance; activation, biome eligibility and island shapes affect
+actual travel distances. See [configuration](docs/configuration.md) for controls
+and [terrain](docs/development/terrain.md) for implementation limits.
 
 ## Placement
 

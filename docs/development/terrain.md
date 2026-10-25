@@ -59,12 +59,12 @@ few sampled shores. It leaves nominal radii and companion orbits unchanged but
 can remove an unusually distant native fringe. The maximum complete-cluster
 reach is 933 blocks, including rounding of companion offsets. Spacing 2400 with
 jitter 90 leaves at least `2400 - 180 - 2 * 933 = 354` blocks between density
-supports, satisfying the configured 350-block minimum. This replaces the previous
-1500-block clearance requirement. Trees, structures and player construction are
+supports, satisfying the configured 350-block minimum. Trees, structures and
+player construction are
 outside that terrain-density guarantee. Actual shore distances are measured
 separately, and missing clusters can create longer journeys.
 
-The new mixins depend on Sky Archipelago 1.3.6's `prepareDensity`,
+The density mixins depend on Sky Archipelago 1.3.6's `prepareDensity`,
 `samplePreparedDensity`, prepared-object lifetime, and underside penalty formula.
 An upstream update requires inspecting those methods, reproducing the native
 cutoff control, and rerunning bounds, silhouette, chunk/query and reopening checks.
@@ -89,7 +89,7 @@ See [configuration](../configuration.md) for authoritative controls.
 ## Geological frame
 
 `GeologicalFrame` maps reference Y=−64 to the anchor's `centerY - cliffDepth`
-and reference Y=64 to `centerY + plateauHeight`. Underground heights scale between
+and reference Y=64 to `centerY + plateauHeight + 1`. Underground heights scale between
 those points with integer floor division. Heights above reference 64 retain a
 one-block-to-one-block offset above that surface datum. Vanilla's build ceiling
 is not treated as ordinary ground level. Samples outside `[-64, 320)` are rejected,
@@ -111,7 +111,7 @@ samples. Counts, feature order, biome checks, configured veins, replacement rule
 and exposure probabilities remain native. Nether/End and unlisted placements
 are unchanged. Feature-internal checks remain native. Fossils still fit their selected template
 below the local heightmap and reject excessive empty corners. Standalone jungle
-vines use a separate `relative_surface` tag: reference 64–100 becomes actual
+vines use a separate `relative_surface` tag: reference 64 to 100 becomes actual
 column top through top+36, preserving their neighbor-attachment test. Blue ice is
 not moved: its native feature requires water, packed ice and a position below sea
 level, which this oceanless preset does not provide naturally. Moving its origin
@@ -138,7 +138,7 @@ cached terrain descriptors and bounded cell searches; it never loads chunks.
 
 Vanilla cave origins sample the reference envelope and map through the geological
 frame at their source chunk's center. Canyon origins instead preserve their native
-10–67 height spread relative to the actual local surface at reference Y=64. That fixed origin
+10 to 67 height spread relative to the actual local surface at reference Y=64. That fixed origin
 frame is shared by every target chunk carved by the same tunnel. Tunnel lengths,
 branching and shapes remain native. A void origin consumes the native random
 sample and subsequent tunnel decisions below the playable envelope; it cannot
@@ -186,8 +186,8 @@ Y=192 datum to the new anchor surface datum. Only the named structure and the
 opted-in generator receive this adjustment. Horizontal clearance still uses the
 complete generated footprint.
 
-The owner requested a per-archipelago target of zero to three villages, with zero
-common and three rare. The selected initial logarithmic-series weights are
+Each archipelago has an allowance of zero to three villages, with zero common
+and three rare. The logarithmic-series weights are
 `96:24:8:3`, or approximately 73.3%, 18.3%, 6.1% and 2.3%. `VillageDistribution`
 implements the deterministic count draw. `ArchipelagoVillagePlacement` replaces
 only the named village's runtime placement inside the opted-in generator. It
@@ -214,7 +214,7 @@ start pool or Jigsaw radius, or Sky Archipelago's source-retry search.
 
 ## Delivery endpoints
 
-When Aeronautics Delivery Quests 1.1.1 is installed, the candidate adapts its
+When Aeronautics Delivery Quests 1.1.1 is installed, the adapter changes its
 structure-route loading, distance checks and surface finalization only in the
 opted-in preset. RANDOM routing and foreign generators retain native behavior.
 
@@ -259,12 +259,12 @@ Sky Village cargo placement and delivery completion remain separate play checks.
 
 The preset uses a Sable dimension-physics data record under
 `data/create_sky_compat/dimension_physics/islands_v1.json`. A narrow lookup adapter
-selects that profile only for the new dimension type. Sable's native loader and
+selects that profile only for this dimension type. Sable's native loader and
 network packet carry the record; no custom packet or global Overworld override is
 needed. A higher-priority explicit dimension record remains authoritative.
 
-The pressure curve starts at 1.5 below the islands, reaches 1.0 at the Y=508 surface
-datum, 0.8 at Y=600, 0.5 at Y=680 and zero at the exclusive ceiling of Y=768.
+The pressure curve starts at 1.5 below the islands, reaches 1.0 at the Y=508 pressure
+reference, 0.8 at Y=600, 0.5 at Y=680 and zero at the exclusive ceiling of Y=768.
 Its cubic interpolation is checked across every integer altitude for bounded,
 monotonic pressure. Gravity, drag and magnetic north retain Sable's defaults.
 Native aircraft behavior still requires separate flight checks; successful data

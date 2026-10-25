@@ -19,13 +19,19 @@ Sable and ADQ hooks require their respective mod IDs. The plugin references no
 game or optional-mod classes. Required injection counts remain enforced when an
 integration is selected. Runtime village fallback and saved-world identity use
 the same presence predicate. The weather mixin is client-only; configuration UI
-registration is also client-only. Server distributions must not include Veil Iris Fix.
+registration is also client-only.
 
 The Sable API is compile-only with a separate development runtime dependency.
 Development runs retain the complete pinned integration set. For the minimal
-native check, use the existing runner with `--generation adapted --minimal --seed 42
---reopen --heap 6G` and the usual `--server`/`--java` arguments. It stages only Sky
-Archipelago, Compat and the separate probe, without copying other mods' configs.
+native check, run:
+
+```sh
+python3 tools/probe.py --generation adapted --minimal --seed 42 --reopen --heap 6G \
+  --server /path/to/server/game --java /path/to/java
+```
+
+It stages only Sky Archipelago, Compat and the separate probe, without copying
+other mods' configs.
 The full check omits `--minimal`. These two installations define the current
 verification scope; intermediate dependency combinations are not runtime-tested.
 
@@ -87,9 +93,9 @@ handlers. Its JAR is separate from release artifacts. Results go to `build/verif
 
 `--islands --seed N --heap 6G` samples three anchors using 49 spatial strata each. It records
 observed blocks, weighted estimates, relative ore depths, spawn collision checks,
-surface biomes, descriptors and generation/scanning time. Import the resulting
-report into the Atlas with its `data:islands` command. See [terrain](terrain.md)
-for sampling limits.
+surface biomes, descriptors and generation/scanning time. Reports are JSON and
+can be consumed by external analysis tools. See
+[terrain](terrain.md) for sampling limits.
 
 The default heap is 4 GiB; `--heap` accepts 4G, 6G or 8G. The report records the
 selected limit and observed end-of-scan heap usage. The runner rejects fatal

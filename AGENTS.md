@@ -1,6 +1,7 @@
 # Create Sky Compat
 
-Own Create Sky's island terrain, relative geology and targeted mod integration.
+Maintain an independently installable Sky Archipelago terrain and integration mod.
+Keep minimum dependencies and optional adapters explicit.
 Keep Sky Villages floating beside Sky Archipelago terrain. Preserve foreign
 generators and saved-world generation identity; never silently convert worlds.
 Keep the independent Veil Iris Fix and pack resources in their owning projects.
