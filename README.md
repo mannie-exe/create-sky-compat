@@ -59,7 +59,10 @@ predictions do not include later structures or player-built blocks.
 
 ## Configuration
 
-Edit `config/create_sky_compat-common.toml`, or use **Mods → Create Sky Compat → Config** in a client. Restart the world or server after changes.
+Edit village settings in `config/create_sky_compat-common.toml`, or use
+**Mods → Create Sky Compat → Config** in a client. Island geometry lives in
+`config/create_sky_compat-generation.json`. Restart the game/server after changes;
+changed generation settings require a fresh world.
 The server's configuration controls multiplayer generation.
 
 See [configuration](docs/configuration.md) for controls and limitations,

@@ -46,7 +46,10 @@ public final class GenerationGuard {
         if (OptionalIntegrations.skyVillages() && villages != null) {
             identity.add("villageSource", StructureSet.DIRECT_CODEC.encodeStart(ops, villages).getOrThrow());
         }
-        identity.add("profile", new Gson().toJsonTree(GenerationProfile.INITIAL));
+        identity.add("profile", new Gson().toJsonTree(GenerationConfiguration.profile()));
+        identity.addProperty("geologicalSurfaceReference", GeologicalFrame.REFERENCE_SURFACE);
+        identity.addProperty("canyonOrigins", "local_surface");
+        identity.addProperty("climate", "biome_temperature_at_reference_surface");
         identity.add("biomes", net.minecraft.world.level.biome.BiomeSource.CODEC.encodeStart(ops, sky.getBiomeSource()).getOrThrow());
         identity.add("islands", SkyIslandGeneratorSettings.CODEC.encodeStart(ops,
                 SkyIslandGeneratorSettings.fromRuntimeSettings(sky.resolvedSkyIslandSettings())).getOrThrow());

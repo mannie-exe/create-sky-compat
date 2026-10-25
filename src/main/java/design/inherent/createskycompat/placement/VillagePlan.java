@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 /** Stable admission, independent of chunk visits, accepted-start counters and world mutations. */
 public final class VillagePlan {
-    public record Anchor(long seed, int x, int z, int radius) {}
+    public record Anchor(long seed, int x, int z, int radius, int surfaceY) {}
     public record Site(int chunkX, int chunkZ) {
         public int x() { return chunkX * 16 + 8; }
         public int z() { return chunkZ * 16 + 8; }

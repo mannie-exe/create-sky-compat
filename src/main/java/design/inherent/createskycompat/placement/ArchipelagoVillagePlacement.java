@@ -8,7 +8,6 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.levelgen.RandomState;
-import design.inherent.createskycompat.terrain.GenerationProfile;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.structure.placement.RandomSpreadStructurePlacement;
@@ -54,8 +53,7 @@ public final class ArchipelagoVillagePlacement extends RandomSpreadStructurePlac
         int minZ = Math.floorDiv(Math.floorDiv(anchor.z() - reach, 16), spacing());
         int maxZ = Math.floorDiv(Math.floorDiv(anchor.z() + reach, 16), spacing());
         var candidates = new ArrayList<VillagePlan.Site>();
-        var profile = GenerationProfile.INITIAL;
-        int surfaceY = (profile.centerMinY() + profile.centerMaxY()) / 2 + profile.anchorPlateau();
+        int surfaceY = anchor.surfaceY();
         for (int x = minX; x <= maxX; x++) for (int z = minZ; z <= maxZ; z++) {
             var chunk = getPotentialStructureChunk(worldSeed, x * spacing(), z * spacing());
             var site = new VillagePlan.Site(chunk.x, chunk.z);

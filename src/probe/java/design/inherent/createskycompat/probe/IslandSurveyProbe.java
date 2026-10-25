@@ -27,6 +27,7 @@ final class IslandSurveyProbe {
         var report = new JsonObject();
         report.addProperty("schema", 1); report.addProperty("kind", "create-sky-island-survey");
         report.addProperty("seed", level.getSeed()); report.addProperty("preset", GenerationProfile.ID);
+        report.addProperty("referenceSurfaceY", GeologicalFrame.REFERENCE_SURFACE);
         report.addProperty("method", "One deterministic random chunk per 7x7 spatial stratum, within twice the anchor descriptor radius; only columns dominated by that anchor contribute to estimates");
         report.addProperty("limitations", "Estimates are bounded to the sampled square and may miss rare features. Counts do not establish visibility, mining access, complete island inventories or survival travel. Structures are disabled. Companion columns are excluded from anchor resource estimates.");
         report.add("descriptors", new Gson().toJsonTree(descriptors));
@@ -44,8 +45,8 @@ final class IslandSurveyProbe {
         var pos = new BlockPos.MutableBlockPos();
         for (var anchor : anchors.stream().limit(3).toList()) {
             var island = new JsonObject(); island.add("descriptor", new Gson().toJsonTree(anchor));
-            int cellX = Math.floorDiv(anchor.x(), GenerationProfile.INITIAL.spacing());
-            int cellZ = Math.floorDiv(anchor.z(), GenerationProfile.INITIAL.spacing());
+            int cellX = Math.floorDiv(anchor.x(), ((ProfiledTerrain)(Object)field).createSky$profile().spacing());
+            int cellZ = Math.floorDiv(anchor.z(), ((ProfiledTerrain)(Object)field).createSky$profile().spacing());
             boolean grouped = false;
             for (int dx = -1; dx <= 1 && !grouped; dx++) for (int dz = -1; dz <= 1 && !grouped; dz++) {
                 @SuppressWarnings("unchecked")
@@ -86,6 +87,7 @@ final class IslandSurveyProbe {
             var counts = new TreeMap<String, Long>(); var estimates = new TreeMap<String, Double>();
             var oreDepths = new TreeMap<String, Map<Integer, Long>>(); var samples = new JsonArray();
             var biomeColumns = new TreeMap<String, Integer>();
+            var openings = new JsonArray(); int openingColumns = 0;
             var random = new Random(level.getSeed() ^ ((long)anchor.x() << 32) ^ anchor.z());
             int minSolid = Integer.MAX_VALUE, maxSolid = Integer.MIN_VALUE; long observedColumns = 0;
             long islandBegan = System.nanoTime();
@@ -106,6 +108,24 @@ final class IslandSurveyProbe {
                     var frame = ((GeologicalField)(Object)field).createSky$frameAt(x, z, settings);
                     int surface = field.sampleColumn(x, z, settings).topY();
                     biomeColumns.merge(level.getBiome(pos.set(x, surface, z)).getRegisteredName(), 1, Integer::sum);
+                    // Actual post-feature air cut into predicted terrain, not a density-only cave claim.
+                    int openDepth = 0;
+                    while (openDepth < 64 && surface - openDepth >= level.getMinBuildHeight()
+                            && chunk.getBlockState(pos.set(x, surface - openDepth, z)).isAir()) openDepth++;
+                    if (openDepth >= 8) {
+                        var predicted = generator.getBaseColumn(x, z, level, level.getChunkSource().randomState());
+                        int removed = 0;
+                        for (int dy = 0; dy < openDepth; dy++) if (!predicted.getBlock(surface - dy).isAir()) removed++;
+                        if (removed >= 8) {
+                            openingColumns++;
+                            if (openings.size() < 8) {
+                                var opening = new JsonObject();
+                                opening.addProperty("x", x); opening.addProperty("z", z);
+                                opening.addProperty("surfaceY", surface); opening.addProperty("airDepth", openDepth);
+                                openings.add(opening);
+                            }
+                        }
+                    }
                     for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y++) {
                         var state = chunk.getBlockState(pos.set(x, y, z)); if (state.isAir()) continue;
                         String id = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
@@ -119,6 +139,9 @@ final class IslandSurveyProbe {
                 row.addProperty("anchorColumns", columns); row.add("blocks", new Gson().toJsonTree(chunkCounts)); samples.add(row);
             }
             island.addProperty("observedAnchorColumns", observedColumns);
+            island.addProperty("surfaceOpeningColumns", openingColumns);
+            island.add("surfaceOpeningExamples", openings);
+            island.addProperty("surfaceOpeningEvidence", "Generated air at least eight blocks into predicted surface rock; does not prove walkable access or deep connectivity");
             if (observedColumns > 0) {
                 island.addProperty("observedMinY", minSolid); island.addProperty("observedMaxY", maxSolid);
                 island.addProperty("observedHeadroom", level.getMaxBuildHeight() - 1 - maxSolid);

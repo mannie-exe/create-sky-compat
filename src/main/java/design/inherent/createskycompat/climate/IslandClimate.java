@@ -22,8 +22,9 @@ public final class IslandClimate {
     }
 
     public static BlockPos temperaturePosition(BlockPos position) {
-        var profile = GenerationProfile.INITIAL;
-        int surfaceDatum = (profile.centerMinY() + profile.centerMaxY()) / 2 + profile.anchorPlateau();
-        return position.atY(position.getY() - surfaceDatum + 64);
+        // Biome climate is independent of a cluster's altitude. This also keeps client weather and
+        // server freezing identical without reconstructing hidden server terrain on the client.
+        // Cold-biome base temperatures and X/Z temperature noise remain native.
+        return position.atY(64);
     }
 }

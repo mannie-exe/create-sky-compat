@@ -46,7 +46,8 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
             var descriptors = descriptorsForCell(cx + dx, cz + dz, settings);
             if (descriptors.isEmpty()) continue;
             var anchor = descriptors.getFirst();
-            anchors.add(new VillagePlan.Anchor(anchor.seed(), anchor.centerX(), anchor.centerZ(), anchor.maxRadius()));
+            anchors.add(new VillagePlan.Anchor(anchor.seed(), anchor.centerX(), anchor.centerZ(), anchor.maxRadius(),
+                    anchor.centerY() + anchor.plateauHeight()));
         }
         return List.copyOf(anchors);
     }

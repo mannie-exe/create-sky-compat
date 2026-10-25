@@ -22,6 +22,9 @@ public abstract class CarverHeightMixin {
         var geology = context instanceof GeologicalCarving scoped ? scoped.createSky$geology() : null;
         if (geology == null) return original.call(provider, random, context);
         int sample = original.call(provider, random, geology.reference());
+        if ((Object)this instanceof CanyonWorldCarver) {
+            return geology.canyonHeight(sample, source.getMiddleBlockX(), source.getMiddleBlockZ(), GenerationProfile.MIN_Y - 1024);
+        }
         // A void origin still consumes the native random sample and tunnel decisions, away from playable terrain.
         return geology.worldHeight(sample, source.getMiddleBlockX(), source.getMiddleBlockZ(), GenerationProfile.MIN_Y - 1024);
     }

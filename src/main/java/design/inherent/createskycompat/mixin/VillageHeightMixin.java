@@ -3,7 +3,8 @@ package design.inherent.createskycompat.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
-import design.inherent.createskycompat.terrain.GenerationProfile;
+import design.inherent.createskycompat.placement.VillageAnchors;
+import design.inherent.createskycompat.placement.VillagePlan;
 import design.inherent.createskycompat.terrain.GeologicalGenerator;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -12,6 +13,7 @@ import net.minecraft.world.level.levelgen.WorldGenerationContext;
 import net.minecraft.world.level.levelgen.heightproviders.HeightProvider;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.structures.JigsawStructure;
+import org.sathrek.sky_archipelago.worldgen.generator.core.SkyIslandChunkGenerator;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,8 +31,11 @@ public abstract class VillageHeightMixin {
                 || !CREATE_SKY_VILLAGE.equals(context.registryAccess().registryOrThrow(Registries.STRUCTURE).getKey((Structure)(Object)this))) {
             return sampled;
         }
-        var profile = GenerationProfile.INITIAL;
-        // Retain the authored 160..224 spread, recentered around the new anchor surface datum.
-        return sampled + (profile.centerMinY() + profile.centerMaxY()) / 2 + profile.anchorPlateau() - 192;
+        var sky = (SkyIslandChunkGenerator)context.chunkGenerator();
+        var field = generator.createSky$field(context.randomState());
+        int x = context.chunkPos().getMiddleBlockX(), z = context.chunkPos().getMiddleBlockZ();
+        var owner = VillagePlan.owner(x, z, ((VillageAnchors)(Object)field).createSky$anchorsNear(x, z, sky.resolvedSkyIslandSettings()));
+        // Preserve the native random spread, centered on the actual host rather than a world-wide band.
+        return owner == null ? sampled : sampled + owner.surfaceY() - 192;
     }
 }

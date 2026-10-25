@@ -53,7 +53,7 @@ final class BiomeProbe {
             var blocks = new TreeMap<String, Integer>(); var caveBiomes = new TreeMap<String, Integer>();
             for (int x = chunk.getPos().getMinBlockX(); x <= chunk.getPos().getMaxBlockX(); x++)
                 for (int z = chunk.getPos().getMinBlockZ(); z <= chunk.getPos().getMaxBlockZ(); z++)
-                    for (int y = 160; y < 540; y++) {
+                    for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y++) {
                         String id = BuiltInRegistries.BLOCK.getKey(chunk.getBlockState(pos.set(x, y, z)).getBlock()).toString();
                         if (id.contains("moss") || id.contains("dripstone") || id.contains("sculk") || id.contains("cave_vine")
                                 || id.contains("spore_blossom") || id.contains("azalea") || id.equals("minecraft:clay")) blocks.merge(id, 1, Integer::sum);

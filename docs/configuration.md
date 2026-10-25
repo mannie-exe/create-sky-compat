@@ -34,6 +34,40 @@ placement controls. Village integration needs both Sky Villages and Architectury
 village integration changes saved generation identity; optional installation is
 not permission to add/remove generation content from an existing marked world.
 
+## Island geometry
+
+`config/create_sky_compat-generation.json` is created at startup and applies only
+to **Create Sky Islands**. Edit it with the game/server stopped; restart the whole
+process to reload it. It is separate from the NeoForge village settings screen.
+Use matching files on client and server. Geometry changes require a fresh world;
+the saved identity rejects changes to an existing world.
+
+| Fields | Defaults | Purpose |
+| --- | --- | --- |
+| `spacing`, `jitter` | 4100, 90 | Cell spacing and bounded center displacement |
+| `activation` | 0.85 | Native cluster activation before biome rejection |
+| `centerMinY`, `centerMaxY` | 200, 490 | Requested anchor-center band |
+| `anchorMinRadius`, `anchorMaxRadius` | 270, 370 | Anchor descriptor radii |
+| `anchorPlateau`, `anchorCliff` | 28, 290 | Anchor upper body and depth |
+| `companionMinRadius`, `companionMaxRadius` | 40, 110 | Companion radii; spires retain 12–28 |
+| `companionMinOrbit`, `companionMaxOrbit` | 470, 680 | Horizontal orbit around host |
+| `companionMinOffsetY`, `companionMaxOffsetY` | −60, 50 | Companion-center altitude relative to host |
+| `minimumClusterGap` | 1500 | Required separation of complete support envelopes |
+| `floorClearance`, `buildingHeadroom` | 32, 200 | Terrain clearance inside build bounds |
+
+The loader rejects unknown/missing fields, nonintegral integer settings, impossible
+geometry and spacing that cannot maintain the requested gap. It does not silently
+repair input. The requested center band is intersected with safe shape placement:
+default anchors can use Y=242–490, with independently fitted companions. Relief
+scale must remain between zero and one for the verified shape envelope.
+
+Geometry, activation, floor/headroom and gap controls have this single owner.
+Upstream size presets, altitude bands, DYNAMIC/CONSISTENT spacing and common TOML
+do not control this preset. Its embedded settings still own biome, archetype and
+structure policy. The embedded spacing value is retained only because Sky
+Archipelago's serialized type cannot represent the actual grid above 2000 blocks.
+Ordinary Sky Archipelago worlds continue to use upstream controls.
+
 ## Interaction with Sky Archipelago
 
 Keep `customStructureRulesEnabled` enabled and retain the SKY category for
@@ -46,9 +80,10 @@ native vertical-clearance validation. It does not disable this mod's horizontal
 proximity rule. `DEFAULT` alone does not avoid SKY routing while the ID still
 matches a sky category token.
 
-The rule uses Sky Archipelago's resolved terrain settings and island field. It
-works with its cluster spacing modes without changing them. It does not make
-DYNAMIC spacing consistent across seeds or override biome eligibility.
+The neighbor filter uses the resolved terrain settings and island field. In ordinary
+Sky Archipelago worlds it works with upstream spacing modes without changing them.
+Create Sky Islands uses the geometry profile above. Neither path overrides biome
+eligibility.
 
 ## Tuning
 

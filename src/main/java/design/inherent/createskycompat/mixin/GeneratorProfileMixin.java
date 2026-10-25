@@ -30,6 +30,7 @@ public abstract class GeneratorProfileMixin implements GeologicalGenerator {
             cached = ((SkyIslandChunkGenerator)(Object)this).embeddedSettings()
                     .orElseThrow(() -> new IllegalStateException("Create Sky requires embedded island settings"))
                     .toRuntimeSettings();
+            cached = GenerationConfiguration.resolve(cached);
             resolvedSettingsCache = cached;
         }
         result.setReturnValue(cached);
@@ -38,7 +39,7 @@ public abstract class GeneratorProfileMixin implements GeologicalGenerator {
     @Inject(method = "getIslandField", at = @At("RETURN"))
     private void configure(RandomState random, CallbackInfoReturnable<IslandField> result) {
         if (createSky$isEnabled()) {
-            ((ProfiledTerrain)(Object)result.getReturnValue()).createSky$configure(GenerationProfile.INITIAL);
+            ((ProfiledTerrain)(Object)result.getReturnValue()).createSky$configure(GenerationConfiguration.profile());
         }
     }
 }

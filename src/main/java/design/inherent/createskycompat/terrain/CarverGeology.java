@@ -15,4 +15,9 @@ public record CarverGeology(SkyIslandChunkGenerator generator, IslandField field
         var frame = ((GeologicalField)(Object)field).createSky$frameAt(x, z, generator.resolvedSkyIslandSettings());
         return frame == null || !frame.containsReference(sampled) ? rejected : frame.toWorld(sampled);
     }
+
+    public int canyonHeight(int sampled, int x, int z, int rejected) {
+        var column = field.sampleColumn(x, z, generator.resolvedSkyIslandSettings());
+        return column.exists() ? column.topY() + sampled - GeologicalFrame.REFERENCE_SURFACE : rejected;
+    }
 }

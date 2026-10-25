@@ -25,6 +25,8 @@ public abstract class OreHeightMixin {
     @Shadow @Final private HeightProvider height;
     @Unique private static final TagKey<PlacedFeature> CREATE_SKY_RELATIVE = TagKey.create(
             Registries.PLACED_FEATURE, ResourceLocation.fromNamespaceAndPath("create_sky_compat", "relative_geology"));
+    @Unique private static final TagKey<PlacedFeature> CREATE_SKY_SURFACE = TagKey.create(
+            Registries.PLACED_FEATURE, ResourceLocation.fromNamespaceAndPath("create_sky_compat", "relative_surface"));
 
     @Inject(method = "getPositions", at = @At("HEAD"), cancellable = true)
     private void relativeHeight(PlacementContext context, RandomSource random, BlockPos position,
@@ -32,13 +34,27 @@ public abstract class OreHeightMixin {
         if (!(context.generator() instanceof SkyIslandChunkGenerator generator)
                 || !((GeologicalGenerator)(Object)generator).createSky$isEnabled() || context.topFeature().isEmpty()) return;
         var registry = context.getLevel().registryAccess().registryOrThrow(Registries.PLACED_FEATURE);
-        if (!registry.wrapAsHolder(context.topFeature().orElseThrow()).is(CREATE_SKY_RELATIVE)) return;
+        var feature = registry.wrapAsHolder(context.topFeature().orElseThrow());
+        boolean surface = feature.is(CREATE_SKY_SURFACE);
+        if (!surface && !feature.is(CREATE_SKY_RELATIVE)) return;
         var reference = new ReferenceHeightContext(generator, context.getLevel());
         // Consume exactly the native height sample, including rejected attempts, before geometry lookup.
         int sample = height.sample(random, reference);
         var field = ((GeologicalGenerator)(Object)generator).createSky$field(context.getLevel().getLevel().getChunkSource().randomState());
         var frame = ((GeologicalField)(Object)field).createSky$frameAt(position.getX(), position.getZ(), generator.resolvedSkyIslandSettings());
-        result.setReturnValue(frame == null || !frame.containsReference(sample)
-                ? Stream.empty() : Stream.of(position.atY(frame.toWorld(sample))));
+        if (frame == null || !frame.containsReference(sample)) {
+            result.setReturnValue(Stream.empty());
+            return;
+        }
+        int y = frame.toWorld(sample);
+        if (surface) {
+            var column = field.sampleColumn(position.getX(), position.getZ(), generator.resolvedSkyIslandSettings());
+            if (!column.exists()) {
+                result.setReturnValue(Stream.empty());
+                return;
+            }
+            y = column.topY() + sample - GeologicalFrame.REFERENCE_SURFACE;
+        }
+        result.setReturnValue(context.getLevel().isOutsideBuildHeight(y) ? Stream.empty() : Stream.of(position.atY(y)));
     }
 }

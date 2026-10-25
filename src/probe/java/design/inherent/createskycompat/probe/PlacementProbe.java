@@ -130,8 +130,12 @@ public final class PlacementProbe {
                 check(NeighborRule.evaluate(new NeighborRule.Footprint(b.minX(), b.minZ(), b.maxX(), b.maxZ()),
                         NeighborConfig.settings(), terrain) == NeighborRule.Decision.ACCEPTED, "Natural start violates placement rule");
                 check(b.minY() >= level.getMinBuildHeight() && b.maxY() < level.getMaxBuildHeight(), "Vertical bounds");
-                if (((design.inherent.createskycompat.terrain.ProfiledTerrain)(Object)field).createSky$profile() != null) {
-                    check(b.minY() >= 400 && b.maxY() <= 650, "Village did not move into the inhabited altitude band");
+                if (placement instanceof ArchipelagoVillagePlacement adapted) {
+                    int surface = adapted.owner(new VillagePlan.Site(candidate.x, candidate.z)).surfaceY();
+                    row.addProperty("hostSurfaceY", surface);
+                    // Retain the tested layout envelope, translated with the host instead of fixed at Y=508.
+                    check(b.minY() >= surface - 108 && b.maxY() <= surface + 142,
+                            "Village did not follow host altitude: surface=" + surface + " layout=" + b);
                 }
                 if (completed < 2) {
                     for (int cx = b.minX() >> 4; cx <= b.maxX() >> 4; cx++)

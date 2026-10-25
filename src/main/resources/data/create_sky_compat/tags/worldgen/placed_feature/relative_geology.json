@@ -30,6 +30,9 @@
     "minecraft:ore_copper_large",
     "minecraft:ore_emerald",
     "minecraft:ore_infested",
+    "minecraft:ore_clay",
+    "minecraft:fossil_upper",
+    "minecraft:fossil_lower",
     {
       "id": "create:zinc_ore",
       "required": false

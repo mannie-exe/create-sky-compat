@@ -1,6 +1,7 @@
 package design.inherent.createskycompat;
 
 import design.inherent.createskycompat.terrain.GenerationGuard;
+import design.inherent.createskycompat.terrain.GenerationConfiguration;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
@@ -15,6 +16,7 @@ public final class CreateSkyCompat {
     public static final String ID = "create_sky_compat";
 
     public CreateSkyCompat(ModContainer container) {
+        GenerationConfiguration.load(FMLPaths.CONFIGDIR.get());
         LegacyConfiguration.migrate(FMLPaths.CONFIGDIR.get());
         container.registerConfig(ModConfig.Type.COMMON, NeighborConfig.SPEC);
         NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> {

@@ -1,26 +1,22 @@
-# Create Sky Compat 0.2.0
+# Create Sky Compat 0.3.0
 
-Replaces Sky Village Neighbors for Minecraft 1.21.1 / NeoForge 21.1.264+ (21.1 series).
-Remove the old mod; its configuration is imported when the new file is absent.
+Changes the existing Create Sky Islands preset (`create_sky_compat:islands_v1`).
+A fresh world is required; saved generation identity rejects incompatible terrain.
 
-- Add the Create Sky Islands preset with build bounds -128 to 767, deep anchor
-  islands, smaller companions and island-relative Overworld geology.
-- Adapt classic caves, selected underground features, cave biomes and climate to
-  the island band; preserve unrelated generators and Nether/End generation.
-- Keep floating villages beside islands, shift their altitude and assign each
-  archipelago a weighted allowance of zero to three villages.
-- Apply a scoped Sable pressure curve and bounded ADQ endpoint-loading, distance
-  and village-surface corrections when their dependencies are installed.
-- Require only Sky Archipelago 1.3.6 in addition to Minecraft/NeoForge. Village
-  integration requires both Sky Villages 1.0.6 and Architectury 13.x; Sable 2.0.6
-  and ADQ 1.1.1 are optional. Create/Propulsion feature references are optional.
+- Vary anchor centers across Y=242–490, with independently fitted companions,
+  floor clearance and at least 200 blocks of terrain headroom.
+- Separate full cluster envelopes by at least 1500 blocks using a 4100-block grid
+  and bounded jitter. Sampled shore crossings are usually longer, around 3 km.
+- Map vanilla underground depth to each anchor's body, with reference Y=64 at its
+  surface. Keep shallow canyon origins relative to the actual local surface.
+- Adapt fossils, underground clay and jungle vines; preserve native feature checks.
+- Follow host altitude for floating villages. Keep biome climate independent of
+  altitude and consistent between client weather and server freezing.
+- Expose one validated JSON geometry profile; preserve optional integration gates,
+  foreign generators, the continuous Sable pressure curve and saved-world guards.
 
-Install on client and server. The new preset requires a new world; existing
-ordinary Sky Archipelago worlds retain the neighbor filter. Saved generation
-identity rejects incompatible changes rather than converting worlds.
-
-Native checks cover minimal/full dedicated installations and reopening, terrain
-queries, sampled ores and villages, climate, pressure and a controlled powered
-balloon crossing. Survival operating costs, completed deliveries and wing-borne
-flight remain unverified. Vanilla noise caves, aquifers and large noise ore veins
-are not restored. See docs/development/verification.md for exact scope.
+Minecraft 1.21.1, NeoForge 21.1.264+ within 21.1, and Sky Archipelago 1.3.6 remain
+required. Other supported integrations remain optional. Install matching versions
+and geometry configuration on client and server. This does not restore vanilla
+noise caves, aquifers or large noise veins. See development verification for
+sampled results and remaining gameplay limits.

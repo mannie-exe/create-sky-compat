@@ -34,19 +34,43 @@ upstream effective hanging-depth cap intact: the requested rock volume belongs t
 the main body, not an elongated tail. Crescents receive the same body dimensions
 as other anchors. `VOID` overlap remains selected; stacked terrain is not required.
 
-`GenerationProfile.INITIAL` owns the independent dimension ranges. The embedded
-preset owns activation density, biome eligibility, archetype weights and upstream
-structure settings. These values remain provisional until native world surveys
-and flight checks are complete.
+`config/create_sky_compat-generation.json` owns geometry and activation. The profile
+is loaded once at startup, validated and captured by each field. The default grid
+is 4100 blocks with at most 90 blocks of center jitter per axis and activation 0.85.
+The requested center range is Y=200–490; complete shape bounds narrow it to
+242–490. Companions choose heights from host −60 through +50, intersected with
+their own safe placement range. Neither body nor geology is compressed to fit.
+
+The bounds reserve 32 blocks above the floor and 200 above terrain. They include
+native relief, shoulder, capped hanging depth and density fringes. The native
+circular column envelope is at most 1206 blocks from the cluster center, including
+companions and spires. Adjacent centers remain at least 3920 blocks apart, leaving
+a conservative 1508-block horizontal gap. This is a guaranteed support-envelope
+gap; actual shores can be considerably farther apart. It is not a guarantee of a
+1500–2500-block navigable route. Runtime descriptor checks reject unexpected
+upstream tail geometry that exceeds the bound.
+
+Embedded settings retain biome eligibility, archetypes and structure policy.
+Their serialized spacing is a placeholder: upstream caps that field at 2000,
+while the field and sampler adapters own the real grid. Upstream common TOML,
+DYNAMIC spacing and size/band controls do not override this preset's geometry.
+See [configuration](../configuration.md) for authoritative controls.
 
 ## Geological frame
 
-`GeologicalFrame` maps the original `[-64, 320)` height envelope into the anchor's
-`[centerY - cliffDepth, centerY + plateauHeight + 1)` span. Mapping uses integer
-floor division. Samples outside the original envelope are rejected, never clamped
-to the island's top or bottom. The frame is shared across an anchor, its shorelines
-and its companions; a shallow companion therefore does not acquire an entire
-compressed set of deep ores.
+`GeologicalFrame` maps reference Y=−64 to the anchor's `centerY - cliffDepth`
+and reference Y=64 to `centerY + plateauHeight`. Underground heights scale between
+those points with integer floor division. Heights above reference 64 retain a
+one-block-to-one-block offset above that surface datum. Vanilla's build ceiling
+is not treated as ordinary ground level. Samples outside `[-64, 320)` are rejected,
+not clamped. The inverse uses the same piecewise model for cave biomes and ore
+reporting.
+
+The frame is shared across an anchor, its shorelines and companions; a shallow
+companion does not acquire a complete compressed ore column. The datum is not the
+actual surface of every column. Relief and erosion remain meaningful: upper iron,
+coal and emerald attempts can land in air, while attempts below the datum remain
+in the deep body where replacement rules permit them. Native counts are unchanged.
 
 `OreHeightMixin` intercepts the existing height modifier only for features in
 `#create_sky_compat:relative_geology`, inside the opted-in generator. It samples
@@ -55,9 +79,16 @@ bottom-relative and top-relative anchors retain their original meaning. It
 consumes the sample even when the target column is void, then maps successful
 samples. Counts, feature order, biome checks, configured veins, replacement rules
 and exposure probabilities remain native. Nether/End and unlisted placements
-are unchanged. Nested feature behavior still needs individual review.
+are unchanged. Feature-internal checks remain native. Fossils still fit their selected template
+below the local heightmap and reject excessive empty corners. Standalone jungle
+vines use a separate `relative_surface` tag: reference 64–100 becomes actual
+column top through top+36, preserving their neighbor-attachment test. Blue ice is
+not moved: its native feature requires water, packed ice and a position below sea
+level, which this oceanless preset does not provide naturally. Moving its origin
+would not supply that environment. Ocean-specific content is not guaranteed.
 
-The tag includes vanilla Overworld ores and geological patches, Create zinc and
+The tag includes vanilla Overworld ores, underground clay, both fossil placements,
+geological patches, Create zinc and
 Overworld striated deposits, and Propulsion platinum. Mod entries are optional
 registry references; their absence does not invalidate the datapack.
 
@@ -75,8 +106,9 @@ cached terrain descriptors and bounded cell searches; it never loads chunks.
 
 ## Carving
 
-Vanilla cave and canyon origin providers sample the reference envelope, then map
-through the geological frame at their source chunk's center. That fixed origin
+Vanilla cave origins sample the reference envelope and map through the geological
+frame at their source chunk's center. Canyon origins instead preserve their native
+10–67 height spread relative to the actual local surface at reference Y=64. That fixed origin
 frame is shared by every target chunk carved by the same tunnel. Tunnel lengths,
 branching and shapes remain native. A void origin consumes the native random
 sample and subsequent tunnel decisions below the playable envelope; it cannot
@@ -105,7 +137,11 @@ Vanilla cave decoration retains its own ground, ceiling, water and space checks.
 
 ## Climate and villages
 
-Temperature comparisons use the anchor surface datum as reference Y=64. The
+Temperature comparisons use reference Y=64 throughout this preset. Climate follows
+biome rather than absolute altitude: a high temperate island does not become snowy
+solely because it is high. This also keeps multiplayer client weather and server
+freezing consistent without reconstructing server terrain or exposing its seed.
+Altitude cooling above a mountain is deliberately absent in this preset. The
 adapter changes only temperature-query positions; light, fluid, terrain and block
 coordinates retain their real altitude. It covers Sky Archipelago surface
 selection, ruined-portal cold classification, vanilla snow/freezing predicates,

@@ -4,17 +4,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GeologicalFrameTest {
-    @Test void preservesReferenceEndpointsAndRejectsOutsideSamples() {
+    @Test void distinguishesUndergroundSurfaceAndBuildCeiling() {
         var frame = new GeologicalFrame(180, 509);
         assertEquals(180, frame.toWorld(-64));
-        assertEquals(508, frame.toWorld(319));
+        assertEquals(508, frame.toWorld(64));
+        assertEquals(344, frame.toWorld(0));
+        assertEquals(763, frame.toWorld(319));
+        assertEquals(64, frame.toReference(508));
         assertTrue(frame.containsReference(-64));
         assertTrue(frame.containsReference(319));
         assertFalse(frame.containsReference(-65));
         assertFalse(frame.containsReference(320));
         // Out-of-range coordinates stay outside; placement rejects them instead of clamping.
         assertTrue(frame.toWorld(-65) < frame.bottom());
-        assertEquals(frame.topExclusive(), frame.toWorld(320));
+        assertEquals(frame.surface() + 256, frame.toWorld(320));
     }
 
     @Test void mappingIsMonotonicAndInverseHasOnlyQuantizationError() {

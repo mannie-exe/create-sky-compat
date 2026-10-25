@@ -29,7 +29,7 @@ Create a project under **mannie-exe** using these fields:
 | Description | README installation, placement and configuration sections |
 
 For the first version, select **Beta**, **Minecraft 1.21.1**, and **NeoForge**.
-Upload `create-sky-compat-0.2.0-mc1.21.1-neoforge.jar` as the primary file.
+Upload `create-sky-compat-<version>-mc1.21.1-neoforge.jar` as the primary file.
 Declare Sky Archipelago required and the other integrations optional. Pin exact
 versions where the adapter targets internals:
 
