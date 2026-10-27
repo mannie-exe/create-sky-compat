@@ -86,6 +86,7 @@ final class IslandSurveyProbe {
             island.add("chunkBounds", bounds);
             var counts = new TreeMap<String, Long>(); var estimates = new TreeMap<String, Double>();
             var oreDepths = new TreeMap<String, Map<Integer, Long>>(); var samples = new JsonArray();
+            var exposureChecked = new TreeMap<String, Long>(); var exposedOres = new TreeMap<String, Long>();
             var biomeColumns = new TreeMap<String, Integer>();
             var openings = new JsonArray(); int openingColumns = 0;
             var random = new Random(level.getSeed() ^ ((long)anchor.x() << 32) ^ anchor.z());
@@ -106,7 +107,7 @@ final class IslandSurveyProbe {
                             || owner.centerX() != anchor.x() || owner.centerZ() != anchor.z()) continue;
                     columns++; observedColumns++;
                     var frame = ((GeologicalField)(Object)field).createSky$frameAt(x, z, settings);
-                    int surface = field.sampleColumn(x, z, settings).topY();
+                    int surface = field.sampleColumnProfile(x, z, settings).topY();
                     biomeColumns.merge(level.getBiome(pos.set(x, surface, z)).getRegisteredName(), 1, Integer::sum);
                     // Actual post-feature air cut into predicted terrain, not a density-only cave claim.
                     int openDepth = 0;
@@ -132,8 +133,23 @@ final class IslandSurveyProbe {
                         chunkCounts.merge(id, 1L, Long::sum); counts.merge(id, 1L, Long::sum);
                         estimates.merge(id, (double)weight, Double::sum);
                         minSolid = Math.min(minSolid, y); maxSolid = Math.max(maxSolid, y);
-                        if (id.endsWith("_ore")) oreDepths.computeIfAbsent(id, unused -> new TreeMap<>())
+                        if (id.endsWith("_ore") || id.equals("minecraft:raw_iron_block") || id.equals("minecraft:raw_copper_block")) {
+                            oreDepths.computeIfAbsent(id, unused -> new TreeMap<>())
                                 .merge(Math.floorDiv(frame.toReference(y), 16) * 16, 1L, Long::sum);
+                            // Inspect only same-chunk neighbors; never generate another chunk to
+                            // decide whether an ore face is exposed. Count blocks, not faces.
+                            if ((x & 15) > 0 && (x & 15) < 15 && (z & 15) > 0 && (z & 15) < 15
+                                    && y > level.getMinBuildHeight() && y < level.getMaxBuildHeight() - 1) {
+                                exposureChecked.merge(id, 1L, Long::sum);
+                                for (var direction : net.minecraft.core.Direction.values()) {
+                                    var neighbor = chunk.getBlockState(pos.set(x + direction.getStepX(),
+                                            y + direction.getStepY(), z + direction.getStepZ()));
+                                    if (neighbor.isAir() || !neighbor.getFluidState().isEmpty()) {
+                                        exposedOres.merge(id, 1L, Long::sum); break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 row.addProperty("anchorColumns", columns); row.add("blocks", new Gson().toJsonTree(chunkCounts)); samples.add(row);
@@ -148,6 +164,9 @@ final class IslandSurveyProbe {
             }
             island.add("observedBlocks", new Gson().toJsonTree(counts)); island.add("estimatedBlocks", new Gson().toJsonTree(estimates));
             island.add("observedOresByReferenceY", new Gson().toJsonTree(oreDepths));
+            island.add("exposureCheckedOres", new Gson().toJsonTree(exposureChecked));
+            island.add("exposedOres", new Gson().toJsonTree(exposedOres));
+            island.addProperty("oreExposureEvidence", "Observed ore blocks adjacent to air or fluid; excludes chunk-edge columns and does not establish player access");
             island.add("sampledSurfaceBiomeColumns", new Gson().toJsonTree(biomeColumns)); island.add("samples", samples);
             island.addProperty("elapsedSeconds", (System.nanoTime() - islandBegan) / 1e9); islands.add(island);
             System.out.println("CREATE_SKY_ISLAND " + anchor.x() + "," + anchor.z() + " columns=" + observedColumns + " blocks=" + counts.values().stream().mapToLong(Long::longValue).sum());

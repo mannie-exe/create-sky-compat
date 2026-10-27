@@ -17,8 +17,14 @@ public final class CreateSkyCompat {
 
     public CreateSkyCompat(ModContainer container) {
         GenerationConfiguration.load(FMLPaths.CONFIGDIR.get());
+        design.inherent.createskycompat.terrain.InteriorConfiguration.load(FMLPaths.CONFIGDIR.get());
+        design.inherent.createskycompat.terrain.WaterConfiguration.load(FMLPaths.CONFIGDIR.get());
+        design.inherent.createskycompat.terrain.OceanConfiguration.load(FMLPaths.CONFIGDIR.get());
         LegacyConfiguration.migrate(FMLPaths.CONFIGDIR.get());
         container.registerConfig(ModConfig.Type.COMMON, NeighborConfig.SPEC);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isDedicatedServer() && OptionalIntegrations.blueMap()) {
+            design.inherent.createskycompat.bluemap.BlueMapIntegration.register();
+        }
         NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> {
             NeighborConfig.beginServer();
             GenerationGuard.verify(event.getServer());

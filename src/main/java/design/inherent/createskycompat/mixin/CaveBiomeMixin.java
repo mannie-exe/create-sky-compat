@@ -20,7 +20,7 @@ public abstract class CaveBiomeMixin {
     private static void relativeCaveBiome(BiomeResolver resolver, Holder<Biome> original, int qx, int qy, int qz,
             Climate.Sampler sampler, CallbackInfoReturnable<Holder<Biome>> result) {
         if (resolver == null || sampler == null || result.getReturnValue() == null || ACTIVE.get() == null
-                || SAMPLING_PROXY.get() || result.getReturnValue().is(Biomes.DEEP_DARK)) return;
+                || SAMPLING_PROXY.get()) return;
         var context = (DeepDarkContextAccessor)ACTIVE.get();
         var generator = context.createSky$generator();
         if (!((GeologicalGenerator)(Object)generator).createSky$isEnabled()) return;
@@ -30,8 +30,11 @@ public abstract class CaveBiomeMixin {
         try {
             var settings = generator.resolvedSkyIslandSettings();
             var field = ((GeologicalGenerator)(Object)generator).createSky$field(context.createSky$random());
-            var column = field.sampleColumn(x, z, settings);
-            if (!column.exists() || y < column.bottomY() || y > column.topY() - 16) return;
+            var ocean = OceanBiomes.project(generator.getBiomeSource(), original, field, settings, x, y, z);
+            if (ocean != original) { result.setReturnValue(ocean); return; }
+            if (result.getReturnValue().is(Biomes.DEEP_DARK)) return;
+            var exteriors = ((InteriorField)(Object)field).createSky$exteriorAt(x, z, settings);
+            if (exteriors.stream().noneMatch(column -> y >= column.bottomY() && y <= column.topY() - 16)) return;
             var frame = ((GeologicalField)(Object)field).createSky$frameAt(x, z, settings);
             if (frame == null || !frame.containsReference(frame.toReference(y))) return;
             var proxy = resolver.getNoiseBiome(qx, frame.toReference(y) >> 2, qz, sampler);

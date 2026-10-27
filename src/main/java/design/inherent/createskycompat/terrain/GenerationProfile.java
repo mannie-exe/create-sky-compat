@@ -10,7 +10,7 @@ public record GenerationProfile(int spacing, int jitter, int centerMinY, int cen
     public static final int MIN_Y = -128;
     public static final int MAX_Y = 768;
     public static final GenerationProfile INITIAL = new GenerationProfile(
-            2400, 90, 200, 490, 270, 370, 28, 250, 400, 80, 40, 110, 470, 680,
+            2400, 750, 200, 490, 270, 370, 28, 250, 400, 80, 40, 110, 470, 680,
             -60, 50, 350, 32, 200, 0.85);
 
     public GenerationProfile {
@@ -30,8 +30,8 @@ public record GenerationProfile(int spacing, int jitter, int centerMinY, int cen
             throw new IllegalArgumentException("Invalid or unreachable island profile");
         }
         int radius = clusterReach(anchorMaxRadius, companionMaxOrbit, companionMaxRadius);
-        if ((long)spacing - 2L * jitter - 2L * radius < minimumClusterGap) {
-            throw new IllegalArgumentException("Spacing/jitter cannot preserve minimumClusterGap around complete clusters");
+        if (Math.ceilDiv(2L * jitter + 2L * radius + minimumClusterGap, spacing) > 8) {
+            throw new IllegalArgumentException("Profile requires more than eight neighboring cells for clearance");
         }
         if (safeMinimumY(centerMinY, anchorMaxHeight - anchorPlateau - 32, companionMaxOffsetY, floorClearance)
                 > safeMaximumY(centerMaxY, anchorPlateau, companionMinOffsetY, buildingHeadroom)) {
@@ -49,6 +49,11 @@ public record GenerationProfile(int spacing, int jitter, int centerMinY, int cen
         return safeMinimumY(centerMinY, cliffDepth(targetHeight), companionMaxOffsetY, floorClearance);
     }
     public int clusterReach() { return clusterReach(anchorMaxRadius, companionMaxOrbit, companionMaxRadius); }
+    /** A farther cell's centers cannot approach within two cluster reaches plus the gap. */
+    public int conflictCells() { return (int)Math.ceilDiv(2L * jitter + 2L * clusterReach() + minimumClusterGap, spacing); }
+    /** Point/area lookup, including the distance from a cell edge to its nominal center. */
+    public int lookupCells() { return lookupCells(clusterReach()); }
+    public int lookupCells(int reach) { return (int)Math.ceilDiv((long)jitter + reach + (spacing + 1L) / 2, spacing); }
     public int safeMinimumY() { return safeMinimumY(centerMinY, anchorMaxHeight - anchorPlateau - 32, companionMaxOffsetY, floorClearance); }
     public int safeMaximumY() { return safeMaximumY(centerMaxY, anchorPlateau, companionMinOffsetY, buildingHeadroom); }
 

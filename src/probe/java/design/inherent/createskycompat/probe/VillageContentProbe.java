@@ -16,6 +16,10 @@ final class VillageContentProbe {
     private VillageContentProbe() {}
 
     static JsonArray inspect(ServerLevel level, BoundingBox bounds) throws Exception {
+        return inspect(level, bounds, true);
+    }
+
+    static JsonArray inspect(ServerLevel level, BoundingBox bounds, boolean requireContainers) throws Exception {
         var rows = new JsonArray();
         for (int cx = bounds.minX() >> 4; cx <= bounds.maxX() >> 4; cx++)
             for (int cz = bounds.minZ() >> 4; cz <= bounds.maxZ() >> 4; cz++) {
@@ -46,7 +50,7 @@ final class VillageContentProbe {
                     rows.add(row);
                 }
             }
-        if (rows.isEmpty()) throw new AssertionError("No realized village loot containers");
+        if (requireContainers && rows.isEmpty()) throw new AssertionError("No realized village loot containers");
         return rows;
     }
 }

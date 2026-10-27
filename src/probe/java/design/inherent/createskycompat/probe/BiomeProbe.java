@@ -27,15 +27,24 @@ final class BiomeProbe {
         outer: for (var anchor : anchors) for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) {
             int x = ((anchor.x() + dx * anchor.radius() / 2) >> 2) * 4 + 2;
             int z = ((anchor.z() + dz * anchor.radius() / 2) >> 2) * 4 + 2;
-            var column = field.sampleColumn(x, z, settings);
+            var column = field.sampleColumnProfile(x, z, settings).terrainColumn();
             var frame = ((GeologicalField)(Object)field).createSky$frameAt(x, z, settings);
             if (frame == null || column.thickness() < 150) continue;
+            // Deep Dark retains upstream's fixed -48 proxy and lower-45%-of-column rule.
+            // Lush/dripstone use our geological inverse; those are different projection contracts.
+            var dominant = field.sampleDominantIslandDescriptor(x, z, settings);
+            if (dominant != null && dominant.family() == IslandField.IslandFamily.ANCHOR_PLATEAU
+                    && generator.getBiomeSource().getNoiseBiome(x >> 2, -48 >> 2, z >> 2, random.sampler())
+                    .getRegisteredName().equals("minecraft:deep_dark")) {
+                int deepY = ((column.bottomY() + column.thickness() / 4) >> 2) * 4 + 2;
+                found.putIfAbsent("minecraft:deep_dark", new BlockPos(x, deepY, z));
+            }
             for (int referenceY : new int[]{-48, -16, 16, 48}) {
                 int y = (frame.toWorld(referenceY) >> 2) * 4 + 2;
                 if (y < column.bottomY() || y > column.topY() - 16) continue;
                 var biome = generator.getBiomeSource().getNoiseBiome(x >> 2, frame.toReference(y) >> 2, z >> 2, random.sampler());
                 String id = biome.getRegisteredName();
-                if (targets.contains(id)) found.putIfAbsent(id, new BlockPos(x, y, z));
+                if (targets.contains(id) && !id.equals("minecraft:deep_dark")) found.putIfAbsent(id, new BlockPos(x, y, z));
                 if (found.size() == targets.size()) break outer;
             }
         }
@@ -47,7 +56,7 @@ final class BiomeProbe {
             row.addProperty("unprojected", generator.getBiomeSource().getNoiseBiome(point.getX() >> 2, point.getY() >> 2,
                     point.getZ() >> 2, random.sampler()).getRegisteredName());
             row.addProperty("stored", chunk.getNoiseBiome(point.getX() >> 2, point.getY() >> 2, point.getZ() >> 2).getRegisteredName());
-            int surface = field.sampleColumn(point.getX(), point.getZ(), settings).topY();
+            int surface = field.sampleColumnProfile(point.getX(), point.getZ(), settings).topY();
             row.addProperty("surfaceUnchanged", chunk.getNoiseBiome(point.getX() >> 2, surface >> 2, point.getZ() >> 2)
                     .equals(generator.getBiomeSource().getNoiseBiome(point.getX() >> 2, surface >> 2, point.getZ() >> 2, random.sampler())));
             var blocks = new TreeMap<String, Integer>(); var caveBiomes = new TreeMap<String, Integer>();
@@ -73,6 +82,7 @@ final class BiomeProbe {
             return row.get("target").equals(row.get("stored")) && row.get("surfaceUnchanged").getAsBoolean();
         });
         for (String key : new String[]{"temperatePortal", "coldPortal"}) {
+            if (!features.has(key)) { matches = false; continue; }
             var portal = features.getAsJsonObject(key);
             matches &= portal.get("cold").equals(portal.get("expectedCold"));
         }

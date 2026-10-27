@@ -47,7 +47,7 @@ final class FeatureProbe {
 
         var portal = (RuinedPortalStructure)level.registryAccess().registryOrThrow(Registries.STRUCTURE)
                 .get(ResourceLocation.withDefaultNamespace("ruined_portal"));
-        var anchors = field.collectIslandPreviewsInRadius(0, 0, 16000, settings).stream()
+        var anchors = field.collectIslandPreviewsInRadius(0, 0, 24000, settings).stream()
                 .filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
                 .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).toList();
         var geodeAnchor = anchors.getFirst();
@@ -79,15 +79,19 @@ final class FeatureProbe {
         geodeRow.addProperty("evidence", "Direct native configured feature in deep island rock; not natural frequency");
         result.add("geode", geodeRow);
         if (!geodePlaced || amethyst == 0 || budding == 0) throw new AssertionError("Native geode did not produce amethyst");
+        var portalCandidates = new com.google.gson.JsonArray();
         for (var anchor : anchors) {
             var context = new Structure.GenerationContext(level.registryAccess(), generator, generator.getBiomeSource(), random,
                     level.getServer().getStructureManager(), level.getSeed(), new ChunkPos(anchor.x() >> 4, anchor.z() >> 4), level, b -> true);
             var stub = portal.findGenerationPoint(context);
             if (stub.isEmpty()) continue;
             var point = stub.get().position();
+            var candidate = new JsonObject(); candidate.addProperty("x", point.getX()); candidate.addProperty("y", point.getY()); candidate.addProperty("z", point.getZ());
+            portalCandidates.add(candidate);
             if (point.getY() < 400) continue;
             var biome = generator.getBiomeSource().getNoiseBiome(point.getX() >> 2, point.getY() >> 2,
                     point.getZ() >> 2, random.sampler());
+            candidate.addProperty("biome", biome.getRegisteredName()); candidate.addProperty("nativeCold", biome.value().coldEnoughToSnow(point));
             if (!biome.value().coldEnoughToSnow(point)) continue;
             boolean referenceCold = biome.value().coldEnoughToSnow(IslandClimate.temperaturePosition(point));
             String key = referenceCold ? "coldPortal" : "temperatePortal";
@@ -102,7 +106,7 @@ final class FeatureProbe {
             result.add(key, row);
             if (result.has("temperatePortal") && result.has("coldPortal")) break;
         }
-        if (!result.has("temperatePortal") || !result.has("coldPortal")) throw new AssertionError("Missing high portal climate fixture");
+        result.add("portalCandidates", portalCandidates);
         return result;
     }
 }

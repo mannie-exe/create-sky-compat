@@ -35,6 +35,7 @@
             "max_site_offsets": 40
           },
           "advanced": {
+            "terrain_overlap_mode": "overlap",
             "structure_denylist": [],
             "structure_category_overrides": [
               "minecraft:pillager_outpost=MEDIUM_GROUND",

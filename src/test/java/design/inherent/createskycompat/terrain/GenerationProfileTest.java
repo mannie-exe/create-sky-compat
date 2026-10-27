@@ -5,13 +5,14 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GenerationProfileTest {
-    @Test void validatesCompleteClusterSeparationRatherThanCenterDistance() {
+    @Test void permitsDisplacedCandidatesButBoundsTheirSearchCost() {
         var json = new Gson().toJsonTree(GenerationProfile.INITIAL).getAsJsonObject();
         json.addProperty("spacing", 2000);
-        assertThrows(RuntimeException.class, () -> GenerationConfiguration.parse(json.toString()));
-        json.addProperty("spacing", 4500);
         var profile = GenerationConfiguration.parse(json.toString());
-        assertTrue(profile.spacing() - 2 * profile.jitter() - 2 * profile.clusterReach() >= profile.minimumClusterGap());
+        assertTrue(profile.spacing() - 2 * profile.jitter() - 2 * profile.clusterReach() < profile.minimumClusterGap());
+        assertTrue(profile.conflictCells() <= 8);
+        json.addProperty("minimumClusterGap", 1000000);
+        assertThrows(RuntimeException.class, () -> GenerationConfiguration.parse(json.toString()));
     }
 
     @Test void rejectsUnknownMissingFractionalAndImpossibleControls() {

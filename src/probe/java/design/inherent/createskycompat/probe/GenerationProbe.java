@@ -47,7 +47,8 @@ final class GenerationProbe {
                 int step = Math.max(16, anchor.radius() / 6);
                 for (int dx = -6; dx <= 6; dx++) for (int dz = -6; dz <= 6; dz++) {
                     int x = anchor.x() + dx * step, z = anchor.z() + dz * step;
-                    var column = field.sampleColumn(x, z, settings);
+                    // Keep sample sites stable when comparing cavity profiles at the same exterior.
+                    var column = field.sampleColumnProfile(x, z, settings).terrainColumn();
                     if (column.thickness() > best) { best = column.thickness(); chosen = new BlockPos(x, column.topY(), z); }
                 }
                 check(chosen != null, "No solid interior sample"); sampleLocations.add(chosen);
@@ -59,6 +60,20 @@ final class GenerationProbe {
             check(level.getMinBuildHeight() == -128 && level.getMaxBuildHeight() == 768, "Expanded dimension bounds");
             check(sky != null && ((GeologicalGenerator)(Object)sky).createSky$isEnabled(), "Opt-in generator not enabled");
             TerrainProbe.checkEmbeddedSettings(sky);
+            var membership = (ClusterField)(Object)field;
+            var settings = sky.resolvedSkyIslandSettings();
+            var profile = ((ProfiledTerrain)(Object)field).createSky$profile();
+            BlockPos crossing = null;
+            search: for (int cx = -6; cx <= 6; cx++) for (int cz = -6; cz <= 6; cz++) {
+                for (var member : membership.createSky$members(cx, cz, settings)) {
+                    if (Math.floorDiv(member.centerX(), profile.spacing()) == cx && Math.floorDiv(member.centerZ(), profile.spacing()) == cz) continue;
+                    var column = field.sampleColumn(member.centerX(), member.centerZ(), settings);
+                    if (!column.exists()) continue;
+                    crossing = new BlockPos(member.centerX(), column.topY(), member.centerZ()); break search;
+                }
+            }
+            check(crossing != null, "Missing generated cross-cell companion fixture");
+            sampleLocations.add(crossing); report.add("crossCellCompanion", new Gson().toJsonTree(crossing));
             // Ordinary preset remains unadapted in the same JVM and registries.
             var ordinary = (SkyIslandChunkGenerator)server.registryAccess().registryOrThrow(Registries.WORLD_PRESET)
                     .get(net.minecraft.resources.ResourceLocation.parse("sky_archipelago:sky_islands")).createWorldDimensions().overworld();

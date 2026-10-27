@@ -10,6 +10,12 @@ public final class OptionalIntegrations {
         return LoadingModList.get().getModFileById(id) != null;
     }
 
+    public static boolean blueMap() {
+        var file = LoadingModList.get().getModFileById("bluemap");
+        return file != null && file.getMods().stream().anyMatch(mod ->
+                mod.getModId().equals("bluemap") && mod.getVersion().toString().equals("5.7"));
+    }
+
     public static boolean skyVillages() {
         return loaded("skyvillages") && loaded("architectury");
     }

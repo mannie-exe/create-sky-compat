@@ -32,8 +32,8 @@ python3 tools/probe.py --generation adapted --minimal --seed 42 --reopen --heap 
 
 It stages only Sky Archipelago, Compat and the separate probe, without copying
 other mods' configs.
-The full check omits `--minimal`. These two installations define the current
-verification scope; intermediate dependency combinations are not runtime-tested.
+The full check omits `--minimal`. These cover the general gameplay integration set. The optional BlueMap boundary
+has a separate minimal-plus-BlueMap check described in [BlueMap](bluemap.md).
 
 Loading references: [NeoForge metadata](https://docs.neoforged.net/docs/1.21.1/gettingstarted/modfiles/)
 and [Mixin configuration plugins](https://javadoc.io/static/net.fabricmc/sponge-mixin/0.16.4%2Bmixin.0.8.7/org/spongepowered/asm/mixin/extensibility/IMixinConfigPlugin.html).
@@ -68,6 +68,44 @@ The server artifact has no dependency on loading client GUI classes.
 
 ## Verification
 
+`tools/probe.py --coverage` exports resolved Overworld biome feature lists, placed
+and configured features, structures, structure sets, resource priority and bounded
+ancient-city eligibility observations. `--structures --heap 6G` requests natural
+underground structure candidates and realizes the first bounded layout per type.
+`--surface-structures` does the same for vanilla surface/water families. These modes
+accept `--minimal`; generated JSON records scope and artifact hashes. Full-set
+structure captures wait for a loaded neighborhood and ticks to inspect one Lootr
+conversion. Generation captures disable only their disposable BlueMap webserver
+and asset-download configuration. They do not test map rendering. Counts
+of accepted starts are candidate observations, not natural occurrence rates.
+`tools/feature_coverage.py CAPTURE --output CLOSURE` traces registered and inline
+nested placements from that capture. It distinguishes placed/configured IDs and
+reports height modifiers under selectors; update its typed traversal if new feature
+codecs add nested placements.
+
+
+`--terrain` checks native descriptors and reordered/concurrent queries across
+five seeds. Use `--terrain --terrain-seed SEED` to reproduce a particular world's
+layout with its installed configuration instead. This remains a native prediction,
+not a read of stored terrain; compare selected points with the saved world before
+making claims about its contents. Compare its reports with `tools/layout_report.py` (matplotlib), which
+draws descriptor radii at equal scale rather than pretending they are shorelines.
+`--overlap --minimal` compares exterior intervals under VOID/OVERLAP at identical
+geometry and three seeds. `--interiors --minimal --seed N` records representative
+baseline/noise/hollow cross-sections, solid-volume differences and independent
+snapshot/direct query-order checks. These are pre-carver baseline samples, not
+observations of decorated chunks or dynamic water. Use `--generation adapted`
+for actual fill/base-column agreement and completed chunk content.
+`--veins --minimal --seed N` searches a bounded set of solid columns for raw
+iron/copper witnesses, then checks native fill, base columns and completed chunks.
+This deliberately targeted search does not estimate vein abundance. A missing
+witness fails its completion check without establishing global absence.
+`--surface-climate --seed 42` inspects contiguous warm, cold and transition areas
+before and after an explicit native precipitation sweep. `--benchmark --seed 42`
+measures a fixed column/chunk workload; use `--mod /exact/baseline.jar` for a
+comparison without modifying installed instances. Different layouts generate
+different terrain, so timings do not isolate the cost of a single algorithm.
+
 `check` runs geometry tests and verifies upstream artifact hashes. Tests cover
 void, fragments, exact distance boundaries, narrow unaligned overlaps, full
 footprints, invalid ranges, negative/world-border coordinates and concurrent
@@ -85,11 +123,19 @@ python3 tools/probe.py --natural --seed 1 --server /path/to/server/game --java /
 Use `--generation-config /path/to/create_sky_compat-generation.json` to stage an
 authored candidate profile instead of the installed one. Strict profile parsing
 rejects obsolete fields; do not accidentally test against an older installed JSON.
+`--interior-config /path/to/create_sky_compat-interiors.json` similarly stages
+an explicit cavity/carver comparison without changing the installed instance.
 
 The runner reads installed libraries, mods, config and existing EULA acceptance.
 It creates a disposable world, binds loopback on an ephemeral port, and removes
 the temporary server on exit. It never mounts a live save. The probe waits for the first completed server tick, after all startup spawn
 handlers. Its JAR is separate from release artifacts. Results go to `build/verification`.
+
+`--dh-pregen --seed N --heap 6G` runs the installed DH dedicated pregeneration
+manager in a disposable full-installation world. It uses the command's minimum
+32-chunk radius, waits on that isolated job's future, records region-header entries
+before/after, and removes the test world. This mode cannot run with `--minimal`.
+It is a development probe, not a monitor for an operator's server or pregen task.
 
 `--islands --seed N --heap 6G` samples three anchors using 49 spatial strata each. It records
 observed blocks, weighted estimates, relative ore depths, spawn collision checks,

@@ -23,7 +23,7 @@ with zipfile.ZipFile(root / f'build/libs/create-sky-compat-{version}-mc1.21.1-ne
     assert {name for name, d in deps.items() if d['type'] == 'required'} == {'minecraft', 'neoforge', 'sky_archipelago'}
     assert all(deps[name]['type'] == 'optional' for name in ['skyvillages', 'sable', 'architectury'])
     assert 'LICENSE' in names
-    assert not any(n.startswith(('org/sathrek/', 'com/aureljz/')) or '/probe/' in n or n.endswith('.jar') for n in names)
+    assert not any(n.startswith(('org/sathrek/', 'com/aureljz/', 'de/bluecolored/')) or '/probe/' in n or n.endswith('.jar') for n in names)
     mixin = json.loads(jar.read('create_sky_compat.mixins.json'))
     assert mixin['required'] and mixin['injectors']['defaultRequire'] == 1
     assert mixin['plugin'] == 'design.inherent.createskycompat.OptionalMixinPlugin'

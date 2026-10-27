@@ -39,7 +39,8 @@ public final class GenerationGuard {
         }
         var ops = RegistryOps.create(JsonOps.INSTANCE, server.registryAccess());
         var identity = new JsonObject();
-        identity.addProperty("algorithm", "islands_v1-prototype-8");
+        identity.addProperty("algorithm", "islands_v1-prototype-10");
+        identity.addProperty("largeVeins", "native_reference_depth_v1");
         identity.addProperty("seed", server.getWorldData().worldGenOptions().seed());
         identity.add("villagePolicy", new Gson().toJsonTree(NeighborConfig.settings()));
         var villages = server.registryAccess().registryOrThrow(Registries.STRUCTURE_SET).get(ResourceLocation.parse("skyvillages:skyvillage"));
@@ -47,8 +48,17 @@ public final class GenerationGuard {
             identity.add("villageSource", StructureSet.DIRECT_CODEC.encodeStart(ops, villages).getOrThrow());
         }
         identity.add("profile", new Gson().toJsonTree(GenerationConfiguration.profile()));
+        identity.add("interiors", new Gson().toJsonTree(InteriorConfiguration.profile()));
+        identity.add("water", new Gson().toJsonTree(WaterConfiguration.profile()));
+        identity.addProperty("waterPolicy", "owned_sources_and_lining_v1");
+        identity.add("oceans", new Gson().toJsonTree(OceanConfiguration.profile()));
+        var mudBiomes = new JsonArray();
+        server.registryAccess().registryOrThrow(Registries.BIOME).getTag(BiomeMaterials.MUD).ifPresent(tag ->
+                tag.stream().map(biome -> biome.getRegisteredName()).sorted().forEach(mudBiomes::add));
+        identity.add("mudSurfaceBiomes", mudBiomes);
         identity.addProperty("geologicalSurfaceReference", GeologicalFrame.REFERENCE_SURFACE);
         identity.addProperty("canyonOrigins", "local_surface");
+        identity.addProperty("ancientCityEligibility", "lower_quarter_v1");
         identity.addProperty("spawnLanding", "generated_surface");
         identity.addProperty("climate", "biome_temperature_at_reference_surface");
         identity.add("biomes", net.minecraft.world.level.biome.BiomeSource.CODEC.encodeStart(ops, sky.getBiomeSource()).getOrThrow());

@@ -33,7 +33,9 @@ final class TerrainProbe {
         report.addProperty("evidence", "native-density-samples; actual preset biome filtering; before carving/features");
         report.add("profile", new Gson().toJsonTree(GenerationConfiguration.profile()));
         var rows = new JsonArray(); long started = System.nanoTime();
-        for (long seed : new long[]{1, 42, 8675309, 424242, -3095298318114116683L}) {
+        var requestedSeed = Long.getLong("neighbors.probe.terrainSeed");
+        long[] seeds = requestedSeed == null ? new long[]{1, 42, 8675309, 424242, -3095298318114116683L} : new long[]{requestedSeed};
+        for (long seed : seeds) {
             for (boolean adapted : new boolean[]{false, true}) {
                 var preset = server.registryAccess().registryOrThrow(Registries.WORLD_PRESET)
                         .get(ResourceLocation.parse(adapted ? GenerationProfile.ID : "sky_archipelago:sky_islands"));
@@ -59,15 +61,26 @@ final class TerrainProbe {
                     distances.add(nearest);
                 }
                 row.add("nearestAnchorDistances", distances);
+                if (adapted && seed == 42) row.add("queryChecks", LayoutProbe.run(field, selectedSettings));
                 if (adapted) {
                     var profile = ((ProfiledTerrain)(Object)field).createSky$profile();
                     var clearances = new JsonArray();
+                    var ownership = new HashMap<IslandField.IslandPreview, ClusterLayout.Cell>();
+                    for (var preview : previews) ownership.put(preview, owner(field, selectedSettings, profile, preview));
+                    var groups = new JsonArray();
+                    for (var cell : ownership.values().stream().distinct().sorted(Comparator.comparingInt(ClusterLayout.Cell::x)
+                            .thenComparingInt(ClusterLayout.Cell::z)).toList()) {
+                        var group = new JsonObject(); group.add("cell", new Gson().toJsonTree(cell));
+                        group.add("members", new Gson().toJsonTree(((ClusterField)(Object)field).createSky$members(cell.x(), cell.z(), selectedSettings)));
+                        groups.add(group);
+                    }
+                    row.add("clusters", groups);
                     for (var anchor : anchors) {
                         if (Math.hypot(anchor.x(), anchor.z()) > 10000) continue;
-                        var members = previews.stream().filter(p -> sameCell(anchor, p, profile.spacing())).toList();
+                        var members = previews.stream().filter(p -> ownership.get(anchor).equals(ownership.get(p))).toList();
                         double gap = Double.POSITIVE_INFINITY;
                         for (var member : members) for (var other : previews) {
-                            if (sameCell(anchor, other, profile.spacing())) continue;
+                            if (ownership.get(anchor).equals(ownership.get(other))) continue;
                             gap = Math.min(gap, Math.hypot(member.x() - other.x(), member.z() - other.z())
                                     - GenerationProfile.supportRadius(member.radius()) - GenerationProfile.supportRadius(other.radius()));
                         }
@@ -185,8 +198,17 @@ final class TerrainProbe {
         return edge;
     }
 
-    private static boolean sameCell(IslandField.IslandPreview a, IslandField.IslandPreview b, int spacing) {
-        return Math.floorDiv(a.x(), spacing) == Math.floorDiv(b.x(), spacing)
-                && Math.floorDiv(a.z(), spacing) == Math.floorDiv(b.z(), spacing);
+    private static ClusterLayout.Cell owner(IslandField field, SkyIslandSettings settings,
+            GenerationProfile profile, IslandField.IslandPreview preview) {
+        var membership = (ClusterField)(Object)field;
+        int cx = Math.floorDiv(preview.x(), profile.spacing()), cz = Math.floorDiv(preview.z(), profile.spacing());
+        int range = profile.lookupCells();
+        for (int dx = -range; dx <= range; dx++) for (int dz = -range; dz <= range; dz++) {
+            for (var member : membership.createSky$members(cx + dx, cz + dz, settings)) {
+                if (member.centerX() == preview.x() && member.centerY() == preview.y() && member.centerZ() == preview.z()
+                        && member.family() == preview.family()) return new ClusterLayout.Cell(cx + dx, cz + dz);
+            }
+        }
+        throw new AssertionError("Preview has no accepted cluster membership");
     }
 }

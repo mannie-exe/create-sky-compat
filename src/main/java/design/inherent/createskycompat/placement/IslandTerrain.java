@@ -5,7 +5,8 @@ import org.sathrek.sky_archipelago.worldgen.structure.StructureSupportContext;
 public record IslandTerrain(StructureSupportContext context) implements NeighborRule.Terrain {
     @Override
     public boolean exists(int x, int z) {
-        return context.islandField().sampleColumn(x, z, context.settings()).exists();
+        // Village clearance reserves the exterior footprint, including cavern entrances.
+        return context.islandField().sampleColumnProfile(x, z, context.settings()).exists();
     }
 
     @Override

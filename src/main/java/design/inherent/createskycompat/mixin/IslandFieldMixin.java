@@ -16,14 +16,64 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Constant;
+import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = IslandField.class, remap = false)
-public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalField, VillageAnchors {
+public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalField, VillageAnchors, VeinField, InteriorField {
     @Shadow @Final private IslandClusterSampler clusterSampler;
     @Shadow @Final private IslandDescriptorFactory descriptorFactory;
     @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandDensityEvaluator densityEvaluator;
+    @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandColumnResolver columnResolver;
     @Unique private volatile GenerationProfile createSky$profile;
+    @Unique private volatile IslandVeins createSky$veins;
+    @Unique private boolean createSky$veinsConfigured;
+    @Unique private boolean createSky$interiorsConfigured;
+    @Unique private IslandWaters createSky$waters;
+    @Override public IslandWaters createSky$waters() { return createSky$waters; }
+    @Override public WaterColumn createSky$waterAt(int x, int z, SkyIslandSettings settings) {
+        return ((LayeredColumn)(Object)sampleColumnData(x, z, settings)).createSky$water();
+    }
+    @Shadow abstract IslandField.ColumnData sampleColumnData(int x, int z, SkyIslandSettings settings);
+    @Shadow private IslandField.ColumnData resolveColumnData(int x, int z, SkyIslandSettings settings) { throw new AssertionError(); }
+    @Override public IslandField.ColumnData createSky$planningColumn(int x, int z, SkyIslandSettings settings, TerrainStage stage) {
+        if (stage == TerrainStage.COMPLETE) throw new IllegalArgumentException("Planning must select an earlier terrain stage");
+        return stage.query(() -> resolveColumnData(x, z, settings));
+    }
+    @Override public synchronized void createSky$configureInteriors(net.minecraft.world.level.levelgen.RandomState random,
+            InteriorProfile profile) {
+        if (createSky$interiorsConfigured) return;
+        createSky$waters = new IslandWaters(this, WaterConfiguration.profile(), OceanConfiguration.profile());
+        ((InteriorResolver)(Object)columnResolver).createSky$interiors(new IslandInteriors(random, profile, createSky$waters));
+        createSky$interiorsConfigured = true;
+    }
+    @Override public List<org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn> createSky$exteriorAt(
+            int x, int z, SkyIslandSettings settings) {
+        return ((LayeredColumn)(Object)sampleColumnData(x, z, settings)).createSky$exterior();
+    }
+    @Inject(method = "sampleColumn", at = @At("HEAD"), cancellable = true)
+    private void actualTopInterval(int x, int z, SkyIslandSettings settings,
+            CallbackInfoReturnable<org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn> result) {
+        if (createSky$profile == null) return;
+        var segments = sampleColumnData(x, z, settings).segments();
+        result.setReturnValue(segments.isEmpty()
+                ? org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn.EMPTY : segments.getFirst());
+    }
+
+    @Inject(method = "sampleDensity", at = @At("RETURN"), cancellable = true)
+    private void actualDensity(int x, int y, int z, SkyIslandSettings settings, CallbackInfoReturnable<Double> result) {
+        if (createSky$profile == null || result.getReturnValue() <= 0) return;
+        if (sampleColumnData(x, z, settings).segments().stream().noneMatch(segment -> segment.contains(y)))
+            result.setReturnValue(0.0);
+    }
+    @Override public synchronized void createSky$configureVeins(net.minecraft.world.level.levelgen.RandomState random,
+            net.minecraft.world.level.levelgen.NoiseGeneratorSettings settings) {
+        if (createSky$veinsConfigured) return;
+        createSky$veins = settings.oreVeinsEnabled() ? new IslandVeins(random, settings) : null;
+        createSky$veinsConfigured = true;
+    }
+    @Override public IslandVeins createSky$veins() { return createSky$veins; }
 
     @Override public synchronized void createSky$configure(GenerationProfile profile) {
         if (createSky$profile != null && createSky$profile.equals(profile)) return;
@@ -33,6 +83,7 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
         ((ProfiledTerrain)(Object)clusterSampler).createSky$configure(profile);
         ((ProfiledTerrain)(Object)descriptorFactory).createSky$configure(profile);
         ((ProfiledTerrain)(Object)densityEvaluator).createSky$configure(profile);
+        ((ProfiledTerrain)(Object)columnResolver).createSky$configure(profile);
         createSky$profile = profile;
     }
     @Override public GenerationProfile createSky$profile() { return createSky$profile; }
@@ -44,7 +95,9 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
         if (createSky$profile == null) return List.of();
         int cx = Math.floorDiv(x, createSky$profile.spacing()), cz = Math.floorDiv(z, createSky$profile.spacing());
         var anchors = new ArrayList<VillagePlan.Anchor>();
-        for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
+        // Maximum configured village reach includes layout reservation and native SKY retries.
+        int range = createSky$profile.lookupCells(createSky$profile.anchorMaxRadius() + 2048 + 320);
+        for (int dx = -range; dx <= range; dx++) for (int dz = -range; dz <= range; dz++) {
             var descriptors = descriptorsForCell(cx + dx, cz + dz, settings);
             if (descriptors.isEmpty()) continue;
             var anchor = descriptors.getFirst();
@@ -60,17 +113,15 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
         if (owner == null) return null;
         var anchor = owner;
         if (owner.family() != IslandField.IslandFamily.ANCHOR_PLATEAU) {
-            int cx = Math.floorDiv(x, createSky$profile.spacing()), cz = Math.floorDiv(z, createSky$profile.spacing());
-            anchor = null;
-            // Same bounded cells as terrain lookup; no world/chunk reads or growing owner map.
-            outer: for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++) {
-                var candidates = descriptorsForCell(cx + dx, cz + dz, settings);
-                if (candidates.contains(owner)) { anchor = candidates.getFirst(); break outer; }
-            }
-            if (anchor == null) throw new IllegalStateException("Island has no cluster anchor");
+            var membership = (ClusterField)this;
+            var cell = membership.createSky$owner(owner, settings);
+            anchor = membership.createSky$members(cell.x(), cell.z(), settings).getFirst();
         }
         return new GeologicalFrame(anchor.centerY() - anchor.cliffDepth(), anchor.centerY() + anchor.plateauHeight() + 1);
     }
+
+    @ModifyConstant(method = {"sampleDensity", "collectSnapshotCandidates"}, constant = @Constant(intValue = 3), require = 8)
+    private int searchRange(int original) { return createSky$profile == null ? original : createSky$profile.lookupCells(); }
 
     @Inject(method = "effectiveClusterSpacing", at = @At("HEAD"), cancellable = true)
     private void spacing(SkyIslandSettings settings, CallbackInfoReturnable<Integer> result) {

@@ -29,6 +29,7 @@ public final class PlacementProbe {
         NeoForge.EVENT_BUS.addListener(this::settle);
     }
     private void settle(net.neoforged.neoforge.event.tick.ServerTickEvent.Post event) {
+        WaterProbe.tick(event.getServer());
         // Sky Archipelago chooses its fallback spawn in another ServerStarted listener.
         // The first completed tick observes all startup handlers, regardless of registration order.
         if (pendingServer != null) {
@@ -38,7 +39,11 @@ public final class PlacementProbe {
             return;
         }
         // Assembly removal and physics cleanup happen during ticks, not ServerStartedEvent.
-        if (settleTicks > 0 && --settleTicks == 0) event.getServer().halt(false);
+        if (settleTicks > 0 && --settleTicks == 0) {
+            try { StructureCoverageProbe.finish(event.getServer()); }
+            catch (Exception error) { throw new RuntimeException("Structure coverage completion failed", error); }
+            event.getServer().halt(false);
+        }
     }
     private static void check(boolean value, String label) {
         if (!value) throw new AssertionError(label);
@@ -191,6 +196,50 @@ public final class PlacementProbe {
     private void run(net.minecraft.server.MinecraftServer server) {
         try {
             check(NeighborConfig.settings().maximumGap() == Integer.getInteger("neighbors.probe.expectedMaximumGap", 512), "Config not applied at server start");
+            if (Boolean.getBoolean("neighbors.probe.structures")) {
+                StructureCoverageProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                settleTicks = 100;
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.coverage")) {
+                CoverageProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                // Let asynchronous full-pack startup callbacks finish before shutting down.
+                settleTicks = 100;
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.benchmark")) {
+                BenchmarkProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.overlap")) {
+                OverlapProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                settleTicks = 100;
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.interiors")) {
+                InteriorProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                settleTicks = 100;
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.veins")) {
+                VeinProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                settleTicks = 100;
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.materials")) {
+                MaterialProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.water")) {
+                asynchronous = WaterProbe.start(server, Path.of(System.getProperty("neighbors.probe.output")),
+                        Integer.getInteger("neighbors.probe.fluidTicks", 600));
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.dhPregen")) {
+                DhPregenProbe.start(server, Path.of(System.getProperty("neighbors.probe.output")));
+                asynchronous = true;
+                return;
+            }
             if (Boolean.getBoolean("neighbors.probe.chunkFutures")) {
                 ChunkFutureProbe.start(server, Path.of(System.getProperty("neighbors.probe.output")));
                 asynchronous = true;
@@ -203,6 +252,10 @@ public final class PlacementProbe {
             if (Boolean.getBoolean("neighbors.probe.mechanics")) {
                 MechanicsProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
                 settleTicks = 40;
+                return;
+            }
+            if (Boolean.getBoolean("neighbors.probe.surfaceClimate")) {
+                SurfaceClimateProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
                 return;
             }
             if (Boolean.getBoolean("neighbors.probe.biomes")) {

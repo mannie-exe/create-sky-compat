@@ -10,7 +10,9 @@ The preset owns its dimension type, noise settings and embedded Sky Archipelago
 settings. Both height envelopes are `[-128, 768)`. The noise settings retain
 Minecraft 1.21.1's Overworld router and surface definitions with the expanded
 envelope. Sky Archipelago still supplies terrain filling and surface treatment;
-this does not restore vanilla aquifers or the separate large noise-vein system.
+this bypasses the complete vanilla terrain pipeline. Compat supplies its own interior
+composition and connects the native large-vein material rule. Classic carving still
+has a separate native aquifer query, described below.
 
 `GeneratorProfileMixin` opts in only when the generator references the versioned
 noise-settings key. It configures each field before returning it to a caller.
@@ -25,9 +27,10 @@ embedded settings fail explicitly rather than falling back to a host's defaults.
 
 `IslandGeometry` retains upstream archetypes, horizontal shape noise and shape
 parameters while separating anchor dimensions from companion radius/orbit ranges.
-The spatial grid stays fixed. Its jitter changes center distances without breaking
-floor-division lookup or bounded neighboring-cell searches. Terrain fills, height
-queries, structure support and previews all consume the same descriptors.
+The spatial grid indexes candidates; accepted centers are displaced independently
+on X and Z. Companions retain explicit source-cell ownership even when they cross
+a cell boundary. Terrain fills, height queries, structure support and previews
+consume the same accepted descriptors.
 
 Main-island radii remain 270 to 370 blocks; companions retain radii 40 to 110
 and orbits 470 to 680. Spires retain their native smaller dimensions. Each cluster
@@ -57,12 +60,11 @@ All island families also have continuous radial support ending at
 `2 * maxRadius + 32`. This is an explicit shape bound, not an inference from a
 few sampled shores. It leaves nominal radii and companion orbits unchanged but
 can remove an unusually distant native fringe. The maximum complete-cluster
-reach is 933 blocks, including rounding of companion offsets. Spacing 2400 with
-jitter 90 leaves at least `2400 - 180 - 2 * 933 = 354` blocks between density
-supports, satisfying the configured 350-block minimum. Trees, structures and
-player construction are
-outside that terrain-density guarantee. Actual shore distances are measured
-separately, and missing clusters can create longer journeys.
+reach is 933 blocks, including rounding of companion offsets. Clearance compares
+the individual support disks of neighboring candidate clusters, rather than filling
+that entire cluster envelope. Trees, structures and player construction are outside
+this terrain-density guarantee. Actual shore distances are measured separately,
+and missing clusters can create longer journeys.
 
 The density mixins depend on Sky Archipelago 1.3.6's `prepareDensity`,
 `samplePreparedDensity`, prepared-object lifetime, and underside penalty formula.
@@ -85,6 +87,218 @@ Their serialized spacing is a placeholder: upstream caps that field at 2000,
 while the field and sampler adapters own the real grid. Upstream common TOML,
 DYNAMIC spacing and size/band controls do not override this preset's geometry.
 See [configuration](../configuration.md) for authoritative controls.
+
+## Cluster placement
+
+`ClusterPlacementMixin` separates candidate construction from acceptance. A cell
+first draws its activation and native archetype/companion descriptors. Biome
+admission samples the displaced anchor at its surface datum. Ocean exclusion and
+other upstream policy still apply; admission does not assign one biome to an island.
+`IslandGeometry` retains the native shape noise and the configured vertical profile.
+
+`ClusterLayout` assigns a stable priority to each eligible candidate. It rejects a
+candidate if a higher-priority eligible neighbor has any island support disk closer
+than `minimumClusterGap` to one of its disks. Exact-gap contact is permitted. Ties
+are resolved by source-cell coordinates. Accepted clusters therefore cannot violate
+the gap, including companion-to-companion approaches. The rule compares candidates,
+never recursively accepted neighbors. It can discard a candidate whose winning
+neighbor is itself rejected elsewhere; this trades some density for a bounded,
+order-independent decision. It is not a maximal packing or a blue-noise guarantee.
+
+The default uses ±750 independent X/Z offsets with a 2400-block candidate grid.
+Activation precedes biome and clearance rejection, so it is not the realized
+fraction of occupied cells. Larger jitter does not shrink islands or move rejected
+candidates back toward cell centers.
+
+The conflict neighborhood is bounded by
+`ceil((2*jitter + 2*clusterReach + minimumClusterGap) / spacing)` cells. Point and
+area lookups use `ceil((jitter + reach + ceil(spacing/2)) / spacing)`. Both are two
+cells at defaults. Profile validation limits conflict searches to eight cells.
+Village lookup includes its maximum supported placement reach and retry allowance.
+Native density, column resolution, chunk snapshots, previews and geological lookup
+use the derived bounds; none loads neighboring chunks to decide terrain. Candidate
+and decision caches are separately capped at 8192 entries per field. Eviction may
+repeat deterministic work but cannot change acceptance.
+
+`ClusterField` provides accepted membership by source cell. A companion's position
+is not its cluster ID. Geological mapping and the native survey use that membership;
+spawn and optional village/delivery consumers query the accepted field.
+
+![Native descriptor layouts at equal scale](cluster-layout.svg)
+
+The comparison uses the same seed and vertical profile, but changes both horizontal
+placement and the biome admission point. It is not a jitter-only experiment. The
+[verification record](verification.md) reports alignment, density, clearance and
+travel observations. Regenerate the figure with `tools/layout_report.py` from
+native terrain reports; circles represent descriptor radii, not measured shores.
+
+When updating Sky Archipelago, inspect `sampleCluster`, descriptor construction,
+biome admission, cache keys, preview filtering and all three native search loops.
+Verify that the density support bound still contains the generated terrain. A
+matching method signature alone does not preserve these contracts. Changed layout
+requires a new recorded algorithm identity and a fresh world.
+
+## Columns and internal cavities
+
+`IslandDensityEvaluator` combines footprint coverage, top/bottom windows, depth
+narrowing, relief, edge erosion, channel noise and a small cavern-noise subtraction.
+These are upstream shape terms, not Minecraft's complete noise-cave router.
+`IslandColumnResolver` scans positive density into ordered solid intervals, then
+applies `IslandOverlapResolver` before exposing a top-segment `ColumnProfile`.
+
+The preset explicitly selects `OVERLAP`, retaining all exterior solid intervals.
+`VOID` retains only the highest, while `CRATER` selectively modifies lower islands.
+Cavity subtraction runs after this policy. It cannot make the overlap resolver
+mistake a cavern floor for a separate island and discard it.
+
+`IslandInteriors` evaluates each contributor separately within the admitted exterior.
+It subtracts only that contributor's selected cavities, then unions the surviving
+rock. A hole in one island cannot erase a different island. `LayeredColumn` retains
+the original exterior intervals alongside the native post-cavity solid segments.
+The native `ColumnProfile` remains an exterior-cap description. Solid-segment,
+base-column, density-sign, top-solid-interval and support queries use actual baseline
+rock. Saved blocks remain authoritative after classic carving, decoration or play.
+`TerrainStage` scopes uncached planning reads to exterior or pre-water interior
+columns. These reads bypass the final-column cache and restore their stage after
+errors. Later planners can inspect earlier terrain without recursively invoking
+themselves or consulting generated neighbor chunks.
+
+Noise interiors combine intersecting noise bands and larger chambers. Hollow interiors
+use an irregular chamber with three rock pillars. Descriptor-seeded selection also
+admits occasional side passages and skylights. Vertical shell protection and a radial
+shoulder limit constrain ordinary cavities; selected openings deliberately bypass that
+shell. These are independently configured interiors, not new upstream exterior enums.
+The existing taper and descriptor geometry remain unchanged.
+
+Surface painting follows the exterior cap and skips cavity air/fluid instead of
+refilling openings. Lush/dripstone projection tests the exterior envelope, including
+interior air and retained lower bodies. Deep Dark and ancient-city eligibility retain
+the upstream upper exterior's lower-quarter query; cavity roof thickness does not
+replace its geological band. Native classic carving is separately configurable and
+can alter the baseline after these queries. Queries never load neighboring chunks.
+
+## Local water
+
+`IslandWaters` admits descriptor-owned regions against uncached EXTERIOR columns.
+An anchor's deterministic candidate supplies a basin center, level, radius, depth
+and enclosed/overflow/outlet mode. Every floor and retaining-rim column must fit
+inside the existing exterior; a coarse rejection precedes the full admission
+scan. The bounded descriptor cache stores both admissions and rejections.
+
+Water cuts occur during COMPLETE composition, before surviving contributors are
+united. Another contributor's retained rock wins over a water source. Basin
+lining restores only rock from the owning exterior, never unsupported new land.
+`WaterColumn` carries source intervals separately from solid intervals into the
+native material plan. Noise filling and base-column queries share those states;
+surface height includes water while ocean-floor height tests actual solid blocks.
+Wet beds use gravel/clay patches. These are local basins, not ocean habitats.
+
+`WaterCarverMixin` preserves planned source water, lining and the retaining rim
+during classic carving. Vanilla's carver replacement tag includes water, and its
+aquifer can otherwise replace elevated sources with air. `WaterPostprocessing`
+marks exposed sources during chunk filling using
+pure neighbor-column queries. Minecraft's chunk postprocessing and fluid ticks
+then create flows. Planning and preview reads neither load neighboring chunks nor
+schedule ticks. Native springs may independently add water below a contained
+basin, so a low water block alone is not evidence of a basin leak.
+
+`WaterAnimalMixin` replaces the sea-level input only for native surface-water-animal
+spawn checks inside planned basin water. `LocalWater` verifies the opted-in generator,
+surviving source interval and basin footprint without reading neighboring chunks.
+The native below/above-water predicates still apply. Biome spawn lists, available
+space and population caps remain authoritative; this does not add ocean species to
+an inland biome or change guardians, drowned or axolotl rules. Foreign generators,
+waterfall columns and positions outside the region retain their native sea level.
+
+When updating Minecraft or Sky Archipelago, inspect material-plan iteration,
+heightmap predicates, carver replacement/fluid decisions, chunk postprocessing and
+`WaterAnimal`'s spawn-height rule. Recheck initial fill, completed chunks and actual
+fluid ticks separately. The saved identity records both water configuration and
+the source/lining policy; do not reuse an older world marker after changing them.
+
+## Ocean habitats
+
+`OceanProfile` is an opt-in extension of local water, not a global ocean toggle.
+Anchor candidates select enclosed or coastal basins; eligible small companions
+can instead receive a flat water-covered cap with open edges. An ocean candidate
+takes precedence over that descriptor's freshwater selection. Anchor admission
+checks every floor/rim column against existing exterior rock. A companion cap
+retains its lower body and only fills cells belonging to that contributor; another
+contributor's surviving rock still wins at intersections.
+
+`OceanBiomes` projects stored ocean cells near the planned water volume while the
+upstream biome-fill scope is active. It selects warm, ordinary, cold or frozen
+ocean from the original biome's base temperature. Coastal regions can project a
+beach along nearby low ground; distant terrain and deep cave cells retain their
+previous biome path. Geometry planning uses the existing sampling guard to avoid
+reentering biome projection. Sand/gravel beds and native ocean-biome decoration
+provide substrate and vegetation; water-animal height checks use the local level.
+These are explicit habitat prototypes, not a replacement climate sampler or a
+promise of monument, guardian or sponge access.
+
+The upstream [1.3.3 release notes](https://modrinth.com/mod/sky-archipelago/version/1.3.3)
+limit water structures to the ocean layer and describe floating-island support as
+future work. Its [project overview](https://modrinth.com/mod/sky-archipelago) describes
+the early creative-first scope and planned lakes, but also contains older cave
+limitations that do not describe all of 1.3.6's implementation. The inspected code,
+rather than that historical overview, establishes the current palette and projection
+behavior. The inference guiding these adapters is that upstream provides configurable
+sky terrain, while local survival habitats need additional material, biome and fluid
+coordination; vanilla hydrology is not an implicit upstream contract.
+
+## Large veins
+
+`IslandVeins` invokes Minecraft's `OreVeinifier` with the preset's toggle,
+ridge and gap definitions bound to the existing `RandomState` noises. It does not
+replace nodes in C2ME's compiled runtime router. Interpolated markers use the noise settings' cell dimensions
+and Minecraft's Y/X/Z interpolation order. Samples and positional randomness use
+island-relative reference depth; the material rule keeps native thresholds, granite/
+copper and tuff/iron composition, and raw-ore blocks. A thread retains at most one
+cell per interpolated noise. Cache state does not affect query order or chunk seams.
+
+Only surviving stone/deepslate is eligible. Air and water cannot acquire vein blocks.
+The same material plan serves fill and base-column queries. Ordinary placed ore
+features run afterward and retain their counts, replacement predicates and mapped
+heights. This adapter does not add large zinc or platinum veins. The preset's
+`ore_veins_enabled` controls this material path; the flag alone was insufficient
+while the custom fill bypassed Minecraft's native vein rule.
+
+When updating Minecraft, review `OreVeinifier`, `RandomState`, `NoiseChunk` marker
+wrapping/interpolation and the vein functions in the preset. Verify native generated
+raw blocks, reference-depth distributions, fill/query agreement and reopening.
+
+## Surface and generation stages
+
+Sky Archipelago 1.3.6 replaces `fillFromNoise` with `SkyIslandTerrainPass` column
+material plans. It updates `OCEAN_FLOOR_WG` and `WORLD_SURFACE_WG` during filling;
+`getBaseColumn` uses the same material plan. The upstream `getBaseHeight`
+prediction does not distinguish heightmap predicates. Compat resolves those
+predicates against its material column where local source water makes the water
+surface differ from the solid floor. These baseline queries are not substitutes
+for completed chunk heightmaps after trees, fluid updates or structures.
+
+`buildSurface` runs `SkyIslandSurfacePass`, not the complete vanilla
+`SurfaceSystem`. `SurfaceBlockSelector` chooses a soil/cliff palette from upstream
+override tags, vanilla biome tags and temperature/biome heuristics. It supplies
+sand/gravel shores, red sand/terracotta in badlands, mycelium and snowy surfaces,
+then blends supported structure bases and mineshaft chains. This is not vanilla
+badlands banding/pillars, swamp hydrology or powder-snow terrain. A noise-settings
+surface-rule JSON does not make those features execute here.
+
+Compat adds tagged mangrove mud at the actual surface-write boundary. Upstream's
+`SurfaceMaterial` enum would otherwise convert a custom mud layer back into its
+fixed palette. `BiomeMaterials` changes only the upper three grass/dirt soil blocks;
+upstream override tags win, and the existing opening/fluid guard still applies.
+The resolved mud-biome tag is part of saved generation identity.
+Carving can separately consult native surface rules to repair exposed top material.
+Mods adding surface rules need a review of the consuming stage, not just a tag.
+
+Classic carving, biome decoration, structure references, light/postprocessing and
+initial mob population retain Minecraft's chunk-stage machinery. Initial population
+uses `NoiseBasedChunkGenerator.spawnOriginalMobs` and native heightmap/support
+checks; no separate island mob ecology is implemented. Structure spawn overrides
+remain native. Fresh-preset generation is supported; vanilla terrain blending and
+below-zero retrogen are not an old-world migration path.
 
 ## Geological frame
 
@@ -151,6 +365,14 @@ loaded for these lookups. Other generators retain their original provider calls.
 This restores classic carvers within island rock; it does not introduce vanilla's
 noise-cave or aquifer terrain-filling systems.
 
+There is a narrower unresolved fluid distinction: delegated `applyCarvers` creates
+a native `NoiseChunk`, and `WorldCarver.getCarveState` consults its aquifer above
+the mapped lava floor. Those noise/sea-level inputs still use world coordinates;
+only the explicit lava anchor is mapped. This does not create a full aquifer during
+island filling, but it prevents claiming that all carved fluids are island-relative.
+A future fluid-policy change needs matched low/high island samples, containment and
+exposed-side checks. It must not introduce global water to repair an origin height.
+
 ## Cave biomes
 
 During native chunk biome filling, lush and dripstone cave footprints are sampled
@@ -161,9 +383,91 @@ complete cave-biome column.
 
 The adapter extends Sky Archipelago's existing projection scope and recursion
 protection. Its Deep Dark projection retains priority and upstream behavior.
-Direct biome-source calls used by structure eligibility remain unchanged; adding
-structures that require lush or dripstone biomes needs a separate placement review.
+Lush/dripstone projection does not extend to direct structure eligibility queries;
+adding structures that require those biomes needs a separate placement review.
 Vanilla cave decoration retains its own ground, ceiling, water and space checks.
+
+## Feature coverage and limits
+
+Height-range tags adapt origins, not every algorithm inside a feature. The resolved
+registry and typed selector traversal are checked with the native coverage probe.
+Trees, flowers, crop patches and surface lakes primarily use actual heightmaps,
+soil/fluid predicates and local offsets. Root systems, vegetation patches and
+selectors retain their nested placements. Cave decoration searches real floors,
+ceilings and available space; moving its origin does not guarantee a suitable cave.
+Geodes, springs and underground lakes retain native shape and enclosure rejection.
+Monster rooms retain floor/wall/opening checks. Fossils fit below the local heightmap
+and reject excessive empty corners. No scan range or feature geometry is stretched
+with the geological frame.
+
+Create's `LayeredOreFeature` checks the actual ocean-floor heightmap, replaceability
+and exposure; it has no extra fixed-Y cutoff. Almost Unified rewrites
+`OreConfiguration` targets, not the generic layered feature. Its removal of an
+empty unified feature would need rechecking after mod/config updates. Propulsion's
+three bottom-relative platinum distributions partly sample below reference −64;
+those attempts remain rejected, rather than being clamped into extra ore.
+
+Oceanless generation excludes ocean hosts and reports sea level at the build floor.
+Icebergs reset their origin to sea level; blue ice also needs water and packed ice.
+Kelp, seagrass, coral and sea pickles need suitable water/substrate. Wandering traders
+provide kelp, sea pickles, coral blocks, packed/blue ice and nautilus shells, but that
+is not a claim of natural habitat or a complete substitute for ocean progression.
+Monuments, guardian farms and sponge access need an explicit pack acquisition policy
+if required. Adding an ocean or replacement recipes remains a separate design choice.
+
+Sky Archipelago's registered `IceSpikeFeatureMixin` replaces vanilla spike placement
+with `SkyIslandIceSpikeFeature.placeWithoutVanillaRoot`. It removes the long root
+loop, so vanilla's fixed Y=50 root cutoff is not an active defect in this stack.
+This also illustrates why a resolved feature class alone does not establish its
+transformed behavior. Other native predicates and future foreign feature classes
+need their own review; tagged origins are not universal height remapping.
+
+## Structures
+
+Sky Archipelago owns structure categories, host selection, fit checks, relocation,
+references, locate support and postprocessing. Strongholds retain its compact-graph
+pruning; trial chambers and mineshafts retain its underground fit rules. Ancient
+cities use its **surface** placement route on a host selected through Deep Dark
+eligibility. The expanded preset does not turn that route into a buried city.
+
+`AncientCityBiomeMixin` scopes only the registered `minecraft:ancient_city` in the
+expanded preset. Upstream samples a column midpoint before generation, above its
+own lower-45% Deep Dark band, then tests the original Jigsaw stub height before
+relocation. `AncientCityProjectionMixin` makes both checks sample the lower quarter
+of the column through the existing projector. It recomputes the base biome at that
+height, retains the fixed reference-Y−48 footprint and anchor-family restriction,
+and restores both query scope and recursion guard on exit. Geometry queries do
+not load chunks. Stored biomes, template geometry, support rejection and other
+structure queries remain unchanged.
+
+Updating Sky Archipelago requires checking `StructureGenerationAttemptService`'s
+two scoped entry points, both projector overloads, column/quart rounding and the
+ancient-city surface route. Verify positive and negative biome checks, scope exit,
+ordinary-generator exclusion, native placement and realized blocks. Registry or
+layout acceptance alone does not prove that postprocessing produced usable content.
+
+`StructureLocateCheckMixin` corrects the native `StructureCheck` fallback preview.
+That preview tests a layout at its original source chunk, while the upstream
+planner can relocate it to a valid island. A failed preview could therefore hide
+an existing valid start. For this preset, unknown permitted candidates request
+`STRUCTURE_STARTS` resolution instead. Loaded/saved results and placement
+restrictions stay authoritative; denylisted and ocean-disabled WATER candidates
+remain excluded. This is not unconditional acceptance or a FULL-chunk request.
+
+This increases work for some unsuccessful lookups. Search radius and candidate
+selection stay native; broad searches in sparse worlds can still be expensive.
+Locate coordinates remain upstream's X/Z target and may retain Y=0. They are not
+validated landings. Review `StructureCheck.checkStart/canCreateStructure`, upstream
+category policy and reference registration together when updating dependencies.
+
+Upstream routes vanilla villages through its ground-village planner; outposts and
+portals use surface/small-island routes, while other surface structures can use
+DEFAULT anchoring and specialized adapters. Shipwreck pieces explicitly suppress
+late height re-anchoring after island placement, explaining valid land wrecks
+without a new airship generator. Monuments and ocean ruins use WATER placement and
+are rejected with oceans disabled. A missing start in a bounded search is not proof
+of a missing implementation. Lootr conversion occurs after chunk loading and server
+ticks, not synchronously when a structure's chest block is first placed.
 
 ## Climate and villages
 
@@ -180,6 +484,20 @@ and the client's weather rendering/sounds. Native snow rendering was checked
 with shaders enabled and disabled. Surface selectors receive a bounded thread-local context from
 the owning surface pass because their API has no world argument; `finally`
 restores it across nested calls and failures. No biome temperature is mutated.
+
+
+Surface generation and player-facing biome queries do not use identical sampling.
+Sky Archipelago chooses materials from stored quart biomes at the surface;
+Minecraft's smoothed biome lookup can select a neighboring cell. Upstream explicit
+snow tags and cold-biome rules can also choose snowy ground independently of the
+temperature adaptation. Its river/beach terrain-profile blending does not smooth
+general biome boundaries.
+
+A reported grainy snow pattern has no confirmed location or affected version.
+Contiguous surface probes distinguish stored biomes, smoothed lookups, unprojected
+biomes, snow blocks, snow layers and precipitation. They retain cold weather and
+do not globally smooth biomes to hide boundaries. See the verification record for
+observations and remaining uncertainty.
 
 Sky Villages keep their authored start-height spread, shifted from the old
 Y=192 datum to the new anchor surface datum. Only the named structure and the
@@ -274,11 +592,17 @@ loading or interpolation alone cannot validate a ship design.
 
 Before levels load, `GenerationGuard` records the seed, algorithm revision,
 geometry parameters, resolved embedded settings, village policy and structure set,
-biome source, noise settings and dimension
+biome source, noise settings, dimension and the ancient-city eligibility policy
 in `create-sky-generation.json` within a new world's directory. Object keys are
 canonicalized so map iteration cannot change the identity. Reopening with a
 different identity fails before generation. Existing region files without an
 identity are not adopted. Replacing the generator in a marked world is rejected.
+
+The city eligibility correction records `ancientCityEligibility: lower_quarter_v1`.
+Terrain geometry keeps its existing algorithm identity, but worlds recorded before
+this structure-policy field are rejected rather than silently mixing city placement
+rules. Use a new test world or its original artifact; the locate-only correction
+does not independently change generated content.
 
 There is no conversion or automatic marker rewrite. Restore a world's original
 settings/mod version or create a separate world. Deleting the marker is not a
@@ -312,6 +636,15 @@ or altitude-safe crossings.
 
 `--biomes --seed N` locates native cave-biome footprints and checks stored chunk
 biomes, surface preservation and actual cave decoration in generated chunks.
+
+`--water --seed N --fluid-ticks 600` finds one admitted region per water mode,
+compares native fill/base-column states and both water/solid height predicates,
+then loads bounded areas for real fluid ticks. It checks floor/rim integrity,
+flow at intended outlets and the local water-animal height predicate, including
+out-of-region and foreign-generator controls. Zero ticks runs only material
+checks. Selected witnesses do not measure world-wide basin frequency or prove
+aquatic spawn populations. `--interiors` distinguishes exterior, pre-water interior,
+final rock and source-water intervals when comparing independent query orders.
 
 `--reopen` repeats the generated sample after saving and restarting the same
 throwaway world, requiring unchanged ore counts or natural village observations.

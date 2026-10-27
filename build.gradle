@@ -32,6 +32,7 @@ configurations {
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    compileOnly('maven.modrinth:bluemap:8iJcPOHJ') { transitive = false }
     compileOnly('maven.modrinth:sable:fg9dTRz9') { transitive = false }
     localRuntime('maven.modrinth:sable:fg9dTRz9') { transitive = false }
     implementation('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
@@ -61,6 +62,7 @@ tasks.named('processResources', ProcessResources) {
 tasks.named('test', Test) { useJUnitPlatform() }
 tasks.register('verifyUpstream') {
     inputs.files(configurations.runtimeClasspath)
+    inputs.files(configurations.compileClasspath)
     doLast {
         def pins = [
             'sable': '9c199157843bf953a47dff625fc5bb41c01a90538d35ad18e6996bbcb8a617c2',
@@ -75,6 +77,15 @@ tasks.register('verifyUpstream') {
             def actual = java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString()
             if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
         }
+
+        def blueMap = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'bluemap'
+        }?.file
+        if (blueMap == null || java.security.MessageDigest.getInstance('SHA-256').digest(blueMap.bytes).encodeHex().toString()
+                != '827ac3921986d0d5e9c24ef2280f47c110d22dc14d284efb65330010d2e9517d') {
+            throw new GradleException('Unexpected BlueMap compile-only dependency')
+        }
+
     }
 }
 tasks.named('check') { dependsOn 'verifyUpstream' }

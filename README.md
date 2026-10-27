@@ -18,6 +18,7 @@ Optional integrations activate when their dependencies are installed:
 | Aeronautics Delivery Quests | 1.1.1 | Structure-route loading and distance fixes; village surface retry also requires Sky Villages and Architectury |
 | Create | Installed feature IDs | Island-relative zinc and Overworld striated deposits |
 | Create Propulsion | Installed feature IDs | Island-relative platinum |
+| BlueMap | 5.7, dedicated server only | Opt-in browser detail and void-edge adaptation for Sky Archipelago maps |
 
 Aeronautics uses the Sable pressure integration; this mod does not require
 Aeronautics or patch its controls. Optional integrations retain their own upstream
@@ -33,7 +34,8 @@ retain the neighbor filter without receiving the expanded terrain.
 Remove Sky Village Neighbors when installing this replacement. The old common
 configuration is copied only when the new configuration is absent. Leave Sky
 Archipelago's custom structure rules enabled. Unsupported versions of pinned
-integrations are rejected when installed.
+gameplay integrations are rejected when installed. Unsupported BlueMap versions
+retain their original viewer.
 The minimum installation needs only Minecraft, NeoForge, Sky Archipelago and
 Create Sky Compat.
 
@@ -42,11 +44,20 @@ Create Sky Compat.
 **Create Sky Islands** uses a build range from Y=-128 through Y=767. Clusters have
 large anchor islands surrounded by smaller companions. Default anchor height
 targets are 250 to 400 blocks, with placement fitted to leave floor clearance and
-building headroom. Ore placement and classic cave carvers use island-relative
-heights rather than vanilla world altitude.
+building headroom. Ore placement, large iron/copper veins and classic cave carvers
+use island-relative heights rather than vanilla world altitude. The preset retains
+stacked exterior terrain and offers baseline, noise-cave and hollow interiors with
+separate controls for openings and native carving. Local basins can retain water,
+overflow into channels or feed falls through deliberate underside openings.
+Ancient-city eligibility uses a consistent
+Deep Dark column query, and structure lookup resolves relocated starts instead of
+rejecting them from their original source biome. Vanilla terrain systems are not
+all reproduced; the [coverage limits](docs/development/terrain.md#feature-coverage-and-limits)
+describe ocean content, fluids and native feature behavior.
 
-The default cluster grid is 2400 blocks. This is center spacing, not a guaranteed
-shore-to-shore distance; activation, biome eligibility and island shapes affect
+The default candidate grid is 2400 blocks, with up to 750 blocks of displacement
+in each horizontal axis. Accepted centers do not follow fixed spacing;
+activation, biome eligibility, clearance and island shapes affect
 actual travel distances. See [configuration](docs/configuration.md) for controls
 and [terrain](docs/development/terrain.md) for implementation limits.
 
@@ -74,7 +85,9 @@ predictions do not include later structures or player-built blocks.
 
 Edit village settings in `config/create_sky_compat-common.toml`, or use
 **Mods → Create Sky Compat → Config** in a client. Island geometry lives in
-`config/create_sky_compat-generation.json`. Restart the game/server after changes;
+`config/create_sky_compat-generation.json`; cavity and native-carver controls live in
+`config/create_sky_compat-interiors.json`, and local basins use
+`config/create_sky_compat-water.json`. Restart the game/server after changes;
 changed generation settings require a fresh world.
 The server's configuration controls multiplayer generation.
 
