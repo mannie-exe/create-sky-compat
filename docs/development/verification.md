@@ -17,6 +17,16 @@ adapters and resources remain byte-identical. Native evidence below therefore
 applies to the release code; this comparison does not replace release CI or the
 post-publication server reopen check.
 
+The published 0.5.0 JAR passed the Linux/Windows/macOS CI comparison and matched
+local SHA-256 `8fb487b8533389f224d7133312e854f308a44c6c69ca5af8dc0d3a80f09405f0`.
+Create Sky 0.1.16 installed that artifact on both local sides. The dedicated
+server reached Done with its previous generation marker, server properties and
+DH settings preserved. Startup error-message comparison found no new messages
+relative to its preceding launch. BlueMap served its active schema-2 adapter;
+the same DH pregen command was accepted once without completion polling. The
+client's native empack prepare check passed without file changes; Minecraft was
+not relaunched for a fresh visual check.
+
 ## BlueMap adapter
 
 The restored adapter artifact is

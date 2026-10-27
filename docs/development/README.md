@@ -11,6 +11,9 @@ Sky Villages 1.0.6 are pinned by Modrinth version ID and SHA-256. They are downl
 for compilation/testing, not redistributed. Architectury 13.0.11 is included in
 the development runtime for Sky Villages. Output is in `build/libs`.
 
+See [distant terrain integration](lod.md) for DH/SeedGen/Voxy findings and the
+proposed optional terrain provider; it is not part of the released mod.
+
 ## Implementation
 
 `OptionalMixinPlugin` adds integration mixins only after checking NeoForge's early
