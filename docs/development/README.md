@@ -12,7 +12,7 @@ for compilation/testing, not redistributed. Architectury 13.0.11 is included in
 the development runtime for Sky Villages. Output is in `build/libs`.
 
 See [distant terrain integration](lod.md) for DH/SeedGen/Voxy findings and the
-proposed optional terrain provider; it is not part of the released mod.
+proposed island LOD/SeedGen bridge; it is not part of the released mod.
 
 ## Implementation
 

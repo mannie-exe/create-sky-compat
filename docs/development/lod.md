@@ -84,43 +84,82 @@ persistence, scheduling and renderer hooks also need conflict review; it is more
 than one public terrain-provider interface. No stable third-party generator API
 was identified in the inspected artifact.
 
-## Proposed direction
+## Direction: Compat owns island LODs and the SeedGen fix
 
-Prefer an optional **DH terrain provider owned by Compat**, with a small optional
-SeedGen coexistence adapter if needed, over replacing SeedGen's internal sampler.
-This is a design proposal, not a promise of measured speed or complete fidelity.
+The accepted scope is an optional Create Sky Compat integration for ordinary and
+modified Sky Archipelago terrain, plus correction of the SeedGen multiplayer
+reconstruction bug. Do not revive Moxy or build another renderer. Its useful design
+constraints are full generation identity, observed-data precedence, known-air
+handling and bounded work; its existing renderer is not a qualified dependency.
 
-1. Scope registration to our marked preset and the supported DH version. Reuse the
-   generation profile and resolved cluster/column interfaces. Fall back to native
-   DH outside that scope or when identity validation fails. SeedGen may retain
-   ownership of other supported dimensions; do not register competing providers.
-2. Produce bounded coarse island silhouettes first, preserving all relevant solid,
-   water and air intervals from -128 through 767. Respect negative coordinates,
-   cross-cell companions and actual biome/material ownership. Use conservative
-   footprints to skip terrain sampling in void, not to delete saved constructions.
-3. Refine silhouette data into island bodies, visible hollows and local water.
-   Label native features, classic carvers, lighting and simulated fluid extents
-   as remaining approximation boundaries until explicitly reproduced. Reusing our
-   pure column resolver avoids a second, drifting implementation of terrain rules.
-4. Give stored/generated real terrain precedence over predictions. Keep provenance
-   and generation/config identity so changing the approximation cannot contaminate
-   authoritative cache data. Verify DH replacement semantics rather than assuming
-   that marking predicted data LIGHT makes later updates safe.
-5. Address island-first request ordering separately. Faster generation alone does
-   not change DH's nearest-first client download queues. Use bounded cached land
-   hints, coarse coverage before refinement, and aging/fairness for every section.
-   Bridges and other constructions in nominal void must still receive updates.
+There are two independent implementation boundaries:
 
-Start with server-side prediction through DH's existing transport. Client-side
-prediction can reduce network traffic later, but needs an explicit handshake for
-seed, generator identity, configs and registry content, plus mismatch refusal and
-world-unload cleanup. Do not copy generation secrets or installation IDs into
-pack defaults. The minimum installation must continue loading without DH or
-SeedGen, and dedicated servers must not resolve client renderer classes.
+| Boundary | Finding | Proposed responsibility |
+| --- | --- | --- |
+| Island sampling | SeedGen's sampler reads noise fields, while our resolved columns include custom clearance, taper, interiors and water | Compat supplies actual island intervals and material/biome context |
+| Multiplayer admission | The server binding rejects unsupported subclasses, but `SeedSharing.offerLevel` only checks the noise-generator base type before sharing seed/settings; `onWorld` stores the reconstructed standard generator | Apply the same capability decision to sharing, carry validated custom context for supported worlds, and refuse incomplete reconstruction |
 
-Before adoption, compare empty/land/boundary/stacked/water columns against native
-generation on multiple seeds, then test cold-cache join, real-data replacement,
-reconnect, changed player blocks and absent/mismatched optional mods. Measure the
-same workload with and without prediction, including memory, CPU and transfer;
-fast empty-section generation alone is not an island-visibility benchmark. Use
-separate disposable caches and worlds for these checks.
+The second row is a concrete code-path asymmetry in the inspected 0.9.1 artifact,
+not a completed runtime reproduction. The registry fingerprint does not replace
+our saved generation marker or external JSON config digests. A narrowly scoped
+first fix should prevent unsupported Sky Archipelago reconstruction on either
+side. It must not globally suppress other generators or loosen the existing
+compatibility check.
+
+### Integration choices
+
+An internal SeedGen bridge would adapt `WorldBasis.fromSeed`, its admission/binding
+paths and the `SeedWorldGenerator`/`SeedColumnSampler` dispatch. The generator is
+final and holds concrete thread-local samplers; there is no discovered public
+provider interface to implement. Its Overworld path is not a general arbitrary
+stacked-column renderer. Supplying one top height would lose island bottoms,
+stacked bodies, exposed hollows and water intervals. This route retains more of
+SeedGen's feature/scheduling machinery but couples Compat to several exact-version
+internals. Feature anchors and the layer limit need explicit review too.
+
+A narrower alternative is a Compat-owned `IDhApiWorldGenerator` registered with
+DH for Sky Archipelago levels, plus a SeedGen adapter that routes/stands down only
+on those levels and fixes its sharing guard. DH's installed API exposes direct
+column data, explicit generation steps and override priority. This keeps SeedGen
+usable on supported dimensions and avoids copying its implementation. It supplies
+custom island LODs, not a competing renderer. The public API boundary is preferable
+if internal SeedGen reuse cannot be kept small, but coexistence must be verified:
+a registration priority alone does not control SeedGen's client retrieval hooks.
+
+Both choices require the same island sampler and context contract. Decide the
+binding after a bounded prototype compares emitted columns and lifecycle behavior;
+do not commit to a large SeedGen rewrite merely to call the result an adaptation.
+
+### Shared implementation requirements
+
+1. Gate optional classes by mod presence, physical side and supported version.
+   Retain upstream settings for ordinary Sky Archipelago and the complete saved
+   geometry/interior/water/ocean identity for our preset. Other generators keep
+   ordinary DH/SeedGen behavior.
+2. Reuse resolved contributor/column intervals, including `ColumnData.segments`,
+   `LayeredColumn` and water spans. Preserve all relevant solid, fluid and air
+   intervals from -128 through 767. Start with coarse silhouettes and refine
+   material/biome detail; conservative footprint tests can avoid sampling void.
+3. Treat native structures, vegetation, classic carvers, fluid simulation and
+   lighting as explicit fidelity boundaries. Pure column sampling does not run
+   those later stages. Do not silently fill the underside down to the world floor
+   or copy an arbitrary fixed maximum number of solid layers.
+4. Keep stored/generated real data authoritative, including player edits and
+   known air. Verify replacement and provenance semantics; marking a prediction
+   LIGHT must not prevent later real data from replacing it. Config/reload/world
+   identity changes invalidate predictions independently of real caches.
+5. Use a versioned, bounded context exchange for client prediction: generator type,
+   effective seed, configs, registry identity and generation marker. Respect the
+   operator's seed-sharing policy. Reject unknown/mismatched context rather than
+   falling back silently to vanilla noise. Clean up on disconnect/world unload.
+6. Keep island-first request ordering a separate concern. Faster sampling alone
+   does not change DH's nearest-first download queues. Prioritize coarse land
+   coverage with fair service for every section; nominal void can contain builds.
+
+Before implementation, reproduce the server-binding versus client-sharing case
+with an isolated matched mod set. For the selected bridge, compare native and LOD
+columns at void, boundaries, stacked islands, hollows and water across several
+seeds. Then test cold-cache join, actual-data replacement, reconnect, edited blocks,
+plain peers and missing/mismatched optional mods. Measure identical workloads,
+including memory, CPU and transfer. Do not install SeedGen into the playing world
+or reuse its live caches for these experiments.
