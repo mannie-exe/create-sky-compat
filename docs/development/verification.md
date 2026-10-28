@@ -23,7 +23,7 @@ Core Library 1.1.26 alongside the pinned integration versions. The same full set
 passed `--chunk-futures --seed 42`, including retained-ticket completion and ADQ
 rejection cleanup.
 
-The isolated physical-client material check converted eleven sampled modded
+The isolated physical-client material check converted ten sampled modded
 terrain types plus stone, deepslate and grass through DH's real transformer.
 All retained their 32-block column and opaque, texture-derived color; none used
 the missing-texture sprite. This checks conversion, not every distance/shader
