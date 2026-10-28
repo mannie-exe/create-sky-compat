@@ -32,6 +32,7 @@ configurations {
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    compileOnly('maven.modrinth:distanthorizons:9w34y8ai') { transitive = false }
     compileOnly('maven.modrinth:bluemap:8iJcPOHJ') { transitive = false }
     compileOnly('maven.modrinth:sable:fg9dTRz9') { transitive = false }
     localRuntime('maven.modrinth:sable:fg9dTRz9') { transitive = false }
@@ -86,6 +87,14 @@ tasks.register('verifyUpstream') {
             throw new GradleException('Unexpected BlueMap compile-only dependency')
         }
 
+        def distantHorizons = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'distanthorizons'
+        }?.file
+        if (distantHorizons == null || java.security.MessageDigest.getInstance('SHA-256').digest(distantHorizons.bytes).encodeHex().toString()
+                != '864e70def5b0d54d619b940b66bb2784e91d3f3fc253064fdc1b3fc5786cbfab') {
+            throw new GradleException('Unexpected Distant Horizons compile-only dependency')
+        }
+
     }
 }
 tasks.named('check') { dependsOn 'verifyUpstream' }
@@ -109,7 +118,7 @@ tasks.register('probeJar', Jar) {
 tasks.register('compileClientProbeJava', JavaCompile) {
     dependsOn classes
     source fileTree('src/clientProbe/java') { include '**/*.java' }
-    classpath = sourceSets.main.output + sourceSets.main.runtimeClasspath
+    classpath = sourceSets.main.output + sourceSets.main.compileClasspath + sourceSets.main.runtimeClasspath
     destinationDirectory = layout.buildDirectory.dir('classes/clientProbe')
     options.compilerArgs.add('-proc:none')
 }

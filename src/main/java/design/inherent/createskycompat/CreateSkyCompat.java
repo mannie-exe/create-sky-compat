@@ -22,6 +22,9 @@ public final class CreateSkyCompat {
         design.inherent.createskycompat.terrain.OceanConfiguration.load(FMLPaths.CONFIGDIR.get());
         LegacyConfiguration.migrate(FMLPaths.CONFIGDIR.get());
         container.registerConfig(ModConfig.Type.COMMON, NeighborConfig.SPEC);
+        if (OptionalIntegrations.distantHorizons())
+            container.registerConfig(ModConfig.Type.SERVER, design.inherent.createskycompat.dh.DhConfig.SPEC,
+                    "create_sky_compat-dh-server.toml");
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isDedicatedServer() && OptionalIntegrations.blueMap()) {
             design.inherent.createskycompat.bluemap.BlueMapIntegration.register();
         }

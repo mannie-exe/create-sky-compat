@@ -19,11 +19,14 @@ Optional integrations activate when their dependencies are installed:
 | Create | Installed feature IDs | Island-relative zinc and Overworld striated deposits |
 | Create Propulsion | Installed feature IDs | Island-relative platinum |
 | BlueMap | 5.7, dedicated server only | Opt-in browser detail and void-edge adaptation for Sky Archipelago maps |
+| Distant Horizons | 3.3.3 | Client-wrapper lifecycle and shutdown fixes; optional per-save client cache isolation |
 
 Aeronautics uses the Sable pressure integration; this mod does not require
 Aeronautics or patch its controls. Optional integrations retain their own upstream
 dependencies. Missing Create/Propulsion features are skipped. Iris and Veil are not
 dependencies; this mod does not patch shader rendering or Ponder.
+DH is optional. Its internal hooks target 3.3.3; other versions are rejected when
+installed. Review these hooks before changing the pin.
 
 Use the same version on client and server for the expanded preset.
 Create a new world with **Create Sky Islands**, or set
@@ -38,6 +41,14 @@ gameplay integrations are rejected when installed. Unsupported BlueMap versions
 retain their original viewer.
 The minimum installation needs only Minecraft, NeoForge, Sky Archipelago and
 Create Sky Compat.
+
+## Distant terrain
+
+DH generates and renders distant terrain through its ordinary pipeline. Compat
+adds focused lifecycle fixes and optional per-save cache isolation; it does not
+provide a separate terrain predictor. Existing DH cache keys
+remain unchanged by default. See [DH configuration](docs/configuration.md#distant-horizons)
+and [integration boundaries](docs/development/lod.md).
 
 ## Island terrain
 

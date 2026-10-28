@@ -227,3 +227,28 @@ These settings do not change saved generation identity or require a new world.
 They do not change BlueMap's map boundaries, tile generation, resource consent or
 network binding. Keep full-height rendering and cave culling disabled in BlueMap
 when underside geometry is required. See [implementation and limits](development/bluemap.md).
+
+
+## Distant Horizons
+
+DH 3.3.3 is optional. The lifecycle fixes need no additional configuration.
+Ordinary DH generation, server delivery and rendering retain their existing controls.
+
+`<world>/serverconfig/create_sky_compat-dh-server.toml` contains
+`savedWorldIdentity = false`. Enabling it uses a UUID saved in
+`create-sky-lod-world-id` to distinguish Sky Archipelago saves even when their
+seeds match. DH's `sendLevelKeys` must also be enabled. Foreign generators keep
+DH's normal cache naming.
+
+Leave this setting off to retain existing DH cache keys. Enabling it selects a
+new client cache namespace; it does not migrate, delete or populate an old cache.
+Once a save has an identity marker, that identity remains in use even if the
+setting is reset. Keep the marker with the save when copying or restoring it.
+Malformed markers fail explicitly instead of selecting an unrelated cache.
+
+Clients with Compat do not import ambiguous legacy dimension-only caches into
+these UUID namespaces. Existing legacy folders are left untouched; other DH keys
+retain upstream migration behavior. Server databases and ordinary dimension IDs
+are not renamed.
+
+See [DH integration](development/lod.md) for exact hook boundaries and update checks.

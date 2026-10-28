@@ -16,6 +16,12 @@ public final class OptionalIntegrations {
                 mod.getModId().equals("bluemap") && mod.getVersion().toString().equals("5.7"));
     }
 
+    public static boolean distantHorizons() {
+        var file = LoadingModList.get().getModFileById("distanthorizons");
+        return file != null && file.getMods().stream().anyMatch(mod ->
+                mod.getModId().equals("distanthorizons") && mod.getVersion().toString().equals("3.3.3"));
+    }
+
     public static boolean skyVillages() {
         return loaded("skyvillages") && loaded("architectury");
     }

@@ -22,6 +22,8 @@ parser.add_argument('--heap', choices=['4G', '6G', '8G'], default='4G', help='Ma
 parser.add_argument('--samples', type=int, default=12, help='Layouts per seed')
 parser.add_argument('--reopen', action='store_true', help='Reopen generated samples and require unchanged ore counts or village starts')
 parser.add_argument('--minimal', action='store_true', help='Generate with only Sky Archipelago and Compat, plus the read-only probe')
+parser.add_argument('--dh-stop-after', type=int, default=0, metavar='SECONDS', help='With --dh-pregen, stop the disposable server during generation (1 to 30 seconds)')
+parser.add_argument('--dh-world-key', action='store_true', help='With --dh-pregen, verify opt-in per-save cache identity in the disposable world')
 mode = parser.add_mutually_exclusive_group()
 mode.add_argument('--structures', action='store_true', help='Survey natural underground structure starts and realize critical layouts')
 mode.add_argument('--surface-structures', action='store_true', help='Survey vanilla surface and water structure families')
@@ -54,6 +56,14 @@ parser.add_argument('--maximum-gap', type=int, default=512)
 parser.add_argument('--disable-carver-adapter', action='store_true',
                     help='Diagnostic control: omit relative-carving mixins from the staged mod only')
 args = parser.parse_args()
+java_path = shutil.which(args.java)
+if not java_path:
+    parser.error(f'Java executable not found: {args.java}')
+args.java = str(Path(java_path).resolve())
+if args.dh_stop_after and (not args.dh_pregen or not 1 <= args.dh_stop_after <= 30):
+    parser.error('--dh-stop-after requires --dh-pregen and 1 to 30 seconds')
+if args.dh_world_key and not args.dh_pregen:
+    parser.error('--dh-world-key requires --dh-pregen')
 if args.terrain_seed is not None and not -(1 << 63) <= args.terrain_seed < (1 << 63):
     parser.error('--terrain-seed must be a signed 64-bit integer')
 if args.terrain_seed is not None and not args.terrain:
@@ -91,6 +101,8 @@ if args.oceans: name = f'oceans-{args.seed}-{args.fluid_ticks}'
 if args.surface_climate: name = f'surface-climate-{args.seed}'
 if args.chunk_futures: name = f'chunk-futures-{args.seed}'
 if args.dh_pregen: name = f'dh-pregen-{args.seed}'
+if args.dh_stop_after: name += '-shutdown'
+if args.dh_world_key: name += '-world-key'
 if args.disable_carver_adapter:
     name += '-native-carvers'
 if args.minimal:
@@ -133,6 +145,10 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
         if not args.minimal and (server / folder).exists():
             shutil.copytree(server / folder, run / folder)
     (run / 'config').mkdir(exist_ok=True)
+    if args.dh_pregen:
+        (run / 'defaultconfigs').mkdir(exist_ok=True)
+        (run / 'defaultconfigs/create_sky_compat-dh-server.toml').write_text(
+            f'savedWorldIdentity = {str(args.dh_world_key).lower()}\n')
     # Native probes do not serve maps or download/render map assets.
     # Only disposable configuration is edited; the integration still class-loads.
     bluemap = run / 'config/bluemap'
@@ -163,6 +179,8 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
     ]))
     launch_args = next((server / 'libraries/net/neoforged/neoforge').glob('*/unix_args.txt'))
     command = [args.java, f'-Xmx{args.heap}',
+               f'-Dneighbors.probe.dhStopAfter={args.dh_stop_after}',
+               f'-Dneighbors.probe.dhWorldKey={str(args.dh_world_key).lower()}',
                f'-Dneighbors.probe.generation={args.generation or ""}',
                f'-Dneighbors.probe.structures={str(args.structures or args.surface_structures).lower()}',
                f'-Dneighbors.probe.surfaceStructures={str(args.surface_structures).lower()}',
@@ -190,7 +208,7 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
     began = time.monotonic()
     def launch(log_path):
         with log_path.open('w') as log:
-            subprocess.run(command, cwd=run, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=600)
+            subprocess.run(command, cwd=run, stdout=log, stderr=subprocess.STDOUT, check=True, timeout=90 if args.dh_stop_after else 600)
         # Minecraft can exit zero after a shutdown exception, after writing the probe report.
         text = log_path.read_text(errors='replace')
         failures = [marker for marker in ['java.lang.OutOfMemoryError', 'Uncaught exception in server thread',

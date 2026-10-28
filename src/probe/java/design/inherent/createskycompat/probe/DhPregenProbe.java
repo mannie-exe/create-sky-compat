@@ -27,6 +27,12 @@ final class DhPregenProbe {
         var manager = world.getClass().getMethod("getPregenManager").invoke(world);
         var wrapper = Class.forName("com.seibel.distanthorizons.common.wrappers.world.ServerLevelWrapper_neoforge")
                 .getMethod("getWrapper", ServerLevel.class).invoke(null, level);
+        boolean savedIdentity = Boolean.getBoolean("neighbors.probe.dhWorldKey");
+        var marker = server.getWorldPath(LevelResource.ROOT).resolve("create-sky-lod-world-id");
+        String key = (String)wrapper.getClass().getMethod("getKeyedLevelDimensionName").invoke(wrapper);
+        if (Files.exists(marker) != savedIdentity
+                || key.matches("csky_[0-9a-f]{32}@dim_[0-9a-f]{64}") != savedIdentity)
+            throw new AssertionError("DH cache identity does not match explicit fixture policy");
         var positionType = Class.forName("com.seibel.distanthorizons.core.pos.blockPos.DhBlockPos2D");
         var position = positionType.getConstructor(int.class, int.class).newInstance(anchor.x(), anchor.z());
         var levelType = Class.forName("com.seibel.distanthorizons.core.wrapperInterfaces.world.IServerLevelWrapper");
@@ -36,6 +42,23 @@ final class DhPregenProbe {
         // The installed command's minimum is 32 chunks; keep that same bounded workload.
         var future = (CompletableFuture<?>)manager.getClass().getMethod("startPregen", levelType, positionType, int.class)
                 .invoke(manager, wrapper, position, 32);
+        int stopAfter = Integer.getInteger("neighbors.probe.dhStopAfter", 0);
+        if (stopAfter > 0) {
+            CompletableFuture.delayedExecutor(stopAfter, TimeUnit.SECONDS).execute(() -> server.execute(() -> {
+                var report = new JsonObject();
+                report.addProperty("generationActiveAtStop", !future.isDone());
+                report.addProperty("complete", !future.isDone());
+                report.addProperty("ordinaryCacheKeyPreserved", !Files.exists(server.getWorldPath(LevelResource.ROOT)
+                        .resolve("create-sky-lod-world-id")));
+                report.addProperty("savedIdentityEnabled", savedIdentity);
+                report.addProperty("levelKey", key);
+                report.addProperty("secondsBeforeStop", stopAfter);
+                try { Files.writeString(output, new GsonBuilder().setPrettyPrinting().create().toJson(report)); }
+                catch (Exception failure) { throw new IllegalStateException("Cannot record shutdown fixture", failure); }
+                server.halt(false);
+            }));
+            return;
+        }
         future.orTimeout(480, TimeUnit.SECONDS).whenComplete((ignored, failure) -> server.execute(() -> {
             var report = new JsonObject();
             report.addProperty("seed", Long.toString(level.getSeed()));

@@ -1,165 +1,104 @@
-# Distant terrain integration
+# Distant Horizons integration
 
-Investigation dated 2026-10-26. No new LOD adapter is implemented or installed.
-Create Sky Compat 0.5.0 retains ordinary DH generation and networking. The current
-pack uses DH 3.3.3 with CHUNKS_ONLY / INTERNAL_SERVER: real chunks are generated,
-then reduced to distant rendering data. Pregenerating chunks, obtaining LOD data,
-transferring it and rendering it are separate operations.
+Compat uses DH's ordinary terrain generation, storage and rendering. It does not
+provide a separate terrain predictor. Optional hooks target DH 3.3.3 on Minecraft
+1.21.1 / NeoForge 21.1.264. The compile-only artifact is pinned by SHA-256 in
+`build.gradle`; optional metadata and `OptionalIntegrations` must agree.
 
-## Existing renderers
+## Lifecycle ownership
 
-Distant Horizons renders simplified terrain beyond the native chunk view. Its
-installed API can accept direct LOD data through `IDhApiWorldGenerator.generateLod`
-and `API_DATA_SOURCES`, without requiring an adapter to generate full chunks.
-The method is present in the exact 3.3.3 JAR, not just the current
-[API documentation](https://distant-horizons-team.gitlab.io/distant-horizons/com/seibel/distanthorizons/api/interfaces/override/worldGenerator/IDhApiWorldGenerator.html).
-Air, lighting and vertical spans matter: a surface height alone cannot describe
-stacked islands, undersides or hollow interiors. Pooled data belongs to DH and
-must not escape its task lifetime.
+DH's `ClientLevelWrapper_neoforge.getWrapper` publishes a server-keyed wrapper
+after retiring its predecessor. Concurrent readers can claim the same predecessor,
+and delayed unconditional removal can erase a replacement. `ClientWrapperHandoffMixin`
+publishes the replacement under the cache lock before cleanup. `WrapperCache`
+removes entries only while the retiring wrapper owns them. Cleanup runs outside
+the cache lock, and delayed upstream publication cannot overwrite a newer owner.
+This hook loads only on physical clients.
 
-[Voxy](https://modrinth.com/mod/voxy) is a different renderer and cache system.
-The official distribution targets Fabric, has no 1.21.1 release, requires OpenGL
-4.6 and needs explicit shader-pack support. It ingests explored terrain or existing
-worlds; external generators are a separate concern. Its official inclusion policy
-permits published official versions, not redistributed unofficial backports.
+`ChunkUnloadBudgetMixin` limits each shutdown unload pass to 1,024 queue polls in
+Sky Archipelago dimensions when DH is installed. An unfinished generation reference
+can requeue an unload callback. Draining indefinitely prevents queued server cleanup
+from releasing that reference. Yielding preserves queued work and lets Minecraft
+service the executor between passes. Running servers and foreign generators retain
+native behavior. Previous integrated-client investigation observed this livelock;
+verification of the extracted fix is tracked in [verification](verification.md).
 
-[Roxy](https://modrinth.com/mod/roxy) 0.4.1 provides a NeoForge 1.21.1 translation
-layer around the original Voxy 0.2.16-beta Minecraft 1.21.11 artifact. Its author
-lists Create, Sable and Iris support. Apple Silicon support requires an additional
-Zink/KosmicKrisp graphics bundle and per-instance wrapper; it does not run through
-stock Apple's OpenGL path. The [setup guide](https://github.com/RasaNovum/Roxy/blob/main/Roxy-macOS-compat/setup-guide.md)
-requires macOS 26+, ARM64 Java 21 and a separate clean instance. The inspected host
-runs macOS 26.7.1, but this renderer stack has not been tested here. The guide's
-0.4.1 versus greater-than-0.4.1 wording needs checking against the selected build.
-A whole-renderer experiment must separately cover shaders, Veil/Ponder, dynamic
-Sable sublevels and resource reload; advertised compatibility is not pack evidence.
+## Cache identity
 
-## DH SeedGen 0.9.1
+`WorldIdentity` persists one UUID per saved world. `WorldLevelKeyMixin` uses that UUID
+and a hash of the dimension ID in DH's normal server-key handshake. Creation is
+opt-in through `savedWorldIdentity`; the default retains upstream keys and caches.
+Existing marker files remain authoritative. Server-side database paths do not change.
+See [operator configuration](../configuration.md#distant-horizons) before enabling it
+on an existing installation.
 
-[SeedGen](https://modrinth.com/mod/distant-horizons-seedgen) supplies predicted
-terrain to DH rather than replacing its renderer. The author describes faster
-seed-based sampling with approximated trees and structures, plus multiplayer
-seed sharing. Custom generators and terrain-changing mixins are explicitly outside
-the general noise-based compatibility claim. Reported speedups are the author's
-benchmarks, not measurements on this pack. The author also reports device-dependent
-conflicts with C2ME and Fast Noise; both are present in Create Sky.
+`LegacyCacheMixin` prevents DH's pre-2.3 dimension-only cache import only for the
+complete Compat UUID key format. It leaves the old directory untouched. Ordinary
+and merely similar keys retain native migration. This avoids attributing an
+unidentified old save to a new UUID cache; it is not a general cache migration tool.
 
-The inspected [NeoForge 1.21.1 artifact](https://modrinth.com/mod/distant-horizons-seedgen/version/2DrfEi0d)
-has mod ID `seedrenderer`, version 0.9.1 and SHA-512
-`4b0bbb0426d0d600fcef2deb0580f458bbf16b90440b84b9d28fe377a3107cf22ff9f166eec85b802cb5386d5af39d5b0a12ac6bf7ca04fad427206d1405c61d`.
-Its metadata accepts NeoForge 21.1 and declares DH >=3.2 optional, idling without
-it. Modrinth lists no public source repository. Inspection used the released
-bytecode; downloaded/decompiled files are disposable and are not redistributed.
+## Luminous columns and fluid colors
 
-Observed implementation boundaries:
+DH 3.3.3's `FullDataToRenderDataTransformer.setRenderColumnView` transfers an
+ignored noncolliding block's color and material to the segment below when
+`tintWithAvoidedBlocks=true`. With glow lichen, one thin surface block can therefore
+make a tall stone segment emissive. The same path can replace lava's or water's
+color and material. Complementary/Euphoria's `DH_BLOCK_ILLUMINATED` branch makes
+the resulting gray-green segment particularly bright.
 
-- `WorldBasis` captures seed, registries, noise settings, biome source and random
-  state. `SeedColumnSampler` samples density/height fields at the requested stride
-  instead of invoking the full chunk-generation pipeline.
-- `SeedWorldGenerator` registers through DH's world-generator override API and
-  supplies API data sources. `ColumnWriter` encodes and merges vertical material,
-  biome and light spans. Feature readers contribute visual trees/structures; their
-  presence does not establish identical native feature placement or simulation.
-- `WorldgenCompat.overriddenTerrain` compares a noise-generator subclass against a
-  new standard noise generator at twelve near/far columns. Heights must agree
-  within 24 blocks at all but one sample. The server binding stands down when this
-  check fails. Sky Archipelago's final `SkyIslandChunkGenerator` extends the noise
-  class but supplies custom terrain, making this a relevant refusal path. No
-  runtime SeedGen/Sky Archipelago trial has been performed.
-- Multiplayer `SeedSharing` compares terrain-mod lists and a worldgen registry
-  fingerprint. Its payload carries dimension, seed and a noise-settings key.
-  `WorldBasis.fromSeed` then creates a standard `NoiseBasedChunkGenerator`, not the
-  original generator subclass. The external Compat geometry/interior/water JSON
-  files and saved generation identity are not carried by that payload.
-- `shareSeedWithClients` and `serverGeneration` default true. A future integration
-  must explicitly decide whether a server distributes its seed; exact server LOD
-  delivery does not require giving the seed to clients. The manual server-seed
-  path is described as vanilla-only, so it is not a workaround for this pack.
+The physical-client probe reproduced this through DH's actual conversion code:
+lichen above a 40-block segment changed stone, lava and water to material 15
+and color `ff72847a`. Without lichen, lava was material 6 / `ffd96f21` and water
+material 12 / `bf2b529f`. A rendered stone/lichen fixture produced a white stripe
+at night. Native source and flowing lava states retained the correct orange
+particle color; this was not a general failure to recognize flowing lava.
 
-Removing a compatibility rejection would not make our density composition,
-clearance, island-relative geology, biome projection or local water appear in
-SeedGen's reconstructed generator. Equal seeds alone are insufficient. A misleading
-preview could persist until actual visited terrain replaces it. SeedGen's own
-persistence, scheduling and renderer hooks also need conflict review; it is more
-than one public terrain-provider interface. No stable third-party generator API
-was identified in the inspected artifact.
+The smallest verified remedy is to append `minecraft:glow_lichen` to
+`client.advanced.graphics.culling.ignoredRenderBlockCsv` in DH's configuration.
+Preserve the other entries. This excludes lichen from distant representations;
+native lichen, fluid rendering and ordinary foliage tinting remain unchanged.
+Reopening the same fixture and LOD database removed the stripe and preserved
+all three substrates' original materials and colors. No cache deletion or new
+fluid Mixin is needed. Compat does not rewrite an operator's DH configuration;
+the modpack owns its chosen default.
 
-## Direction: Compat owns island LODs and the SeedGen fix
+| Lichen included in LOD tinting | Lichen excluded; same saved fixture |
+| --- | --- |
+| ![An emissive stripe covers the left stone column](dh-lichen-before.png) | ![Both stone columns retain their dark material](dh-lichen-after.png) |
 
-The accepted scope is an optional Create Sky Compat integration for ordinary and
-modified Sky Archipelago terrain, plus correction of the SeedGen multiplayer
-reconstruction bug. Do not revive Moxy or build another renderer. Its useful design
-constraints are full generation identity, observed-data precedence, known-air
-handling and bounded work; its existing renderer is not a qualified dependency.
+The left stone column has one side-supported lichen block above it; the right
+column is the bare control. Lava and water columns remain in the same scene.
 
-There are two independent implementation boundaries:
+Live inspection also identified native glow lichen at the reported island, but
+did not prove that every historical pale-fluid observation has this cause.
+Modded fluids and other shaders remain untested. If the symptom persists with
+this exclusion, capture the exact affected column before approaching it: normal
+fluid ticks and newly captured chunks can change the evidence.
 
-| Boundary | Finding | Proposed responsibility |
+### Upstream report candidate
+
+Report the tint/material transfer to DH, with 3.3.3, Minecraft 1.21.1 and NeoForge
+21.1.264 as the tested versions. Use a side-supported glow-lichen block directly
+above a tall stone segment and a matching bare control; inspect it beyond native
+render distance with `NON_COLLIDING` and `tintWithAvoidedBlocks=true`. The same
+conversion input over lava/water demonstrates incorrect fluid material assignment.
+The report should distinguish intended foliage tint approximation from carrying
+an emissive material through an entire segment or replacing a liquid material.
+The per-block exclusion is a workaround, not an upstream algorithm correction.
+No report has been submitted.
+
+## Dependency updates
+
+| Boundary | Recheck when updating | Required evidence |
 | --- | --- | --- |
-| Island sampling | SeedGen's sampler reads noise fields, while our resolved columns include custom clearance, taper, interiors and water | Compat supplies actual island intervals and material/biome context |
-| Multiplayer admission | The server binding rejects unsupported subclasses, but `SeedSharing.offerLevel` only checks the noise-generator base type before sharing seed/settings; `onWorld` stores the reconstructed standard generator | Apply the same capability decision to sharing, carry validated custom context for supported worlds, and refuse incomplete reconstruction |
+| Client wrapper ownership | DH `getWrapper`, `onUnload`, keyed branch and weak-reference map | Concurrent ownership tests, actual connection/reconnect and shutdown |
+| Shutdown unloading | Minecraft `ChunkMap.processUnloads`/`scheduleUnload`; DH generation cleanup | Isolated shutdown with generation active, retained queued work |
+| Cache identity | DH server wrapper key creation and level-key handshake | Default-key preservation, opt-in identity across reopen and dimensions |
+| Legacy import | DH `DhClientLevel` constructor's legacy-folder check | Actual client constructor with ordinary and Compat keys; no user cache edits |
+| Fluid colors | DH block/material wrappers, client color cache and render-data conversion; installed shaders | Known source/flow states, native/LOD views and shader controls |
 
-The second row is a concrete code-path asymmetry in the inspected 0.9.1 artifact,
-not a completed runtime reproduction. The registry fingerprint does not replace
-our saved generation marker or external JSON config digests. A narrowly scoped
-first fix should prevent unsupported Sky Archipelago reconstruction on either
-side. It must not globally suppress other generators or loosen the existing
-compatibility check.
-
-### Integration choices
-
-An internal SeedGen bridge would adapt `WorldBasis.fromSeed`, its admission/binding
-paths and the `SeedWorldGenerator`/`SeedColumnSampler` dispatch. The generator is
-final and holds concrete thread-local samplers; there is no discovered public
-provider interface to implement. Its Overworld path is not a general arbitrary
-stacked-column renderer. Supplying one top height would lose island bottoms,
-stacked bodies, exposed hollows and water intervals. This route retains more of
-SeedGen's feature/scheduling machinery but couples Compat to several exact-version
-internals. Feature anchors and the layer limit need explicit review too.
-
-A narrower alternative is a Compat-owned `IDhApiWorldGenerator` registered with
-DH for Sky Archipelago levels, plus a SeedGen adapter that routes/stands down only
-on those levels and fixes its sharing guard. DH's installed API exposes direct
-column data, explicit generation steps and override priority. This keeps SeedGen
-usable on supported dimensions and avoids copying its implementation. It supplies
-custom island LODs, not a competing renderer. The public API boundary is preferable
-if internal SeedGen reuse cannot be kept small, but coexistence must be verified:
-a registration priority alone does not control SeedGen's client retrieval hooks.
-
-Both choices require the same island sampler and context contract. Decide the
-binding after a bounded prototype compares emitted columns and lifecycle behavior;
-do not commit to a large SeedGen rewrite merely to call the result an adaptation.
-
-### Shared implementation requirements
-
-1. Gate optional classes by mod presence, physical side and supported version.
-   Retain upstream settings for ordinary Sky Archipelago and the complete saved
-   geometry/interior/water/ocean identity for our preset. Other generators keep
-   ordinary DH/SeedGen behavior.
-2. Reuse resolved contributor/column intervals, including `ColumnData.segments`,
-   `LayeredColumn` and water spans. Preserve all relevant solid, fluid and air
-   intervals from -128 through 767. Start with coarse silhouettes and refine
-   material/biome detail; conservative footprint tests can avoid sampling void.
-3. Treat native structures, vegetation, classic carvers, fluid simulation and
-   lighting as explicit fidelity boundaries. Pure column sampling does not run
-   those later stages. Do not silently fill the underside down to the world floor
-   or copy an arbitrary fixed maximum number of solid layers.
-4. Keep stored/generated real data authoritative, including player edits and
-   known air. Verify replacement and provenance semantics; marking a prediction
-   LIGHT must not prevent later real data from replacing it. Config/reload/world
-   identity changes invalidate predictions independently of real caches.
-5. Use a versioned, bounded context exchange for client prediction: generator type,
-   effective seed, configs, registry identity and generation marker. Respect the
-   operator's seed-sharing policy. Reject unknown/mismatched context rather than
-   falling back silently to vanilla noise. Clean up on disconnect/world unload.
-6. Keep island-first request ordering a separate concern. Faster sampling alone
-   does not change DH's nearest-first download queues. Prioritize coarse land
-   coverage with fair service for every section; nominal void can contain builds.
-
-Before implementation, reproduce the server-binding versus client-sharing case
-with an isolated matched mod set. For the selected bridge, compare native and LOD
-columns at void, boundaries, stacked islands, hollows and water across several
-seeds. Then test cold-cache join, actual-data replacement, reconnect, edited blocks,
-plain peers and missing/mismatched optional mods. Measure identical workloads,
-including memory, CPU and transfer. Do not install SeedGen into the playing world
-or reuse its live caches for these experiments.
+Keep optional adapters selected through loader metadata before resolving DH
+classes. Do not load client hooks on a dedicated server. Preserve independent
+terrain, BlueMap and physics behavior when changing this integration. The separate
+Veil Iris Fix and resource patches retain their own ownership; do not duplicate
+those fixes here.

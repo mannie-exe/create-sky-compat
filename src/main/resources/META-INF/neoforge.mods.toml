@@ -55,3 +55,9 @@ modId="architectury"
 type="optional"
 versionRange="[13,14)"
 side="BOTH"
+
+[[dependencies.create_sky_compat]]
+modId="distanthorizons"
+type="optional"
+versionRange="[3.3.3]"
+side="BOTH"

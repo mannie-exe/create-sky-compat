@@ -11,6 +11,11 @@ import java.util.Set;
 public final class OptionalMixinPlugin implements IMixinConfigPlugin {
     @Override public List<String> getMixins() {
         var mixins = new ArrayList<String>();
+        if (OptionalIntegrations.distantHorizons()) {
+            mixins.addAll(List.of("dh.WorldLevelKeyMixin", "dh.ChunkUnloadBudgetMixin"));
+            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
+                mixins.addAll(List.of("dh.LegacyCacheMixin", "dh.ClientWrapperHandoffMixin"));
+        }
         if (OptionalIntegrations.skyVillages()) mixins.addAll(List.of(
                 "StructureSupportMixin", "VillageHeightMixin", "PlacementSaltAccessor",
                 "VillageStructureStateMixin", "GeneratorStructureStateMixin"));

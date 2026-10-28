@@ -11,8 +11,27 @@ Sky Villages 1.0.6 are pinned by Modrinth version ID and SHA-256. They are downl
 for compilation/testing, not redistributed. Architectury 13.0.11 is included in
 the development runtime for Sky Villages. Output is in `build/libs`.
 
-See [distant terrain integration](lod.md) for DH/SeedGen/Voxy findings and the
-proposed island LOD/SeedGen bridge; it is not part of the released mod.
+See [DH integration](lod.md) for optional lifecycle and cache fixes, pinned
+implementation boundaries and dependency-update checks. The server and client
+probes are separate artifacts and are never bundled in the mod.
+
+For an isolated full-pack shutdown check with DH generation active:
+
+```sh
+./gradlew probeJar
+python3 tools/probe.py --dh-pregen --dh-stop-after 2 --seed 42 \
+  --server /path/to/server/game --java /path/to/java
+```
+
+The input server is read-only. The fixture uses a temporary save and a local random
+port, requests a bounded DH job, and asks the fixture server to stop while the job
+is active. A normal process exit is required within 90 seconds. Add `--dh-world-key`
+to exercise opt-in UUID cache naming; without it the fixture requires ordinary keys
+and no new identity marker. These commands never submit work to the input server.
+
+The [client probes](#client-probes) cover legacy-cache construction and known
+fluid/material inputs. Scalar measurements do not replace native-versus-LOD
+visual comparison.
 
 ## Implementation
 
@@ -89,8 +108,8 @@ codecs add nested placements.
 
 `--terrain` checks native descriptors and reordered/concurrent queries across
 five seeds. Use `--terrain --terrain-seed SEED` to reproduce a particular world's
-layout with its installed configuration instead. This remains a native prediction,
-not a read of stored terrain; compare selected points with the saved world before
+layout with its installed configuration instead. This estimates terrain from the generator,
+rather than reading stored chunks; compare selected points with the saved world before
 making claims about its contents. Compare its reports with `tools/layout_report.py` (matplotlib), which
 draws descriptor radii at equal scale rather than pretending they are shorelines.
 `--overlap --minimal` compares exterior intervals under VOID/OVERLAP at identical
@@ -160,13 +179,46 @@ retained-ticket controls and the production delivery adapter. The last case
 invokes ADQ's applied rejection handler and checks that the lease is released.
 This diagnoses endpoint loading; it does not transport or complete cargo.
 
-`./gradlew clientProbeJar` builds optional read-only client instrumentation in
-`build/probe/create-sky-client-probe.jar`. Install it only in a disposable client.
-Every five seconds it logs the loaded dimension envelope, Sable pressure profile,
-sampled pressure values, player altitude and tracked sub-level bounds. It writes
-no world state and is not packaged with either production mod or the server probe.
-Compare its observations with the dedicated server and native captures; telemetry
-does not replace checking the aircraft's construction and controls.
+### Client probes
+
+`./gradlew clientProbeJar` builds `build/probe/create-sky-client-probe.jar`.
+Install it only in a disposable client, with desktop authorization before launch.
+It is excluded from production artifacts and the server probe.
+
+With DH 3.3.3 installed, JVM flags select these checks:
+
+| Flag | Behavior and output |
+| --- | --- |
+| `-Dcreate_sky_compat.probe.dhCache=true` | Exercises the real DH client constructor against temporary legacy/current folders; writes `lod-cache-client-probe.json`. Does not open a world. |
+| `-Dcreate_sky_compat.probe.dhFluid=true` | Creates or reopens `dh-fluid-review`, places lava/water and stone/lichen fixtures, and writes `dh-fluid-colors.json` with exact material/color measurements and lichen-transfer controls. |
+
+Both flags may be used together. For the fluid scene, disable background DH
+generation in the disposable configuration, visit the columns at X=0..81, Z=0,
+Y=500..700, then view them beyond native render distance. Compare day/night,
+shaders off/on and a normal save/reopen. The fixture retains native fluid ticks.
+Changing a block exclusion should be tested against the same persisted LODs,
+not a cleared database. See [DH behavior](lod.md#luminous-columns-and-fluid-colors).
+
+ModDev's `runClient` cannot locate Connector's clean Minecraft artifact in the
+tested setup. The renderer check excluded Connector, Surveyor and Hoofprint;
+this is not complete-pack launcher coverage. When connecting a development
+client to an isolated production server containing owo-lib, match its handshake
+mode with `-Dowo.handshake.enabled=true` on that test server. Do not alter a
+playing server for a harness-only mismatch.
+
+Without either DH flag, the probe logs the dimension envelope, Sable pressure,
+altitude and tracked sub-level bounds every five seconds. That mode writes no
+world state. Telemetry does not replace checking aircraft construction and controls.
+Close the selected client process normally after recording results.
+
+For the complete Create Sky development stack, the separate
+`-Dcreate_sky_compat.probe.compatibility=true` mode opens `compatibility-review`,
+a disposable flat-world entity fixture. It exports live Sable block properties,
+checks seven assembled building-material fixtures, and samples natural terrain
+models through DH's real conversion path. It requires DH, Sable, Simulated and
+the fixture's building mods; it is not a minimum-install probe. The JSON outputs
+are `block-mass.json`, `mass-assemblies.json` and `dh-terrain-materials.json`.
+Visual animation checks still require desktop observation and short recordings.
 
 The layout probe exercises the loaded Mixin against native village layouts across
 four seeds and compares maximum-distance variants. The natural probe checks saved

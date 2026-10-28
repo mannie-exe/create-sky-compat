@@ -12,11 +12,19 @@ import net.neoforged.neoforge.common.NeoForge;
 import org.joml.Vector3d;
 import org.slf4j.LoggerFactory;
 
-/** Optional read-only client telemetry. Never included in the released mod. */
+/** Client telemetry and opt-in disposable fixtures. Never included in the released mod. */
 @Mod(value = "create_sky_client_probe", dist = Dist.CLIENT)
 public final class ClientFlightProbe {
     private int ticks;
-    public ClientFlightProbe() { NeoForge.EVENT_BUS.addListener(this::tick); }
+    public ClientFlightProbe() {
+        if (Boolean.getBoolean("create_sky_compat.probe.compatibility")) {
+            new ClientCompatibilityProbe();
+            return;
+        }
+        if (Boolean.getBoolean("create_sky_compat.probe.dhCache")) new ClientDhCacheProbe();
+        if (Boolean.getBoolean("create_sky_compat.probe.dhFluid")) new ClientDhFluidProbe();
+        else if (!Boolean.getBoolean("create_sky_compat.probe.dhCache")) NeoForge.EVENT_BUS.addListener(this::tick);
+    }
     private void tick(ClientTickEvent.Post event) {
         var client = Minecraft.getInstance();
         if (client.level == null || client.player == null || ++ticks % 100 != 0) return;

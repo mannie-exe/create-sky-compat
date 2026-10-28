@@ -1,10 +1,85 @@
 # Verification
 
-Checks use Java 21, Minecraft 1.21.1, NeoForge 21.1.264 and the exact upstream
-pins in `build.gradle`. Source changes extend `d3769c1`; artifact hashes identify
-the tested worktree more precisely than that base revision. Native reports under
-ignored `build/verification` record production/probe hashes, configuration and
-installed JARs.
+Checks use Java 21, Minecraft 1.21.1 and NeoForge 21.1.264 with the exact upstream
+pins in `build.gradle`. Results below distinguish current DH work from historical
+terrain checks; a source inspection does not establish runtime behavior.
+
+## Release 0.5.1
+
+The 2026-10-28 release candidate has SHA-256
+`1a340ef70560c78edb2e6d3416769fa068a784db54818418a9783a1381a91a9d`.
+`./gradlew check build probeJar clientProbeJar` passed: 47 Java tests, five Python
+release-tool checks, upstream pins and package boundaries. Compared with the
+installed 0.5.0 JAR, existing terrain/adaptation entries are byte-identical; only
+the entrypoint, optional integration selection and metadata differ, with new DH
+classes added.
+
+A fresh minimum-install `--generation adapted --minimal --seed 42 --samples 1`
+completed its native block survey. The full-pack `--dh-pregen --dh-stop-after 2`
+fixture reported generation active at stop, preserved the ordinary DH key without
+creating a saved identity, and exited normally. It used C2ME 0.4.0-alpha.0.124,
+Ponder 1.0.87, Radars 5.0.2, Fzzy Config 0.7.7+fix1, JEI 19.70.0.464 and
+Core Library 1.1.26 alongside the pinned integration versions. The same full set
+passed `--chunk-futures --seed 42`, including retained-ticket completion and ADQ
+rejection cleanup.
+
+The isolated physical-client material check converted eleven sampled modded
+terrain types plus stone, deepslate and grass through DH's real transformer.
+All retained their 32-block column and opaque, texture-derived color; none used
+the missing-texture sprite. This checks conversion, not every distance/shader
+combination. The expanded preset and unrelated worldgen were not modified.
+
+## DH integration
+
+On 2026-10-28, `./gradlew check build probeJar clientProbeJar` passed, including
+47 Java tests, five Python release-tool checks, exact dependency pins and
+package-boundary checks. The tested artifact has SHA-256
+`7d6f5fa4da9f159761f7e00d44e7f89c2b3caeb1cb58ac17014e694fcae0055b`.
+Its existing terrain classes, adapters and resources are byte-identical to the
+installed 0.5.0 release. Only the entrypoint, optional integration selection and
+metadata changed among existing JAR entries; the DH classes are additional.
+The unchanged version label does not identify this unreleased build's content.
+
+| Check | Observed result | Artifact SHA-256 prefix |
+| --- | --- | --- |
+| Minimal `--generation adapted --minimal --seed 42 --samples 1` | Native block survey completed; optional DH and other integrations absent | `7d6f5fa4da9f` |
+| Full-pack `--chunk-futures --seed 42` | ADQ retained chunk loading and rejection cleanup passed; process exited normally | `a234216e2436` |
+| Full-pack `--dh-pregen --dh-stop-after 2 --seed 42` | Generation active at shutdown request; normal exit; default DH key retained without creating a UUID marker | `5cc05d968779` |
+| Full-pack shutdown with `--dh-world-key` | Generation active at stop; normal exit; explicit UUID key observed in actual server wrapper | `7d6f5fa4da9f` |
+| Default/opt-in cache key unit checks | Default leaves no marker; opt-in persists across reopen and config reset; malformed markers fail | `7d6f5fa4da9f` |
+| Physical client constructor | Compat UUID keys preserved legacy folders; ordinary and similar-looking keys retained DH's native migration | `7d6f5fa4da9f` |
+| Client/server lifecycle | Connected, changed Overworld → Nether → Overworld, disconnected and reconnected; normal shutdown | `7d6f5fa4da9f` |
+
+A control using the installed pre-cleanup Compat artifact (`8fb487b85333`) also
+exited normally in the dedicated-server shutdown fixture. This fixture verifies
+normal shutdown and key preservation; it does not reproduce the earlier
+integrated-client unload livelock or establish a timing improvement. The client
+checks verify real hook application and ordinary lifecycle behavior; they do not
+deterministically reproduce the concurrent race. Ownership interleavings are
+covered separately by the concurrent tests.
+
+Automated fixtures used disposable directories, copied configurations and loopback
+ports. The network fixture enabled saved-world identity: the island Overworld used
+its UUID key across reconnect; the foreign Nether kept DH's ordinary key. No
+prediction provider or SeedGen was installed. The renderer client excluded
+Connector, Surveyor and Hoofprint because Connector cannot launch in the tested
+ModDev environment. owo-lib's development handshake mode was matched explicitly
+on the isolated server. These are harness constraints, not production pack changes.
+
+`ClientDhFluidProbe` measured lava/water states 0, 1, 7, 8 and 15 on a physical
+client. Known columns were viewed natively and as LODs with shaders off/on, then
+saved and reopened without clearing the DH database. A side-supported lichen
+fixture reproduced the luminous column. Actual DH conversion changed stone, lava
+and water to lichen's material/color; excluding lichen preserved each substrate.
+The bare control and native lichen remained unchanged. The shader was Complementary
+Unbound r5.9.3 + Euphoria 1.10.5, through Iris 1.8.14-beta.1 with DH 3.3.3.
+See [evidence and workaround](lod.md#luminous-columns-and-fluid-colors).
+
+An authorized live-client observation confirmed pale distant cliff patches and
+native glow lichen, with orange native lava nearby. This does not establish that
+all reported historical flowing-liquid anomalies share the same cause. Modded
+fluids, other shader packs and the complete Connector client stack were not covered
+by the isolated rendering check. No personal installation received the candidate.
 
 ## Release 0.5.0
 

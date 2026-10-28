@@ -22,6 +22,9 @@ with zipfile.ZipFile(root / f'build/libs/create-sky-compat-{version}-mc1.21.1-ne
     assert delivery['type'] == 'optional' and delivery['versionRange'] == '[1.1.1]'
     assert {name for name, d in deps.items() if d['type'] == 'required'} == {'minecraft', 'neoforge', 'sky_archipelago'}
     assert all(deps[name]['type'] == 'optional' for name in ['skyvillages', 'sable', 'architectury'])
+    assert deps['distanthorizons']['type'] == 'optional' and deps['distanthorizons']['versionRange'] == '[3.3.3]'
+    assert 'seedrenderer' not in deps
+    assert not any('/createskycompat/lod/' in n or '/mixin/lod/' in n or '/clientprobe/' in n for n in names)
     assert 'LICENSE' in names
     assert not any(n.startswith(('org/sathrek/', 'com/aureljz/', 'de/bluecolored/')) or '/probe/' in n or n.endswith('.jar') for n in names)
     mixin = json.loads(jar.read('create_sky_compat.mixins.json'))
