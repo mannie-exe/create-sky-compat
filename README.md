@@ -28,7 +28,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
 | Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |
 | Aeronautics + Iris | 1.3.2 + the Iris version above | Exclude the balloon hot-air overlay from shadow rendering |
-| Sable + Iris + Sodium | 2.0.6 + the Iris version above + 0.8.13+mc1.21.1 | Shader block IDs for construct geometry |
+| Sable + Iris + Sodium | 2.0.6 + the Iris version above + 0.8.13+mc1.21.1 | Shader block IDs and single-block render passes |
 
 Remove Veil Iris Fix when enabling the incorporated framebuffer adaptation.
 Remove Sky Village Neighbors when enabling Compat's village adaptations.
@@ -41,8 +41,9 @@ Sky Archipelago and create a new world with **Create Sky Islands**, or set
 Do not change an existing save's generator or recorded generation configuration.
 Ordinary Sky Archipelago worlds receive only applicable enabled adaptations.
 
-The rendering adapters have background transformation and state checks; new native
-client, shader, Ponder, balloon, and flickering-shadow checks remain pending.
+The rendering adapters have background checks and native macOS shader, Ponder,
+balloon, and single-block glass comparisons. The original flickering/gapped airship
+shadow report remains unresolved; this is not a general shadow correction.
 The Analog Audio registration fix likewise does not establish moving playback or
 GUI behavior. See [verification](docs/development/verification.md) for exact scope.
 

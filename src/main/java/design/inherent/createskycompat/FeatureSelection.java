@@ -60,7 +60,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
 
     private static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA -> true;
+            case DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES -> true;
             default -> false;
         };
     }
@@ -79,7 +79,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case BLUEMAP -> Map.of("bluemap", "5.7", "sky_archipelago", "1.3.6");
             case FRAMEBUFFER -> Map.of("veil", "4.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
             case BALLOON -> Map.of("aeronautics", "1.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
-            case MATERIAL_IDS -> Map.of("sable", "2.0.6", "iris", "1.8.14-beta.1+mc1.21.1", "sodium", "0.8.13+mc1.21.1");
+            case MATERIAL_IDS, SINGLE_BLOCK_PASSES -> Map.of("sable", "2.0.6", "iris", "1.8.14-beta.1+mc1.21.1", "sodium", "0.8.13+mc1.21.1");
             case MODEL_DATA -> Map.of("sable", "2.0.6");
         };
     }
@@ -117,6 +117,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case BALLOON -> List.of("client.BalloonShadowMixin");
                 case MATERIAL_IDS -> List.of("client.ConstructMaterialMixin");
                 case MODEL_DATA -> List.of("client.SingleBlockModelDataMixin");
+                case SINGLE_BLOCK_PASSES -> List.of("client.SingleBlockPassMixin");
             });
         }
         if (client && enabled(Feature.CLIMATE)) result.add("client.WeatherClimateMixin");

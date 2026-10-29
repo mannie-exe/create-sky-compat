@@ -1,14 +1,84 @@
 # Verification
 
+## Release 0.6.1
+
+2026-10-29, macOS arm64, Temurin Java 21, Minecraft 1.21.1 and NeoForge
+21.1.264. Candidate binary SHA-256:
+`fc8aa5c9f4e82dd7daa0e26c0c54e4e9c844881f1ec623348b1bd71a0636370c`.
+`JAVA_HOME=<java21> ./gradlew check build clientProbeJar` passed 64 JUnit cases,
+five release-tool cases, dependency hashes, packaging, and dedicated-side exclusion.
+The new transform check applies the pass hook to the released Sable dispatcher;
+selection checks cover its independent switch, missing Iris, disabled version
+constraints, and dedicated-side exclusion. No terrain or gameplay code changed.
+`python3 tools/startup_probe.py --server <installed-server>/game --java <java21>
+--scenario <standalone|full> --mod <candidate-jar>` also passed both dedicated
+startup/shutdown cases: zero active features standalone, 18 with the full server
+selection. This confirms client-only exclusion, not every upstream log diagnostic.
+
+A separate physical client with only Compat and NeoForge reached the title screen
+with zero active adaptations and no missing optional-class failure. Its three
+loader entries were Minecraft, NeoForge, and Compat; no content mods or probe were
+installed. This checks minimum client loading, not survival gameplay.
+
+Native runs used a marked disposable Prism instance containing the full installed
+pack, including Connector, with the Compat candidate replacing 0.6.0 and no
+standalone Veil Iris Fix. The cloned Resource Review save and maintained
+`tools/fixtures/rendering` datapack supplied static/assembled controls. The shader
+selection was Complementary Unbound r5.9.3 with Euphoria Patches 1.10.5.
+
+- In 0.6.0, freshly assembled ordinary glass and glass Copycat single-block
+  constructs disappeared with shaders; stationary controls remained visible.
+  Glass Copycat geometry was visible with shaders off. Ordinary glass reproduced
+  the discrepancy while the material-ID adapter was disabled, isolating it from
+  the Copycat model-data and material annotations.
+- In 0.6.1, the same freshly assembled controls rendered alongside their static
+  counterparts with shaders on and off. Sable's original deferred flush runs
+  before entities, outside the later translucent pass. The added flush draws the
+  current layer while Iris's matching pass is active. Restarting 0.6.1 with only
+  `rendering.single_block_passes=false` reproduced both missing constructs in a
+  fresh paused fixture; shader-off controls remained visible.
+- Propeller and mechanical-press Ponder scenes rendered with shaders, including
+  after shader reload. Earlier 0.6.0 checks also covered shader-off Ponder and
+  animated propeller scenes. The UI and scene remained visible.
+- Two hot-air envelopes were valid with capacity 150, predicted filled volume
+  100, and non-null client render regions. No misplaced screen overlay was seen
+  in the inspected exterior/interior views. Sampled metal, glowstone, glass, and
+  gold Copycat geometry rendered; construct motion changed its cast shadow.
+
+These checks are bounded to this hardware, shader selection and fixture. They do
+not prove all special-model materials, normals, shadow filtering or shader packs.
+The original gapped/flickering airship shadow report was not reproduced and is
+not claimed fixed. The balloon source guard and controlled shadow-pass test
+establish cancellation; the native scene did not reproduce the old misplaced
+overlay with the guard disabled, so it is not a native before/after reproduction.
+
+Physics pause does not survive a client restart; fresh floating controls and
+telemetry avoid mistaking a fallen construct for missing geometry. Offline
+quickplay worlds opened to LAN stalled on owner-disconnect shutdown while the
+server kept ticking. Singleplayer Save and Quit succeeded. The test-only
+`compatprobe_stop` command explicitly halted the integrated server and completed
+chunk/database shutdown. This is a fixture exit procedure, not a production
+shutdown fix or evidence of error-free upstream logs. Play worlds were untouched.
+
+Native logs, original clips and screenshots are retained locally under
+`build/verification/native-rendering`; they are not distribution assets. The
+15.29-second Ponder recording was decoded and sampled (2560×1656 H.264). Audio
+was not assessed. Failed command/setup captures are excluded from evidence.
+
 ## Release 0.6.0
 
-2026-10-29, macOS arm64 / Temurin Java 21. Background checks only, as requested.
+2026-10-29, macOS arm64 / Temurin Java 21. Initial background checks preceded
+the subsequently authorized native comparisons recorded above.
 The tested binary SHA-256 is
 `f0e9f715ee9b4e0991d7e3d885dce01c985655fbb9511eff743826dae31708ce`.
 This is the 0.6.0 implementation before a metadata-only trailing-newline cleanup;
 final binary SHA-256 is `6b6b5abc76d13fb9f65aa3945b2e110b2b9ad49db9f51d4582368670ad86a836`. ZIP comparison found only
 that TOML whitespace difference, with identical parsed metadata and identical
 classes/resources. The background evidence therefore applies to its implementation.
+The downloaded release binary has SHA-256
+`df67c9a85117719c0f60c684e6695c2cac2810a8ec9db3e9f5e6b2f1361b4a02`.
+Its regular ZIP entries are byte-identical to the final local binary; only stale
+empty directory entries differ. Native 0.6.0 checks used that published binary.
 
 `JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home ./gradlew check build probeJar`
 passed: 63 JUnit cases, five release-tool cases, exact upstream hashes, packaging,
@@ -42,12 +112,11 @@ Sky Archipelago, and the separate probe; no play save is opened. The scan took
 30.17 seconds including startup/reopen. This supports preset resources and default
 generation continuity, not a new multi-seed qualification of terrain algorithms.
 
-Interactive client startup, shader-on/off Ponder controls, balloon visuals,
-construct materials, shader/resource reload, and flickering-shadow comparisons
-remain pending. No desktop focus was taken. The gapped/flickering cast-shadow
-symptom remains unresolved; see [rendering scope](rendering.md). Historical native
-checks below belong to their recorded versions and do not verify this release's
-combined client rendering.
+Subsequent full-stack Prism checks rendered Ponder scenes with shaders on/off and
+after reload, and inspected paired static/assembled material and balloon fixtures.
+Single-block glass disappeared with shaders; the 0.6.1 record above owns the
+reproduction and correction. Other flickering/gapped cast shadows were not reproduced.
+
 
 
 Checks use Java 21, Minecraft 1.21.1 and NeoForge 21.1.264 with the exact upstream

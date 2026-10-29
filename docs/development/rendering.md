@@ -56,6 +56,23 @@ The earlier Sable matrix-refresh and directional-shading corrections are already
 present in 2.0.6 and are not duplicated here. This material correction does not
 establish correct Ponder previews, Copycat normals, or shadow-map projection.
 
+## Single-block render passes
+
+`SingleBlockPassMixin` flushes Sable's single-block queue at the end of each
+`VanillaSubLevelRenderDispatcher.renderSectionLayer` call while Iris shaders are
+active. Sable 2.0.6 otherwise flushes before entities, after opaque terrain. A
+translucent layer queued later is drawn in a subsequent opaque pass, where Iris
+cannot composite it correctly. Ordinary glass and glass Copycat single-block
+constructs disappeared in the native 0.6.0 fixture while stationary controls
+remained visible. The material-ID switch did not resolve this discrepancy.
+
+The adaptation reuses Sable's renderer and queue clearing. It changes no mesh,
+physics, or material classification, and leaves shader-off scheduling unchanged.
+It is independent of the model-data and material-ID switches. Review Sable's
+queue ownership/call sites and Iris opaque, translucent, and shadow-pass order
+when updating either renderer. Retire when upstream draws single-block geometry
+within its matching pass; do not retain a second flush after that correction.
+
 ## Verification boundary and unresolved shadows
 
 `./gradlew check build` transforms the released Veil and Aeronautics targets,
@@ -65,11 +82,11 @@ exercise recursion and exceptions. These tests require no window or GL context.
 They do not prove native shader output. [Verification](verification.md) records
 the tested artifact and current startup checks.
 
-Native client startup, shader-on/off Ponder controls, balloon overlays, construct
-materials, reload, and flickering-shadow comparisons remain pending by operator
-instruction. Do not take desktop focus or launch an interactive client for this
-release workflow. Historical Veil Iris Fix native evidence remains historical;
-it is not a new validation of the combined artifact.
+Native checks cover the released 0.6.0 and the 0.6.1 correction on macOS arm64,
+with the pack's Complementary Unbound/Euphoria shader selection. Ponder,
+shader toggling/reload, valid heated balloons, materials, and single-block glass
+controls are recorded in [verification](verification.md). These are bounded
+observations, not validation of every driver, shader pack, or special block model.
 
 Airship shadows flickering or appearing separated remain unresolved. There is no
 source evidence here establishing whether precision/filtering, culling, or moving

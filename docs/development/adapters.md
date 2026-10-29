@@ -16,7 +16,7 @@ implementation tests to the exact released artifacts.
 | Analog Audio | `AnalogAudioCreateMixin` | Review public Create registry erasure and upstream reflective lookup. Retire when released Analog Audio registers the handler correctly. See [procedure](README.md#analog-audio). |
 | DH | Separate client handoff, shutdown, cache selections | Review ownership and dimension guards, ordinary/default keys, reconnect and shutdown. See [DH](lod.md). |
 | BlueMap | Dedicated-server registration only | Review extension schema, map opt-in and renderer boundaries. See [BlueMap](bluemap.md). |
-| Framebuffer, balloon, material IDs, model data | Four independent client selections | See [rendering](rendering.md). These do not depend on island generation or each other. |
+| Framebuffer, balloon, material IDs, model data, render passes | Five independent client selections | See [rendering](rendering.md). These do not depend on island generation or each other. |
 
 For a dependency update, inspect the exact release and any nested JARs before
 changing pins. Compare the affected methods with the patch and its upstream issue.

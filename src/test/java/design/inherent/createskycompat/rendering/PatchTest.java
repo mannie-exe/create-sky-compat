@@ -53,6 +53,10 @@ public final class PatchTest {
                 "both AO and flat NeoForge methods must be wrapped");
         var single = transformed(service, transformer, "dev.ryanhcode.sable.neoforge.platform.SableSubLevelRenderPlatformImpl");
         assertEquals(1, calls(method(single, "getRenderLayers"), "createSky$matchingModelData"));
+        var dispatcher = transformed(service, transformer, "dev.ryanhcode.sable.sublevel.render.dispatcher.VanillaSubLevelRenderDispatcher");
+        assertEquals(1, calls(method(dispatcher, "renderSectionLayer"), "createSky$flushCurrentPass"));
+        assertEquals(1, calls(method(dispatcher, "createSky$flushCurrentPass"), "isShaderPackInUse"));
+        assertEquals(1, calls(method(dispatcher, "createSky$flushCurrentPass"), "renderAfterSections"));
         Files.createDirectories(Path.of("build/verification"));
         Files.write(Path.of("build/verification/Wrapper-patched.class"), transformed);
     }

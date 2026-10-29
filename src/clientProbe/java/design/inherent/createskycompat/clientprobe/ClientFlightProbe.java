@@ -17,6 +17,15 @@ import org.slf4j.LoggerFactory;
 public final class ClientFlightProbe {
     private int ticks;
     public ClientFlightProbe() {
+        if (Boolean.getBoolean("create_sky_compat.probe.rendering")) {
+            NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RegisterClientCommandsEvent event) ->
+                event.getDispatcher().register(net.minecraft.commands.Commands.literal("compatprobe_stop").executes(context -> {
+                    var server = Minecraft.getInstance().getSingleplayerServer();
+                    if (server == null) throw new IllegalStateException("Expected a disposable integrated server");
+                    server.execute(() -> server.halt(false));
+                    return 1;
+                })));
+        }
         if (Boolean.getBoolean("create_sky_compat.probe.compatibility")) {
             new ClientCompatibilityProbe();
             return;
@@ -52,6 +61,29 @@ public final class ClientFlightProbe {
             } catch (ReflectiveOperationException error) { throw new IllegalStateException("Flight fixture API changed", error); }
         }
         row.add("ships", ships);
+        if (Boolean.getBoolean("create_sky_compat.probe.rendering")) {
+            try {
+                var mapType = Class.forName("dev.eriksonn.aeronautics.content.blocks.hot_air.balloon.map.BalloonMap");
+                Object attached = mapType.getField("MAP").get(null);
+                Object map = attached.getClass().getMethod("get", net.minecraft.world.level.LevelAccessor.class).invoke(attached, level);
+                var balloons = new JsonArray();
+                for (Object balloon : (Iterable<?>)mapType.getMethod("getBalloons").invoke(map)) {
+                    var item = new JsonObject();
+                    var type = balloon.getClass();
+                    item.addProperty("valid", (Boolean)type.getMethod("isValid").invoke(balloon));
+                    item.addProperty("capacity", (Number)type.getMethod("getCapacity").invoke(balloon));
+                    item.addProperty("renderRegion", type.getMethod("getRenderRegion").invoke(balloon) != null);
+                    var volumes = new JsonArray();
+                    for (Object heater : (Iterable<?>)type.getMethod("getHeaters").invoke(balloon))
+                        volumes.add((Number)heater.getClass().getMethod("getClientPredictedVolume").invoke(heater));
+                    item.add("predictedVolumes", volumes);
+                    balloons.add(item);
+                }
+                row.add("balloons", balloons);
+            } catch (ReflectiveOperationException error) {
+                throw new IllegalStateException("Rendering fixture API changed", error);
+            }
+        }
         LoggerFactory.getLogger(ClientFlightProbe.class).info("CLIENT_FLIGHT_PROBE {}", row);
     }
 }

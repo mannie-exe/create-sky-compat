@@ -62,8 +62,19 @@ class FeatureSelectionTest {
         assertFalse(selection.enabled(Feature.BALLOON));
         assertFalse(selection.enabled(Feature.MATERIAL_IDS));
         assertFalse(selection.enabled(Feature.MODEL_DATA));
+        assertFalse(selection.enabled(Feature.SINGLE_BLOCK_PASSES));
         assertTrue(selection.mixins(false).stream().noneMatch(name -> name.startsWith("client.")));
         assertTrue(selection.enabled(Feature.BLUEMAP));
+    }
+
+    @Test void singleBlockPassesAreIndependentAndNeedTheirRendererStack() {
+        var selection = FeatureSelection.select(only(Feature.SINGLE_BLOCK_PASSES), SUPPORTED, true);
+        assertEquals(java.util.List.of("client.SingleBlockPassMixin"), selection.mixins(true));
+        var missing = new HashMap<>(SUPPORTED);
+        missing.remove("iris");
+        assertTrue(FeatureSelection.select(only(Feature.SINGLE_BLOCK_PASSES), missing, true).active().isEmpty());
+        missing.put("iris", "unsupported");
+        assertTrue(FeatureSelection.select(only(), missing, true).active().isEmpty());
     }
 
     @Test void activeAdaptersRejectUnsupportedVersionsWithConfigurationRemedy() {

@@ -25,7 +25,8 @@ public enum Feature {
     FRAMEBUFFER("rendering.veil_framebuffer"),
     BALLOON("rendering.balloon_shadow_pass"),
     MATERIAL_IDS("rendering.construct_material_ids"),
-    MODEL_DATA("rendering.single_block_model_data");
+    MODEL_DATA("rendering.single_block_model_data"),
+    SINGLE_BLOCK_PASSES("rendering.single_block_passes");
 
     public final String key;
     public final boolean defaultEnabled;
