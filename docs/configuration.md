@@ -1,40 +1,77 @@
 # Configuration
 
-`config/create_sky_compat-common.toml` is created on first launch. Modpacks
-can ship this file in their common overrides. NeoForge's built-in client config
-screen edits the same settings; no configuration library is required.
+## Adaptation switches
 
-On the first start after replacing Sky Village Neighbors, an existing
-`sky_village_neighbors-common.toml` is copied to the new filename only if that
-filename does not already exist. The old file is preserved. Do not install both
-mods: the new metadata explicitly rejects the old implementation.
+`config/create_sky_compat-features.properties` is the authoritative startup feature
+file. It is created when absent; supplied values are preserved. Use literal `true`
+or `false`. Unknown keys, duplicates, and invalid values fail with an explanation.
+Missing keys use their documented defaults. Restart the entire game/server after
+changing switches; applied mixins cannot be unloaded during play.
+
+All switches default to `true` except `distant_horizons.world_cache`, which defaults
+to `false`. A true setting is eligibility, not proof of activation. Missing targets,
+physical-side restrictions, or disabled prerequisites leave an adapter inactive.
+An active combination validates the versions below. Disabling its switch avoids
+that validation, its mixins, callbacks, and integration data. No switch enables a
+disabled prerequisite. Startup logs list active adaptations; debug logs explain
+inactive selections.
+
+| Switch | Adaptation | Prerequisites |
+| --- | --- | --- |
+| `terrain.preset` | Expanded preset, geometry, interiors, geology, and local water | Sky Archipelago 1.3.6 |
+| `terrain.ore_placement` | Relative ore and surface-feature placements | Active preset |
+| `terrain.relative_carvers` | Relative classic carvers and `nativeCarvers` policy | Active preset |
+| `terrain.cave_biomes` | Island-relative cave biome selection | Active preset |
+| `terrain.ancient_cities` | City eligibility and projection | Active preset |
+| `terrain.spawn_landing` | Generated-surface spawn landing | Active preset |
+| `terrain.structure_location` | Relocated structure lookup | Active preset |
+| `terrain.water_animal_spawns` | Local-water spawn height | Active preset |
+| `terrain.climate` | Surface temperature, snow, weather, and portal height | Active preset |
+| `villages.clearance` | Village footprint clearance/proximity | Sky Archipelago 1.3.6, Sky Villages 1.0.6, Architectury 13.x |
+| `villages.placement` | Village altitude and cluster allowance | Active preset, Sky Villages 1.0.6, Architectury 13.x |
+| `sable.island_pressure` | Island-altitude pressure | Active preset, Sable 2.0.6 |
+| `delivery.horizontal_distance` | Horizontal route distance | Active preset, ADQ 1.1.1 |
+| `delivery.chunk_loading` | Retained chunk requests and cleanup | Active preset, ADQ 1.1.1 |
+| `delivery.village_landing` | Bounded village surface retry | Active preset, ADQ 1.1.1, Sky Villages 1.0.6, Architectury 13.x |
+| `analog_audio.movement_registration` | Radio handler registration | Analog Audio 0.1.5-hotfix.1, Create 6.0.10 |
+| `distant_horizons.client_handoff` | Concurrent client wrapper ownership | Client, DH 3.3.3 |
+| `distant_horizons.shutdown` | Bounded island unload passes | DH 3.3.3, Sky Archipelago 1.3.6 |
+| `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.3.6; default false |
+| `bluemap.viewer` | Viewer adapter registration | Dedicated server, BlueMap 5.7, Sky Archipelago 1.3.6; map opt-in below |
+| `rendering.veil_framebuffer` | Framebuffer preservation and active Iris target | Client, Veil 4.3.2, Iris 1.8.14-beta.1+mc1.21.1 |
+| `rendering.balloon_shadow_pass` | Exclude screen-space balloon effect from shadow pass | Client, Aeronautics 1.3.2, Iris version above |
+| `rendering.construct_material_ids` | Annotate construct shader materials | Client, Sable 2.0.6, Iris version above, Sodium 0.8.13+mc1.21.1 |
+| `rendering.single_block_model_data` | Match model data used for layer selection and tessellation | Client, Sable 2.0.6 |
+
+For rendering fixes alone, disable `terrain.preset`, `villages.clearance`,
+`bluemap.viewer`, and unwanted independent adaptations. To make Compat inert, set
+every switch to false. An installed mod's own behavior and dependencies remain
+its responsibility. Compat still reads its own feature file and protects its own
+saved generation identity; disabling terrain is not a way to convert a marked save.
+
+The island preset is never chosen automatically. Generation-related switches are
+part of saved generation identity; changed generation choices require a fresh
+world. Ordinary worlds are not converted. Internal terrain helpers form one preset
+feature; its geometry/interior/water settings tune that feature rather than
+providing separate class-loading switches.
+
+## Village tuning
+
+`config/create_sky_compat-common.toml` is registered only when a village adaptation
+is active. NeoForge's client config screen edits its distances. The startup feature
+file owns activation, including `villages.clearance`; the tuning file does not
+contain a second enable switch.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `enabled` | `true` | Filter new Sky Villages layouts |
 | `minimumGap` | `64` | Minimum horizontal column distance to any island terrain |
 | `maximumGap` | `512` | Maximum horizontal column distance to a sampled host island |
 | `minimumIslandRadius` | `96` | Minimum native descriptor radius of the host island |
 
-Distances and radius accept integers from 0 to 2048. `maximumGap` must be at least
-`minimumGap`; an inverted range fails server startup with a configuration error.
-Even with a zero minimum gap, terrain inside the village footprint is rejected.
-An island's descriptor radius is not a measurement of its habitable surface area.
-
-Settings are captured when a server starts, including a singleplayer server.
-Changes require restarting it. Existing generated structures are not removed or
-moved. The versioned Create Sky preset records its generation configuration and
-rejects changes when reopening a world. Use a disposable new world when comparing
-configurations. The recorded identity includes structure eligibility as well as
-geometry; updates that change that policy can also require a new world. Ordinary
-Sky Archipelago worlds retain upstream behavior, where
-changes affect future starts only.
-
-Gameplay integrations activate at startup from installed mods, not from these
-placement controls. Village integration needs both Sky Villages and Architectury.
-`enabled` does not toggle the terrain preset, Sable or ADQ adaptations. Changing
-village integration changes saved generation identity; optional installation is
-not permission to add/remove generation content from an existing marked world.
+Distances accept integers from 0 to 2048. `maximumGap` must be at least
+`minimumGap`; an inverted range fails startup. Even a zero minimum gap rejects
+terrain inside the footprint. Radius is not habitable surface area. Settings are
+captured at server startup; existing structures are not moved or removed.
 
 ## Island geometry
 
@@ -197,7 +234,7 @@ In the versioned Create Sky preset, each anchor receives a deterministic allowan
 of 0–3 villages. The weights are 96:24:8:3: approximately 73.3% receive zero, 18.3%
 one, 6.1% two and 2.3% three. Companions share their anchor's allowance. These are
 maximums, not promised counts: biome, layout and clearance rules can reject a site.
-The profile owns this distribution and its candidate spacing; `enabled` controls
+The profile owns this distribution and its candidate spacing; `villages.clearance` controls
 the horizontal neighbor filter, not the preset's count policy.
 
 In ordinary Sky Archipelago presets, frequency remains owned by Sky Villages'
@@ -231,24 +268,20 @@ when underside geometry is required. See [implementation and limits](development
 
 ## Distant Horizons
 
-DH 3.3.3 is optional. The lifecycle fixes need no additional configuration.
-Ordinary DH generation, server delivery and rendering retain their existing controls.
+DH 3.3.3 remains responsible for its ordinary generation, delivery, and rendering.
+The feature table above owns Compat's three independent startup switches.
 
-`<world>/serverconfig/create_sky_compat-dh-server.toml` contains
-`savedWorldIdentity = false`. Enabling it uses a UUID saved in
-`create-sky-lod-world-id` to distinguish Sky Archipelago saves even when their
-seeds match. DH's `sendLevelKeys` must also be enabled. Foreign generators keep
-DH's normal cache naming.
+Enable `distant_horizons.world_cache` to use a UUID saved in
+`create-sky-lod-world-id` for Sky Archipelago saves. DH's `sendLevelKeys` must also
+be enabled. Enable the cache adapter on the client to suppress ambiguous legacy
+imports into those UUID namespaces. Foreign generators retain ordinary keys.
 
-Leave this setting off to retain existing DH cache keys. Enabling it selects a
-new client cache namespace; it does not migrate, delete or populate an old cache.
-Once a save has an identity marker, that identity remains in use even if the
-setting is reset. Keep the marker with the save when copying or restoring it.
-Malformed markers fail explicitly instead of selecting an unrelated cache.
+The default false setting selects upstream cache behavior and installs no cache
+hooks, even if a Compat identity marker exists. Enabling selects a different
+client namespace without moving, deleting, or populating old caches. A retained
+marker is reused when re-enabling the adapter; keep it with the save. Malformed
+markers fail when the adapter is active. Server databases are not renamed.
 
-Clients with Compat do not import ambiguous legacy dimension-only caches into
-these UUID namespaces. Existing legacy folders are left untouched; other DH keys
-retain upstream migration behavior. Server databases and ordinary dimension IDs
-are not renamed.
-
-See [DH integration](development/lod.md) for exact hook boundaries and update checks.
+The old per-world `savedWorldIdentity` setting is no longer read. Operators who
+used it must explicitly enable the startup cache switch on the applicable sides.
+See [DH implementation](development/lod.md) for boundaries and update checks.

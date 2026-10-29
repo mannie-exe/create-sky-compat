@@ -24,7 +24,7 @@ abstract class WorldLevelKeyMixin {
                 || !(level.getChunkSource().getGenerator() instanceof SkyIslandChunkGenerator)) return;
         try {
             var key = WorldIdentity.selectKey(level.getServer().getWorldPath(LevelResource.ROOT),
-                    design.inherent.createskycompat.dh.DhConfig.savedWorldIdentity(), level.dimension().location().toString());
+                    true, level.dimension().location().toString());
             if (key != null) result.setReturnValue(key);
         } catch (java.io.IOException invalid) {
             // Never silently fall back to a seed-derived name that could select another world's cache.

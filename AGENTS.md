@@ -1,10 +1,13 @@
 # Create Sky Compat
 
-Maintain an independently installable Sky Archipelago terrain and integration mod.
+Maintain an independently installable mod of optional terrain and compatibility adaptations.
 Keep minimum dependencies and optional adapters explicit.
 Keep Sky Villages floating beside Sky Archipelago terrain. Preserve foreign
 generators and saved-world generation identity; never silently convert worlds.
-Keep the independent Veil Iris Fix and pack resources in their owning projects.
+Own the incorporated Veil/Iris rendering adapters here; keep static pack resources in the pack.
+Only Minecraft, NeoForge and necessary base libraries may be required.
+Feature switches are immutable startup configuration. Disabled adapters must not
+select target mixins, load foreign classes, expose data or constrain target versions.
 Use Java 21, NeoForge and exact upstream dependency pins. Do not bundle upstream
 binaries, templates or decompiled sources.
 

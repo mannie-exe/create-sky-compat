@@ -1,5 +1,55 @@
 # Verification
 
+## Release 0.6.0
+
+2026-10-29, macOS arm64 / Temurin Java 21. Background checks only, as requested.
+The tested binary SHA-256 is
+`f0e9f715ee9b4e0991d7e3d885dce01c985655fbb9511eff743826dae31708ce`.
+This is the 0.6.0 implementation before a metadata-only trailing-newline cleanup;
+final binary SHA-256 is `6b6b5abc76d13fb9f65aa3945b2e110b2b9ad49db9f51d4582368670ad86a836`. ZIP comparison found only
+that TOML whitespace difference, with identical parsed metadata and identical
+classes/resources. The background evidence therefore applies to its implementation.
+
+`JAVA_HOME=/Library/Java/JavaVirtualMachines/temurin-21.jdk/Contents/Home ./gradlew check build probeJar`
+passed: 63 JUnit cases, five release-tool cases, exact upstream hashes, packaging,
+and the framebuffer server-side exclusion probe. Released-target transformations
+cover the original Veil Iris injection plus the framebuffer wrapper, Aeronautics
+balloon callback, both NeoForge tessellation overloads, and Sable model-data query.
+Controlled framebuffer execution checks GUI/world/shadow behavior and exceptional
+restoration. Balloon execution preserves the callback outside a shadow pass and
+cancels it inside one. Material-scope checks cover recursion and exceptions.
+These checks do not use native GL or establish visible shader results.
+
+`python3 tools/startup_probe.py --server <installed-server>/game --java <java21> --scenario <case>`
+passed all seven cases: `standalone`, `terrain-disabled`, `terrain`, `all-disabled`,
+`unsupported-disabled`, `unsupported-enabled`, and `full`. Each uses a disposable
+loopback dedicated server and removes its save afterward. Standalone and disabled
+cases reached Done with no active adaptations and no exported transformed target
+referencing Compat. Unsupported-target fixtures advertise version 999.0.0 without
+target classes; disabled passes, while enabled rejects the exact terrain pin with
+a feature-file remedy. The full installed server selection reached Done and exited
+normally with 18 common/server adaptations. These fixtures do not exercise a
+physical client or every possible feature combination. The full fixture still
+logs upstream Struts/C2ME client-target warnings, Power Grid’s native-backend
+fallback, resource warnings, and two nonfatal IslandField Mixin analyzer errors.
+A matching installed-0.5.2 control also reached Done and produced both analyzer
+errors; they are not introduced by this release. Successful startup is not a
+claim of an error-free upstream log.
+
+`python3 tools/probe.py --generation adapted --minimal --seed 42 --reopen --heap 6G --server <installed-server>/game --java <java21>`
+passed native generation and reopen with matching ore counts. It uses only Compat,
+Sky Archipelago, and the separate probe; no play save is opened. The scan took
+30.17 seconds including startup/reopen. This supports preset resources and default
+generation continuity, not a new multi-seed qualification of terrain algorithms.
+
+Interactive client startup, shader-on/off Ponder controls, balloon visuals,
+construct materials, shader/resource reload, and flickering-shadow comparisons
+remain pending. No desktop focus was taken. The gapped/flickering cast-shadow
+symptom remains unresolved; see [rendering scope](rendering.md). Historical native
+checks below belong to their recorded versions and do not verify this release's
+combined client rendering.
+
+
 Checks use Java 21, Minecraft 1.21.1 and NeoForge 21.1.264 with the exact upstream
 pins in `build.gradle`. Results below distinguish integration checks from historical
 terrain checks; a source inspection does not establish runtime behavior.

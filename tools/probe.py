@@ -55,7 +55,7 @@ parser.add_argument('--seed', type=int, default=1)
 parser.add_argument('--terrain-seed', type=int, help='Survey this exact seed instead of the five-seed terrain comparison')
 parser.add_argument('--maximum-gap', type=int, default=512)
 parser.add_argument('--disable-carver-adapter', action='store_true',
-                    help='Diagnostic control: omit relative-carving mixins from the staged mod only')
+                    help='Disable the relative-carving adaptation in the disposable startup configuration')
 args = parser.parse_args()
 if args.audio and args.minimal:
     parser.error('Use --audio minimal instead of combining --audio and --minimal')
@@ -118,7 +118,7 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
     (run / 'libraries').symlink_to(server / 'libraries', target_is_directory=True)
     (run / 'mods').mkdir()
     for source in (server / 'mods').glob('*.jar'):
-        if source.name.startswith(('create-sky-compat-', 'sky-village-neighbors-')):
+        if source.name.startswith(('create-sky-compat-', 'sky-village-neighbors-', 'veil-iris-fix-')):
             continue
         if args.minimal or (args.audio and args.audio != 'full'):
             selected = {'sky_archipelago'}
@@ -138,28 +138,24 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
         if len(list((run / 'mods').glob('*.jar'))) != expected:
             raise SystemExit('Audio fixture dependencies missing from installed server')
     shutil.copy2(mod, run / 'mods' / mod.name)
-    if args.disable_carver_adapter:
-        staged = run / 'mods' / mod.name
-        control = staged.with_suffix('.control')
-        with zipfile.ZipFile(staged) as source, zipfile.ZipFile(control, 'w') as target:
-            for entry in source.infolist():
-                data = source.read(entry.filename)
-                if entry.filename == 'create_sky_compat.mixins.json':
-                    mixins = json.loads(data)
-                    mixins['mixins'] = [name for name in mixins['mixins'] if name not in {
-                        'CarvingContextMixin', 'CarverHeightMixin', 'CarverLavaMixin'}]
-                    data = (json.dumps(mixins, indent=2) + '\n').encode()
-                target.writestr(entry, data)
-        control.replace(staged)
     shutil.copy2(fixture, run / 'mods' / fixture.name)
     for folder in ['config', 'defaultconfigs']:
         if not args.minimal and args.audio in (None, 'full') and (server / folder).exists():
             shutil.copytree(server / folder, run / folder)
     (run / 'config').mkdir(exist_ok=True)
+    feature_file = run / 'config/create_sky_compat-features.properties'
+    feature_settings = {}
+    if feature_file.exists():
+        for line in feature_file.read_text().splitlines():
+            if line.strip() and not line.lstrip().startswith('#'):
+                key, value = line.split('=', 1)
+                feature_settings[key.strip()] = value.strip()
+    if args.disable_carver_adapter:
+        feature_settings['terrain.relative_carvers'] = 'false'
     if args.dh_pregen:
-        (run / 'defaultconfigs').mkdir(exist_ok=True)
-        (run / 'defaultconfigs/create_sky_compat-dh-server.toml').write_text(
-            f'savedWorldIdentity = {str(args.dh_world_key).lower()}\n')
+        feature_settings['distant_horizons.world_cache'] = str(args.dh_world_key).lower()
+    if feature_settings:
+        feature_file.write_text(''.join(f'{key}={value}\n' for key, value in sorted(feature_settings.items())))
     # Native probes do not serve maps or download/render map assets.
     # Only disposable configuration is edited; the integration still class-loads.
     bluemap = run / 'config/bluemap'
@@ -168,7 +164,7 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
         (bluemap / 'core.conf').write_text('accept-download: false\nmetrics: false\n')
 
     (run / 'config/create_sky_compat-common.toml').write_text(
-        f'enabled = true\nminimumGap = 64\nmaximumGap = {args.maximum_gap}\nminimumIslandRadius = 96\n')
+        f'minimumGap = 64\nmaximumGap = {args.maximum_gap}\nminimumIslandRadius = 96\n')
     if args.generation_config:
         shutil.copy2(args.generation_config.expanduser().resolve(), run / 'config/create_sky_compat-generation.json')
     if args.interior_config:

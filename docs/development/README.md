@@ -35,13 +35,19 @@ visual comparison.
 
 ## Implementation
 
-`OptionalMixinPlugin` adds integration mixins only after checking NeoForge's early
-loading metadata. Sky Villages hooks require both `skyvillages` and `architectury`;
-Sable and ADQ hooks require their respective mod IDs. The plugin references no
-game or optional-mod classes. Required injection counts remain enforced when an
-integration is selected. Runtime village fallback and saved-world identity use
-the same presence predicate. The weather mixin is client-only; configuration UI
-registration is also client-only.
+`FeatureSettings` reads immutable switches before Mixin target resolution.
+`FeatureSelection` uses loader metadata, the physical side, and explicit feature
+prerequisites. `OptionalMixinPlugin` selects only the active mixins. Disabled
+adapters do not validate versions. `CreateSkyCompat` registers callbacks and
+loads integration classes only for active selections. `IntegrationPacks` exposes
+terrain, relative-placement, and pressure data as separately gated built-in packs.
+No integration data is unconditionally exposed at the JAR's `data/` root.
+
+See [adapter maintenance](adapters.md) for ownership, dependency updates, and
+retirement conditions, and [rendering](rendering.md) for client-specific paths.
+The minimum runtime is NeoForge plus Compat; development dependencies are not
+runtime requirements. `tools/startup_probe.py` covers disposable dedicated-server
+startup combinations. It never launches a client or touches the installed save.
 
 The Sable API is compile-only with a separate development runtime dependency.
 Development runs retain the complete pinned integration set. For the minimal
@@ -99,7 +105,8 @@ upstream setup timing, handler construction, registration and error handling.
 
 Loader metadata selects the hook only for that exact pair. Neither mod becomes a
 required or compile-time dependency, and no client classes enter the dedicated
-server path. Other versions retain their upstream behavior. This adapter changes
+server path. Disable this feature to retain upstream behavior with other versions; an enabled
+complete but unsupported pair is rejected with a configuration remedy. This adapter changes
 no recipes, resources, weights, radio controls or Sable coordinate handling.
 
 Before changing either dependency, inspect `CreateCompat.lambda$onCommonSetup$1`,

@@ -3,7 +3,7 @@
 Compat uses DH's ordinary terrain generation, storage and rendering. It does not
 provide a separate terrain predictor. Optional hooks target DH 3.3.3 on Minecraft
 1.21.1 / NeoForge 21.1.264. The compile-only artifact is pinned by SHA-256 in
-`build.gradle`; optional metadata and `OptionalIntegrations` must agree.
+`build.gradle`; `FeatureSelection` and active feature tests must agree.
 
 ## Lifecycle ownership
 
@@ -27,8 +27,8 @@ verification of the extracted fix is tracked in [verification](verification.md).
 
 `WorldIdentity` persists one UUID per saved world. `WorldLevelKeyMixin` uses that UUID
 and a hash of the dimension ID in DH's normal server-key handshake. Creation is
-opt-in through `savedWorldIdentity`; the default retains upstream keys and caches.
-Existing marker files remain authoritative. Server-side database paths do not change.
+opt-in through `distant_horizons.world_cache`; disabled means no cache hooks,
+including for a save with an existing marker. Re-enabling reuses its marker. Server-side database paths do not change.
 See [operator configuration](../configuration.md#distant-horizons) before enabling it
 on an existing installation.
 
@@ -99,6 +99,5 @@ No report has been submitted.
 
 Keep optional adapters selected through loader metadata before resolving DH
 classes. Do not load client hooks on a dedicated server. Preserve independent
-terrain, BlueMap and physics behavior when changing this integration. The separate
-Veil Iris Fix and resource patches retain their own ownership; do not duplicate
-those fixes here.
+terrain, BlueMap and physics behavior when changing this integration. The incorporated [rendering adapters](rendering.md) and pack-owned resource
+patches retain separate activation and verification boundaries.

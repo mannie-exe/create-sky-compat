@@ -3,6 +3,7 @@ package design.inherent.createskycompat.terrain;
 import com.google.gson.*;
 import design.inherent.createskycompat.NeighborConfig;
 import design.inherent.createskycompat.OptionalIntegrations;
+import design.inherent.createskycompat.Feature;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 import net.minecraft.resources.ResourceLocation;
 import com.mojang.serialization.JsonOps;
@@ -61,6 +62,15 @@ public final class GenerationGuard {
         identity.addProperty("ancientCityEligibility", "lower_quarter_v1");
         identity.addProperty("spawnLanding", "generated_surface");
         identity.addProperty("climate", "biome_temperature_at_reference_surface");
+        var disabled = new JsonArray();
+        for (var feature : java.util.List.of(Feature.ORE_PLACEMENT, Feature.CARVERS, Feature.CAVE_BIOMES,
+                Feature.ANCIENT_CITIES, Feature.SPAWN, Feature.STRUCTURE_LOCATION, Feature.CLIMATE,
+                Feature.VILLAGE_CLEARANCE, Feature.VILLAGE_PLACEMENT)) {
+            if (!OptionalIntegrations.configured(feature)) disabled.add(feature.key);
+        }
+        // Default behavior retains the existing identity byte-for-byte. Different generation choices
+        // receive a distinct identity and cannot silently alter an existing save.
+        if (!disabled.isEmpty()) identity.add("disabledAdaptations", disabled);
         identity.add("biomes", net.minecraft.world.level.biome.BiomeSource.CODEC.encodeStart(ops, sky.getBiomeSource()).getOrThrow());
         identity.add("islands", SkyIslandGeneratorSettings.CODEC.encodeStart(ops,
                 SkyIslandGeneratorSettings.fromRuntimeSettings(sky.resolvedSkyIslandSettings())).getOrThrow());

@@ -1,52 +1,50 @@
 # Create Sky Compat
 
-Adds a Sky Archipelago world preset with deep islands, island-relative geology
-and optional village, physics and delivery integrations. It can be installed on
-its own with the required dependencies; the Create Sky modpack is not required.
+Optional terrain, gameplay, and rendering adaptations for Minecraft 1.21.1.
+Every adaptation has a startup switch. The Create Sky modpack is not required.
 
 ## Installation
 
-For **Minecraft 1.21.1, Java 21 and NeoForge 21.1.264 or later in the 21.1 series**,
-install Sky Archipelago **1.3.6** and this mod on both client and server.
+Install this mod with **Java 21 and NeoForge 21.1.264 or later in the 21.1 series**.
+No content mod is required. With no supported targets installed, no adapters activate.
+Use it on the client for rendering fixes; install it on both sides with matching
+configuration when using the expanded island preset.
 
-Optional integrations activate when their dependencies are installed:
+Edit `config/create_sky_compat-features.properties` before startup to disable
+unwanted features. Changes require a full process restart. Disabled adaptations
+select no target mixins, callbacks, or data packs and do not constrain target
+versions. An enabled adaptation activates only when its full dependency combination
+is present on the applicable side; unsupported active combinations fail clearly.
+See [all switches and supported combinations](docs/configuration.md#adaptation-switches).
 
-| Integration | Supported version | Behavior |
+| Optional integration | Supported version | Behavior |
 | --- | --- | --- |
-| Sky Villages and Architectury API | 1.0.6 and Architectury 13.x (tested 13.0.11) | Floating-village clearance, altitude and cluster allowance; both mods must be present |
-| Sable | 2.0.6 | Island-altitude pressure profile for its physics system |
-| Aeronautics Delivery Quests | 1.1.1 | Structure-route loading and distance fixes; village surface retry also requires Sky Villages and Architectury |
-| Analog Audio and Create | 0.1.5-hotfix.1 and 6.0.10 | Restore registration of the upstream radio movement handler; both exact versions must be present |
-| Create | Installed feature IDs | Island-relative zinc and Overworld striated deposits |
-| Create Propulsion | Installed feature IDs | Island-relative platinum |
-| BlueMap | 5.7, dedicated server only | Opt-in browser detail and void-edge adaptation for Sky Archipelago maps |
-| Distant Horizons | 3.3.3 | Client-wrapper lifecycle and shutdown fixes; optional per-save client cache isolation |
+| Sky Archipelago | 1.3.6 | Expanded island preset and separately selectable placement/climate adaptations |
+| Sky Villages + Architectury | 1.0.6 + 13.x (tested 13.0.11) | Village clearance and placement; needs Sky Archipelago |
+| Sable | 2.0.6 | Island pressure; client single-block model-data correction |
+| Aeronautics Delivery Quests | 1.1.1 | Separate route distance, chunk loading, and village landing adaptations |
+| Analog Audio + Create | 0.1.5-hotfix.1 + 6.0.10 | Radio movement-handler registration |
+| Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
+| BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
+| Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |
+| Aeronautics + Iris | 1.3.2 + the Iris version above | Exclude the balloon hot-air overlay from shadow rendering |
+| Sable + Iris + Sodium | 2.0.6 + the Iris version above + 0.8.13+mc1.21.1 | Shader block IDs for construct geometry |
 
-Aeronautics uses the Sable pressure integration; this mod does not require
-Aeronautics or patch its controls. Optional integrations retain their own upstream
-dependencies. Missing Create/Propulsion features are skipped. Iris and Veil are not
-dependencies; this mod does not patch shader rendering or Ponder.
-DH is optional. Its internal hooks target 3.3.3; other versions are rejected when
-installed. Review these hooks before changing the pin.
+Remove Veil Iris Fix when enabling the incorporated framebuffer adaptation.
+Remove Sky Village Neighbors when enabling Compat's village adaptations.
+Upstream mods retain their own dependencies. Create/Propulsion ore IDs are optional
+members of the relative-placement tags, not required mods.
 
-The Analog Audio adapter repairs registration only. Its ordinary Create contraption
-GUI and audible playback during movement still need client playtesting; Sable
-airship audio uses a separate upstream integration. See the
-[adapter maintenance procedure](docs/development/README.md#analog-audio).
-
-Use the same version on client and server for the expanded preset.
-Create a new world with **Create Sky Islands**, or set
+No world preset is selected automatically. To use the expanded terrain, install
+Sky Archipelago and create a new world with **Create Sky Islands**, or set
 `level-type=create_sky_compat:islands_v1` before creating a dedicated-server world.
-Do not change an existing world's generator. Ordinary Sky Archipelago worlds
-retain the neighbor filter without receiving the expanded terrain.
+Do not change an existing save's generator or recorded generation configuration.
+Ordinary Sky Archipelago worlds receive only applicable enabled adaptations.
 
-Remove Sky Village Neighbors when installing this replacement. The old common
-configuration is copied only when the new configuration is absent. Leave Sky
-Archipelago's custom structure rules enabled. Unsupported versions of pinned
-gameplay integrations are rejected when installed. Unsupported BlueMap versions
-retain their original viewer.
-The minimum installation needs only Minecraft, NeoForge, Sky Archipelago and
-Create Sky Compat.
+The rendering adapters have background transformation and state checks; new native
+client, shader, Ponder, balloon, and flickering-shadow checks remain pending.
+The Analog Audio registration fix likewise does not establish moving playback or
+GUI behavior. See [verification](docs/development/verification.md) for exact scope.
 
 ## Distant terrain
 
@@ -100,7 +98,8 @@ predictions do not include later structures or player-built blocks.
 
 ## Configuration
 
-Edit village settings in `config/create_sky_compat-common.toml`, or use
+Feature switches live in `config/create_sky_compat-features.properties`.
+Edit active village tuning in `config/create_sky_compat-common.toml`, or use
 **Mods → Create Sky Compat → Config** in a client. Island geometry lives in
 `config/create_sky_compat-generation.json`; cavity and native-carver controls live in
 `config/create_sky_compat-interiors.json`, and local basins use
@@ -114,5 +113,6 @@ See [configuration](docs/configuration.md) for controls and limitations,
 
 ## License
 
-MIT. This is an independent compatibility mod, not an official release from either
-upstream project. Neither upstream mod nor its templates are bundled.
+Original implementation: MIT. Incorporated framebuffer code and its test infrastructure:
+LGPL-3.0-only. See [NOTICE](NOTICE) and [license texts](licenses/). Upstream binaries
+and templates are not bundled. This is an independent compatibility mod.

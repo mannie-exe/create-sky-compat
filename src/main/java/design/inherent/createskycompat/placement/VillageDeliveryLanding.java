@@ -16,7 +16,7 @@ public final class VillageDeliveryLanding {
     public interface SurfaceResolver { BlockPos resolve(ServerLevel level, int x, int z); }
 
     public static BlockPos find(ServerLevel level, int x, int z, SurfaceResolver nativeSurface) {
-        if (!OptionalIntegrations.skyVillages()) return null;
+        if (!OptionalIntegrations.enabled(design.inherent.createskycompat.Feature.DELIVERY_LANDING)) return null;
         if (!(level.getChunkSource().getGenerator() instanceof GeologicalGenerator generator)
                 || !generator.createSky$isEnabled()) return null;
         var chunk = level.getChunkSource().getChunk(x >> 4, z >> 4, ChunkStatus.FULL, false);

@@ -29,10 +29,6 @@ public abstract class GeneratorProfileMixin implements GeologicalGenerator {
         }
         result.setReturnValue(level.getMinBuildHeight());
     }
-    @Inject(method = "applyCarvers", at = @At("HEAD"), cancellable = true)
-    private void carverPolicy(CallbackInfo callback) {
-        if (createSky$isEnabled() && !InteriorConfiguration.profile().nativeCarvers()) callback.cancel();
-    }
     @Shadow private IslandField getIslandField(RandomState random) { throw new AssertionError(); }
     @Shadow private volatile SkyIslandSettings resolvedSettingsCache;
     @Override public IslandField createSky$field(RandomState random) { return getIslandField(random); }

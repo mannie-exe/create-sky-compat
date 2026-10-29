@@ -15,6 +15,9 @@ Download CI artifacts into `build/ci/build-<runner>/` before staging;
 `build/release` must not already exist. The tag must resolve to the checked-out
 commit. No automatic Modrinth upload is configured.
 
+Pending native client checks must remain explicit in release notes and verification.
+Background checks do not establish GPU or gameplay rendering behavior.
+
 ## Modrinth selections
 
 Modrinth publication is deferred. Use these fields if publication is approved:
@@ -24,22 +27,22 @@ Modrinth publication is deferred. Use these fields if publication is approved:
 | Project type | Mod |
 | Name | Create Sky Compat |
 | Slug | `create-sky-compat` |
-| Summary | Deep sky islands with relative geology and optional village, physics and delivery integrations |
+| Summary | Optional terrain, gameplay, and rendering adaptations with independent startup switches |
 | Category | World Generation; Utility as an optional second category |
 | Environment | Required on client and server for the expanded preset |
-| License | MIT |
+| License | MIT AND LGPL-3.0-only; see NOTICE |
 | Source | `https://github.com/mannie-exe/create-sky-compat` |
 | Issues | `https://github.com/mannie-exe/create-sky-compat/issues` |
 | Description | README installation, placement and configuration sections |
 
 For the current prerelease, select **Beta**, **Minecraft 1.21.1**, and **NeoForge**.
 Upload `create-sky-compat-<version>-mc1.21.1-neoforge.jar` as the primary file.
-Declare Sky Archipelago required and the other integrations optional. Pin exact
+Declare all integrated content mods optional, including Sky Archipelago. Pin exact
 versions where the adapter targets internals:
 
 | Dependency | Version | Relationship |
 | --- | --- | --- |
-| Sky Archipelago | 1.3.6 (`RwLz4CJb`) | Required |
+| Sky Archipelago | 1.3.6 (`RwLz4CJb`) | Optional |
 | Sky Villages | 1.0.6, NeoForge (`3InSHTOp`) | Optional, requires Architectury |
 | Sable | 2.0.6 (`fg9dTRz9`) | Optional |
 | Aeronautics Delivery Quests | 1.1.1 | Optional |

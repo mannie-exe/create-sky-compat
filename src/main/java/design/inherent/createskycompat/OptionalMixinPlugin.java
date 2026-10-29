@@ -3,26 +3,13 @@ package design.inherent.createskycompat;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinConfigPlugin;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 /** Select optional mixins before Mixin resolves their target classes. */
 public final class OptionalMixinPlugin implements IMixinConfigPlugin {
     @Override public List<String> getMixins() {
-        var mixins = new ArrayList<String>();
-        if (OptionalIntegrations.analogAudio()) mixins.add("AnalogAudioCreateMixin");
-        if (OptionalIntegrations.distantHorizons()) {
-            mixins.addAll(List.of("dh.WorldLevelKeyMixin", "dh.ChunkUnloadBudgetMixin"));
-            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient())
-                mixins.addAll(List.of("dh.LegacyCacheMixin", "dh.ClientWrapperHandoffMixin"));
-        }
-        if (OptionalIntegrations.skyVillages()) mixins.addAll(List.of(
-                "StructureSupportMixin", "VillageHeightMixin", "PlacementSaltAccessor",
-                "VillageStructureStateMixin", "GeneratorStructureStateMixin"));
-        if (OptionalIntegrations.loaded("sable")) mixins.add("DimensionPhysicsMixin");
-        if (OptionalIntegrations.loaded("aeronautics_delivery_quests")) mixins.add("DeliveryLandingMixin");
-        return mixins;
+        return OptionalIntegrations.selection().mixins(net.neoforged.fml.loading.FMLEnvironment.dist.isClient());
     }
 
     @Override public void onLoad(String mixinPackage) {}

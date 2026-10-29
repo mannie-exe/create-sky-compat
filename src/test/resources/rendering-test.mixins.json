@@ -1,0 +1,1 @@
+{"required":true,"package":"design.inherent.createskycompat.mixin.client","compatibilityLevel":"JAVA_21","client":["BalloonShadowMixin","ConstructMaterialMixin","SingleBlockModelDataMixin"],"injectors":{"defaultRequire":1}}

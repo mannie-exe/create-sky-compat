@@ -27,6 +27,8 @@ neoForge {
 }
 configurations {
     localRuntime
+    veilSource
+    aeronauticsSource
     runtimeClasspath.extendsFrom localRuntime
 }
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
@@ -34,9 +36,15 @@ sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
     compileOnly('maven.modrinth:distanthorizons:9w34y8ai') { transitive = false }
     compileOnly('maven.modrinth:bluemap:8iJcPOHJ') { transitive = false }
+    aeronauticsSource('maven.modrinth:create-aeronautics:44pLdPGg') { transitive = false }
+    veilSource('maven.modrinth:sable:fg9dTRz9') { transitive = false }
+    compileOnly('maven.modrinth:iris:KduFYu4t') { transitive = false }
+    testImplementation('maven.modrinth:iris:KduFYu4t') { transitive = false }
+    testRuntimeOnly 'io.github.llamalad7:mixinextras-neoforge:0.5.5'
     compileOnly('maven.modrinth:sable:fg9dTRz9') { transitive = false }
     localRuntime('maven.modrinth:sable:fg9dTRz9') { transitive = false }
-    implementation('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
+    compileOnly('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
+    localRuntime('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
     localRuntime('maven.modrinth:sky-villages:3InSHTOp') { transitive = false }
     localRuntime('dev.architectury:architectury-neoforge:13.0.11') { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.11.4')
@@ -53,9 +61,10 @@ tasks.withType(AbstractArchiveTask).configureEach {
 }
 tasks.named('jar', Jar) {
     archiveFileName = "create-sky-compat-${version}-mc1.21.1-neoforge.jar"
-    from 'LICENSE'
+    from 'LICENSE', 'NOTICE'
+    from('licenses') { into 'licenses' }
 }
-tasks.named('sourcesJar', Jar) { from 'LICENSE' }
+tasks.named('sourcesJar', Jar) { from 'LICENSE', 'NOTICE'; from('licenses') { into 'licenses' } }
 tasks.named('processResources', ProcessResources) {
     inputs.property 'version', project.version
     filesMatching('META-INF/neoforge.mods.toml') { expand version: project.version }
@@ -138,3 +147,57 @@ tasks.register('releaseToolTest', Exec) {
     commandLine 'python3', '-m', 'unittest', 'discover', '-s', 'tools/tests'
 }
 tasks.named('check') { dependsOn 'verifyPackage', 'releaseToolTest' }
+
+// Test released nested targets without bundling them in the output mod.
+def pinnedNestedJar = { String taskName, source, String entry, String outerHash, String innerHash ->
+    def output = layout.buildDirectory.file('dependencies/' + entry.tokenize('/').last())
+    def extraction = tasks.register(taskName) {
+        inputs.files(source)
+        inputs.property 'entry', entry
+        inputs.property 'outerHash', outerHash
+        inputs.property 'innerHash', innerHash
+        outputs.file(output)
+        doLast {
+            def digest = { bytes -> java.security.MessageDigest.getInstance('SHA-256').digest(bytes).encodeHex().toString() }
+            def artifact = source.singleFile
+            if (digest(artifact.bytes) != outerHash) throw new GradleException("Unexpected artifact: ${artifact.name}")
+            new java.util.zip.ZipFile(artifact).withCloseable { zip ->
+                def bytes = zip.getInputStream(zip.getEntry(entry)).bytes
+                if (digest(bytes) != innerHash) throw new GradleException("Unexpected nested artifact: ${entry}")
+                output.get().asFile.parentFile.mkdirs()
+                output.get().asFile.bytes = bytes
+            }
+        }
+    }
+    files(output).builtBy(extraction)
+}
+def veilTestJar = pinnedNestedJar('extractVeil', configurations.veilSource,
+        'META-INF/jarjar/veil-neoforge-1.21.1-4.3.2.jar',
+        '9c199157843bf953a47dff625fc5bb41c01a90538d35ad18e6996bbcb8a617c2',
+        '774b83887d882dc47cd4d29d140cef0c8677747a6fe7799649f490926a4e0265')
+def aeronauticsTestJar = pinnedNestedJar('extractAeronautics', configurations.aeronauticsSource,
+        'META-INF/jarjar/dev.eriksonn.aeronautics.aeronautics-neoforge-1.21.1-1.3.2.jar',
+        'a3f330d4757640f8715d991a43eedb826e4d0e51558d859c843ae6693bd35f1e',
+        '97fbf1e27f38674145b8521b140613dc8258bea7efca456dc2686e22bd683933')
+dependencies {
+    testImplementation veilTestJar
+    testImplementation aeronauticsTestJar
+}
+tasks.register('framebufferServerProbe', JavaExec) {
+    dependsOn 'testClasses'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'design.inherent.createskycompat.rendering.ServerProbe'
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
+tasks.register('verifyIris') {
+    inputs.files(configurations.compileClasspath)
+    doLast {
+        def iris = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'iris'
+        }?.file
+        if (iris == null) throw new GradleException('Pinned Iris artifact missing')
+        def digest = java.security.MessageDigest.getInstance('SHA-256').digest(iris.bytes).encodeHex().toString()
+        if (digest != '60d5f8bf52f25e9986440f4a4270a6bd986d9cff994510e1108ac1547063b314') throw new GradleException('Unexpected Iris artifact')
+    }
+}
+tasks.named('check') { dependsOn 'framebufferServerProbe', 'verifyIris' }

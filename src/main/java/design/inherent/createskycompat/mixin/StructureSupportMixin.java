@@ -26,7 +26,8 @@ public abstract class StructureSupportMixin {
         if (!report.accepted() || report.category() != StructurePlacementCategory.SKY
                 || !context.structureId().equals(ResourceLocation.fromNamespaceAndPath("skyvillages", "skyvillage"))) return;
         var bounds = start.getBoundingBox();
-        if (((ProfiledTerrain)(Object)context.islandField()).createSky$profile() != null) {
+        if ((Object)context.islandField() instanceof ProfiledTerrain terrain && terrain.createSky$profile() != null
+                && design.inherent.createskycompat.OptionalIntegrations.enabled(design.inherent.createskycompat.Feature.VILLAGE_PLACEMENT)) {
             var anchors = (VillageAnchors)(Object)context.islandField();
             int sourceX = start.getChunkPos().getMiddleBlockX(), sourceZ = start.getChunkPos().getMiddleBlockZ();
             int centerX = (bounds.minX() + bounds.maxX()) / 2, centerZ = (bounds.minZ() + bounds.maxZ()) / 2;

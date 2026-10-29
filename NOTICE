@@ -1,0 +1,24 @@
+Create Sky Compat
+
+The original compatibility and terrain implementation is MIT-licensed; see LICENSE.
+
+The incorporated ShaderWrapperMixin and rendering test infrastructure from
+mannie-exe/veil-iris-fix (99a47d2) retain LGPL-3.0-only. See licenses/LICENSE.LESSER.txt
+and licenses/LICENSE.txt. Their source is distributed in this repository and the
+matching sources release artifact.
+
+Veil Iris Fix
+
+Framebuffer restoration and Iris pass selection are based on CuddlesPrime's
+Veil PR #213 (7ec9af4602fb93062fd9debe94b61adfd0e22bf3), LGPL-3.0-only.
+https://github.com/FoundryMC/Veil/pull/213
+
+Build and isolated Mixin test infrastructure adapted from dh-polygon-fix.
+https://github.com/mannie-exe/dh-polygon-fix
+
+The balloon guard follows the defect analysis in Simulated-Project PR #1298
+(MoePus); construct material and model-data adapters follow the analysis in Sable
+PR #1417 (BlackCube4). These adapters are independently implemented against the
+installed APIs; upstream renderer implementations and assets are not bundled.
+https://github.com/Creators-of-Aeronautics/Simulated-Project/pull/1298
+https://github.com/ryanhcode/sable/pull/1417
