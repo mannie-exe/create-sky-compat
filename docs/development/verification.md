@@ -1,8 +1,35 @@
 # Verification
 
 Checks use Java 21, Minecraft 1.21.1 and NeoForge 21.1.264 with the exact upstream
-pins in `build.gradle`. Results below distinguish current DH work from historical
+pins in `build.gradle`. Results below distinguish integration checks from historical
 terrain checks; a source inspection does not establish runtime behavior.
+
+## Release 0.5.2
+
+On 2026-10-29, `./gradlew --offline --no-daemon check build probeJar` passed
+47 Java tests, five release-tool checks, pinned dependencies and package checks.
+The release binary has SHA-256
+`0228b2cd34f402114ba6bf57a02e29b6d03c2b294dd8f970b37bd523a828320e`.
+Compared with 0.5.1, only optional integration selection and version metadata
+changed among existing entries; `AnalogAudioCreateMixin` is the only added entry.
+Terrain, physics, resources and other integration classes remain byte-identical.
+
+The maintained `tools/probe.py --audio SELECTION` runner used the Create Sky
+0.1.18 installed server as a read-only dependency source, Java 21 and Apple silicon
+macOS. All five selections passed: `minimal`, `create`, `analog`, `pair`, `full`.
+The first three left the adapter disabled. The pair and full pack registered
+upstream `RadioMovementBehaviour`; a control drill handler remained present.
+Radio `tick` and `stopMoving` completed on the dedicated server without client
+class loading. Full startup no longer logged the movement-registration exception.
+
+The same pair probe with `--mod` pointing to published 0.5.1 reproduced the
+`NoSuchMethodException` and failed because the radio handler was missing. The matrix reports retain exact loaded JAR hashes; disposable worlds and raw
+logs were removed after review. No live instance was modified.
+
+This checks the applied common-setup Mixin and dedicated-server callbacks. It
+does not establish audible playback, client GUIs, moving audio positions or all
+contraption lifecycle cases. Those remain interactive checks of the upstream
+handler; the adapter does not rewrite it. See [maintenance](README.md#analog-audio).
 
 ## Release 0.5.1
 

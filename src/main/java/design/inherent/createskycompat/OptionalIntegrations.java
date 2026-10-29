@@ -11,15 +11,21 @@ public final class OptionalIntegrations {
     }
 
     public static boolean blueMap() {
-        var file = LoadingModList.get().getModFileById("bluemap");
-        return file != null && file.getMods().stream().anyMatch(mod ->
-                mod.getModId().equals("bluemap") && mod.getVersion().toString().equals("5.7"));
+        return version("bluemap", "5.7");
     }
 
     public static boolean distantHorizons() {
-        var file = LoadingModList.get().getModFileById("distanthorizons");
+        return version("distanthorizons", "3.3.3");
+    }
+
+    public static boolean analogAudio() {
+        return version("analogaudio", "0.1.5-hotfix.1") && version("create", "6.0.10");
+    }
+
+    private static boolean version(String id, String expected) {
+        var file = LoadingModList.get().getModFileById(id);
         return file != null && file.getMods().stream().anyMatch(mod ->
-                mod.getModId().equals("distanthorizons") && mod.getVersion().toString().equals("3.3.3"));
+                mod.getModId().equals(id) && mod.getVersion().toString().equals(expected));
     }
 
     public static boolean skyVillages() {

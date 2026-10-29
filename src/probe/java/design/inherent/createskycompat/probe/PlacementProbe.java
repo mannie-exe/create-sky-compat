@@ -195,6 +195,10 @@ public final class PlacementProbe {
 
     private void run(net.minecraft.server.MinecraftServer server) {
         try {
+            if (Boolean.getBoolean("neighbors.probe.audio")) {
+                AnalogAudioProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));
+                return;
+            }
             check(NeighborConfig.settings().maximumGap() == Integer.getInteger("neighbors.probe.expectedMaximumGap", 512), "Config not applied at server start");
             if (Boolean.getBoolean("neighbors.probe.structures")) {
                 StructureCoverageProbe.run(server, Path.of(System.getProperty("neighbors.probe.output")));

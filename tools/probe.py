@@ -25,6 +25,7 @@ parser.add_argument('--minimal', action='store_true', help='Generate with only S
 parser.add_argument('--dh-stop-after', type=int, default=0, metavar='SECONDS', help='With --dh-pregen, stop the disposable server during generation (1 to 30 seconds)')
 parser.add_argument('--dh-world-key', action='store_true', help='With --dh-pregen, verify opt-in per-save cache identity in the disposable world')
 mode = parser.add_mutually_exclusive_group()
+mode.add_argument('--audio', choices=['minimal', 'create', 'analog', 'pair', 'full'], help='Check Analog Audio registration and optional dependency boundaries')
 mode.add_argument('--structures', action='store_true', help='Survey natural underground structure starts and realize critical layouts')
 mode.add_argument('--surface-structures', action='store_true', help='Survey vanilla surface and water structure families')
 mode.add_argument('--coverage', action='store_true', help='Export resolved worldgen resources and bounded native eligibility checks')
@@ -56,6 +57,8 @@ parser.add_argument('--maximum-gap', type=int, default=512)
 parser.add_argument('--disable-carver-adapter', action='store_true',
                     help='Diagnostic control: omit relative-carving mixins from the staged mod only')
 args = parser.parse_args()
+if args.audio and args.minimal:
+    parser.error('Use --audio minimal instead of combining --audio and --minimal')
 java_path = shutil.which(args.java)
 if not java_path:
     parser.error(f'Java executable not found: {args.java}')
@@ -107,6 +110,7 @@ if args.disable_carver_adapter:
     name += '-native-carvers'
 if args.minimal:
     name += '-minimal'
+if args.audio: name = f'audio-{args.audio}'
 report = output / (name + '.json')
 report.unlink(missing_ok=True)
 with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
@@ -116,16 +120,23 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
     for source in (server / 'mods').glob('*.jar'):
         if source.name.startswith(('create-sky-compat-', 'sky-village-neighbors-')):
             continue
-        if args.minimal:
+        if args.minimal or (args.audio and args.audio != 'full'):
+            selected = {'sky_archipelago'}
+            if args.audio in ('create', 'pair'): selected.add('create')
+            if args.audio in ('analog', 'pair'): selected.add('analogaudio')
             with zipfile.ZipFile(source) as jar:
                 if 'META-INF/neoforge.mods.toml' not in jar.namelist():
                     continue
                 metadata = tomllib.loads(jar.read('META-INF/neoforge.mods.toml').decode())
-                if not any(mod['modId'] == 'sky_archipelago' for mod in metadata.get('mods', [])):
+                if not any(mod['modId'] in selected for mod in metadata.get('mods', [])):
                     continue
         (run / 'mods' / source.name).symlink_to(source)
     if args.minimal and len(list((run / 'mods').glob('*.jar'))) != 1:
         raise SystemExit('Minimal run requires exactly one installed Sky Archipelago JAR')
+    if args.audio and args.audio != 'full':
+        expected = {'minimal': 1, 'create': 2, 'analog': 2, 'pair': 3}[args.audio]
+        if len(list((run / 'mods').glob('*.jar'))) != expected:
+            raise SystemExit('Audio fixture dependencies missing from installed server')
     shutil.copy2(mod, run / 'mods' / mod.name)
     if args.disable_carver_adapter:
         staged = run / 'mods' / mod.name
@@ -142,7 +153,7 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
         control.replace(staged)
     shutil.copy2(fixture, run / 'mods' / fixture.name)
     for folder in ['config', 'defaultconfigs']:
-        if not args.minimal and (server / folder).exists():
+        if not args.minimal and args.audio in (None, 'full') and (server / folder).exists():
             shutil.copytree(server / folder, run / folder)
     (run / 'config').mkdir(exist_ok=True)
     if args.dh_pregen:
@@ -179,6 +190,7 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
     ]))
     launch_args = next((server / 'libraries/net/neoforged/neoforge').glob('*/unix_args.txt'))
     command = [args.java, f'-Xmx{args.heap}',
+               f'-Dneighbors.probe.audio={str(bool(args.audio)).lower()}',
                f'-Dneighbors.probe.dhStopAfter={args.dh_stop_after}',
                f'-Dneighbors.probe.dhWorldKey={str(args.dh_world_key).lower()}',
                f'-Dneighbors.probe.generation={args.generation or ""}',
@@ -246,10 +258,11 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
         data['wallSecondsIncludingStartup'] = time.monotonic() - began
         data['maximumHeap'] = args.heap
         data['peakResidentBytes'] = resource.getrusage(resource.RUSAGE_CHILDREN).ru_maxrss * (1 if sys.platform == 'darwin' else 1024)
-        data['modSelection'] = 'minimal' if args.minimal else 'full'
+        data['modSelection'] = args.audio or ('minimal' if args.minimal else 'full')
         data['installedJars'] = sorted(path.name for path in (run / 'mods').glob('*.jar'))
         data['carverAdapterDisabled'] = args.disable_carver_adapter
-        data['artifacts'] = {path.name: hashlib.sha256((run / 'mods' / path.name).read_bytes()).hexdigest() for path in [mod, fixture]}
+        artifacts = list((run / 'mods').glob('*.jar')) if args.audio else [mod, fixture]
+        data['artifacts'] = {path.name: hashlib.sha256((run / 'mods' / path.name).read_bytes()).hexdigest() for path in artifacts}
         report.write_text(json.dumps(data, indent=2) + '\n')
 
 if not report.exists():
@@ -257,6 +270,9 @@ if not report.exists():
 data = json.loads(report.read_text())
 if data.get('complete') is False:
     raise SystemExit(f'Native check failed; diagnostics: {report}')
+if args.audio:
+    print('Analog Audio integration:', report)
+    raise SystemExit(0)
 if args.structures or args.surface_structures:
     print('Natural structure coverage:', report)
     raise SystemExit(0)

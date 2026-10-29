@@ -16,6 +16,7 @@ Optional integrations activate when their dependencies are installed:
 | Sky Villages and Architectury API | 1.0.6 and Architectury 13.x (tested 13.0.11) | Floating-village clearance, altitude and cluster allowance; both mods must be present |
 | Sable | 2.0.6 | Island-altitude pressure profile for its physics system |
 | Aeronautics Delivery Quests | 1.1.1 | Structure-route loading and distance fixes; village surface retry also requires Sky Villages and Architectury |
+| Analog Audio and Create | 0.1.5-hotfix.1 and 6.0.10 | Restore registration of the upstream radio movement handler; both exact versions must be present |
 | Create | Installed feature IDs | Island-relative zinc and Overworld striated deposits |
 | Create Propulsion | Installed feature IDs | Island-relative platinum |
 | BlueMap | 5.7, dedicated server only | Opt-in browser detail and void-edge adaptation for Sky Archipelago maps |
@@ -27,6 +28,11 @@ dependencies. Missing Create/Propulsion features are skipped. Iris and Veil are 
 dependencies; this mod does not patch shader rendering or Ponder.
 DH is optional. Its internal hooks target 3.3.3; other versions are rejected when
 installed. Review these hooks before changing the pin.
+
+The Analog Audio adapter repairs registration only. Its ordinary Create contraption
+GUI and audible playback during movement still need client playtesting; Sable
+airship audio uses a separate upstream integration. See the
+[adapter maintenance procedure](docs/development/README.md#analog-audio).
 
 Use the same version on client and server for the expanded preset.
 Create a new world with **Create Sky Islands**, or set
