@@ -3,8 +3,8 @@
 ## Release 0.8.0
 
 2026-10-31, macOS arm64, Temurin 21.0.13, Minecraft 1.21.1, NeoForge
-21.1.264. Final local binary SHA-256:
-`8b60320ad5d0e98f18b084f52494f5a5aee78986966adbcbce137dd52c9a23f1`.
+21.1.264. Published binary SHA-256:
+`6a69429fa30e63672f8778226179f6b908286b6398563e0a1add9a108e047681`.
 `./gradlew --no-daemon check build clientProbeJar` passes 81 Java cases, five
 release-tool cases, released-target transformations, package boundaries and exact
 artifact checks. Colorwheel's real `ClrwlProgram.postLink` contains both sampler
@@ -52,8 +52,16 @@ Final dedicated `unsupported-disabled` and `full` startup/shutdown probes pass.
 The former selects no hooks even with future-version metadata; the latter selects
 19 existing server adaptations and no client renderer hooks. Personal server data
 is a read-only source for the disposable startup harness. The standalone probe
-also passed on the preceding candidate. Native checks and dependency inventories
-are retained locally in `build/verification/colorwheel`.
+also passed on the preceding candidate. The release workflow passed Linux, Windows and macOS with matching artifacts.
+The local native candidate's SHA-256 was
+`8b60320ad5d0e98f18b084f52494f5a5aee78986966adbcbce137dd52c9a23f1`.
+Its renderer/lighting classes match the published binary byte for byte; the only
+entry difference is a compiler-generated `getFocused()` bridge in the configuration
+information list, delegating to its superclass. The downloaded published JAR also
+loaded a fresh isolated world, selected Colorwheel instancing, produced packed
+emission 15, rendered propeller Ponder and saved/disconnected normally. Published
+checksums were verified against both manifests. The retained published check is
+in `build/verification/colorwheel`; earlier disposable run output was cleaned.
 
 No performance improvement is claimed from these bounded observations. OIT,
 indirect rendering, every shader/driver combination, arbitrary modded models and
@@ -122,9 +130,8 @@ claimed fixed. Complete cabin occlusion, every modded lamp, shader hand-light
 preferences and the upstream reported hang are not established by these checks.
 DH's inspected light-storage path did not justify a hook or cache change. See
 [lighting](lighting.md) for contracts, limits, retirement and upstream-report
-candidates. Native manifests, scalar reports and selected captures are retained
-locally in `build/verification/lighting`; disposable instances and inspection
-sources are removed. No personal profile, server, world or LOD database was used.
+candidates. The observations above retain the lighting findings; raw run output, disposable
+instances and inspection sources are cleaned after review. No personal profile, server, world or LOD database was used.
 
 ## Release 0.7.0
 
