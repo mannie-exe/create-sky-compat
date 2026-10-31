@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public final class ClientFlightProbe {
     private int ticks;
     public ClientFlightProbe() {
-        if (Boolean.getBoolean("create_sky_compat.probe.rendering")) {
+        if (Boolean.getBoolean("create_sky_compat.probe.rendering") || Boolean.getBoolean("create_sky_compat.probe.journal")) {
             NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RegisterClientCommandsEvent event) ->
                 event.getDispatcher().register(net.minecraft.commands.Commands.literal("compatprobe_stop").executes(context -> {
                     var server = Minecraft.getInstance().getSingleplayerServer();
@@ -25,6 +25,10 @@ public final class ClientFlightProbe {
                     server.execute(() -> server.halt(false));
                     return 1;
                 })));
+        }
+        if (Boolean.getBoolean("create_sky_compat.probe.journal")) {
+            new ClientJournalProbe();
+            return;
         }
         if (Boolean.getBoolean("create_sky_compat.probe.compatibility")) {
             new ClientCompatibilityProbe();

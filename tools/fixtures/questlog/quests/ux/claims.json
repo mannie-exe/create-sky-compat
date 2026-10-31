@@ -1,0 +1,39 @@
+{
+  "title": "Claim validation",
+  "chapter": "main",
+  "toast_on_unlock": false,
+  "toast_on_complete": false,
+  "show_popup_on_unlock": false,
+  "details_open_by_default": true,
+  "requirements": [],
+  "hidden": true,
+  "description": "Isolated server claim validation",
+  "objectives": [
+    {
+      "type": "questlog:read"
+    }
+  ],
+  "rewards": [
+    {
+      "type": "questlog:item",
+      "item": "minecraft:bread",
+      "count": 2
+    },
+    {
+      "type": "questlog:choice",
+      "pick_count": 1,
+      "choices": [
+        {
+          "type": "questlog:item",
+          "item": "minecraft:apple",
+          "count": 1
+        },
+        {
+          "type": "questlog:item",
+          "item": "minecraft:carrot",
+          "count": 1
+        }
+      ]
+    }
+  ]
+}

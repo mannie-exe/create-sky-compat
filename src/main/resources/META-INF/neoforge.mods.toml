@@ -98,3 +98,9 @@ modId="aeronautics"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
+
+[[dependencies.create_sky_compat]]
+modId="questlog"
+type="optional"
+versionRange="[0,)"
+side="BOTH"

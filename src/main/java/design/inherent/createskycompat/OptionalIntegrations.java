@@ -30,6 +30,7 @@ public final class OptionalIntegrations {
     public static FeatureSelection selection() { return Startup.SELECTION; }
     public static boolean enabled(Feature feature) { return selection().enabled(feature); }
     public static boolean configured(Feature feature) { return Startup.SETTINGS.enabled(feature); }
+    public static boolean defaulted(Feature feature) { return !Startup.SETTINGS.values().containsKey(feature); }
     public static boolean loaded(String id) { return LoadingModList.get().getModFileById(id) != null; }
     public static boolean skyVillages() {
         return enabled(Feature.VILLAGE_CLEARANCE) || enabled(Feature.VILLAGE_PLACEMENT);

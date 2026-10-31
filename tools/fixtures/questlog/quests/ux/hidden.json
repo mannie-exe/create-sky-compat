@@ -1,0 +1,25 @@
+{
+  "title": "Hidden details fixture",
+  "chapter": "main",
+  "toast_on_unlock": false,
+  "toast_on_complete": false,
+  "show_popup_on_unlock": false,
+  "disable_details_button": true,
+  "details_open_by_default": false,
+  "requirements": [],
+  "description": "Conditions and rewards stay hidden until completion. Complete with one amethyst shard, then inspect and claim the reward.",
+  "objectives": [
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:amethyst_shard",
+      "required_amount": 1
+    }
+  ],
+  "rewards": [
+    {
+      "type": "questlog:item",
+      "item": "minecraft:bread",
+      "count": 1
+    }
+  ]
+}

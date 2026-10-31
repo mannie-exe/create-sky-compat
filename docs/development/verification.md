@@ -1,5 +1,46 @@
 # Verification
 
+## Release 0.7.0
+
+2026-10-31, macOS arm64, Temurin Java 21.0.13, Minecraft 1.21.1,
+NeoForge 21.1.264 and Questlog 3.5.0. Final local binary SHA-256:
+`2252e8a5c0da41c983e78895d6ceb806963691338297da9124cfb79419faa64a`.
+`./gradlew --no-daemon check build clientProbeJar` passes 73 unit cases,
+package/dependency checks and five release-tool cases. Dedicated startup/shutdown
+probes pass `standalone`, `questlog`, `questlog-disabled`, `unsupported-disabled`
+and `full` using `tools/startup_probe.py --server <installed-server>/game
+--java <java21> --scenario <case>`. Questlog-only dedicated loading selects reward
+validation without client hooks. The full server selects 19 adaptations.
+
+Isolated minimal and 133-JAR clients exercised native parchment, replacement quest
+artwork, wrapped conditions/rewards, centered headings, bounded custom icons,
+GUI scales 2/3, German headings and a 480×500 window. Grouped settings and the
+native registered editor share saved preferences. Settings retain entry scroll
+and a collected repeatable cycle; an adapted dedicated server confirmed ordinary
+entry closure still resets that cycle. Main-navigation bookmarks survive search
+and chapter refresh without overlapping expanded search controls. Configuration
+status shows omitted-key defaults and local/server scope instructions. A physical
+client with only Compat and NeoForge opens that overview/status without optional
+API failures; its registered editor is correctly disabled. Native resource-pack
+selection triggers a real reload, after which entry layout renders normally.
+
+Integrated and dedicated claim checks pass all seven cases, including malformed
+claims, choices, duplicate requests and survival overflow. Actual collection of
+item, choice and XP rewards also succeeds against a Questlog server without
+Compat; validation is not claimed for that server. Full-pack checks retain
+Complementary Unbound r5.9.3/Euphoria 1.10.5. The final full-client run used the
+same UI implementation before removal of an unused helper and a diagnostic-label
+refinement; final dedicated checks use the binary above.
+
+The 300-frame full-client CPU render sample after 60 warmup frames measures
+1.314 ms median and 1.570 ms at the 95th percentile. The previous adapter measured
+1.388/1.664 ms in the same fixture. These are screen-render intervals, not FPS,
+GPU timings or a statistically established improvement. Spoken narration was not
+verified. Native UI/probe evidence is retained locally in
+`build/verification/questlog-redesign`; test worlds and probes are not shipped.
+The [integration guide](questlog.md) owns hooks, notification limits and update
+procedures. No personal world was used for these checks.
+
 ## Release 0.6.1
 
 2026-10-29, macOS arm64, Temurin Java 21, Minecraft 1.21.1 and NeoForge

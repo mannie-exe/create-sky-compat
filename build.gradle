@@ -34,6 +34,7 @@ configurations {
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    compileOnly('maven.modrinth:questlog:Pykla7tJ') { transitive = false }
     compileOnly('maven.modrinth:distanthorizons:9w34y8ai') { transitive = false }
     compileOnly('maven.modrinth:bluemap:8iJcPOHJ') { transitive = false }
     aeronauticsSource('maven.modrinth:create-aeronautics:44pLdPGg') { transitive = false }
@@ -94,6 +95,14 @@ tasks.register('verifyUpstream') {
         if (blueMap == null || java.security.MessageDigest.getInstance('SHA-256').digest(blueMap.bytes).encodeHex().toString()
                 != '827ac3921986d0d5e9c24ef2280f47c110d22dc14d284efb65330010d2e9517d') {
             throw new GradleException('Unexpected BlueMap compile-only dependency')
+        }
+
+        def questlog = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'questlog'
+        }?.file
+        if (questlog == null || java.security.MessageDigest.getInstance('SHA-256').digest(questlog.bytes).encodeHex().toString()
+                != 'a78b76ff010ea227fcfabc133689bffd24c76e1572d88ec26a26258ca1b96bd0') {
+            throw new GradleException('Unexpected Questlog compile-only dependency')
         }
 
         def distantHorizons = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {

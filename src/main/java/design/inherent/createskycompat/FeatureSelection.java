@@ -49,7 +49,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
         return new FeatureSelection(active, inactive);
     }
 
-    private static Feature prerequisite(Feature feature) {
+    public static Feature prerequisite(Feature feature) {
         return switch (feature) {
             case ORE_PLACEMENT, CARVERS, CAVE_BIOMES, ANCIENT_CITIES, SPAWN, STRUCTURE_LOCATION,
                     WATER_SPAWNS, CLIMATE, VILLAGE_PLACEMENT, PRESSURE, DELIVERY_DISTANCE,
@@ -58,15 +58,17 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
         };
     }
 
-    private static boolean clientOnly(Feature feature) {
+    public static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES -> true;
+            case DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
+                    QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> true;
             default -> false;
         };
     }
 
-    private static Map<String, String> dependencies(Feature feature) {
+    public static Map<String, String> dependencies(Feature feature) {
         return switch (feature) {
+            case QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS, QUESTLOG_REWARD_VALIDATION -> Map.of("questlog", "3.5.0");
             case TERRAIN, ORE_PLACEMENT, CARVERS, CAVE_BIOMES, ANCIENT_CITIES, SPAWN,
                     STRUCTURE_LOCATION, WATER_SPAWNS, CLIMATE -> Map.of("sky_archipelago", "1.3.6");
             case VILLAGE_CLEARANCE, VILLAGE_PLACEMENT -> Map.of("sky_archipelago", "1.3.6", "skyvillages", "1.0.6", "architectury", "13.");
@@ -118,6 +120,9 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case MATERIAL_IDS -> List.of("client.ConstructMaterialMixin");
                 case MODEL_DATA -> List.of("client.SingleBlockModelDataMixin");
                 case SINGLE_BLOCK_PASSES -> List.of("client.SingleBlockPassMixin");
+                case QUESTLOG_INTERFACE -> List.of("client.QuestDetailsMixin", "client.QuestlogBookmarkMixin");
+                case QUESTLOG_NOTIFICATIONS -> List.of("client.QuestNotificationMixin", "client.QuestSyncMixin");
+                case QUESTLOG_REWARD_VALIDATION -> List.of("questlog.RewardClaimMixin");
             });
         }
         if (client && enabled(Feature.CLIMATE)) result.add("client.WeatherClimateMixin");

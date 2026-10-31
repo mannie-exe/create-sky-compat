@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--server', type=Path, required=True, help='Read-only installed game directory')
     parser.add_argument('--java', required=True)
     parser.add_argument('--scenario', choices=['standalone', 'all-disabled', 'terrain-disabled', 'terrain', 'full',
-                                             'unsupported-disabled', 'unsupported-enabled'], required=True)
+                                             'unsupported-disabled', 'unsupported-enabled', 'questlog', 'questlog-disabled'], required=True)
     parser.add_argument('--mod', type=Path)
     args = parser.parse_args()
     server = args.server.expanduser().resolve()
@@ -45,7 +45,7 @@ def main():
             # Disabled adapters must neither reject their versions nor resolve their APIs.
             metadata = 'modLoader="lowcodefml"\nloaderVersion="[1,)"\nlicense="MIT"\n'
             for target in ['sky_archipelago', 'skyvillages', 'architectury', 'sable', 'aeronautics_delivery_quests',
-                           'distanthorizons', 'bluemap', 'analogaudio', 'create', 'veil', 'iris', 'sodium', 'aeronautics']:
+                           'distanthorizons', 'bluemap', 'analogaudio', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog']:
                 metadata += f'[[mods]]\nmodId="{target}"\nversion="999.0.0"\ndisplayName="Fixture {target}"\n'
             with zipfile.ZipFile(run / 'mods/future-targets-fixture.jar', 'w') as fixture:
                 fixture.writestr('META-INF/neoforge.mods.toml', metadata)
@@ -59,9 +59,11 @@ def main():
                     continue
                 if args.scenario in {'terrain', 'terrain-disabled'} and 'sky_archipelago' not in ids:
                     continue
+                if args.scenario in {'questlog', 'questlog-disabled'} and 'questlog' not in ids:
+                    continue
                 shutil.copy2(source, run / 'mods' / source.name)
                 selected[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
-        if args.scenario in {'all-disabled', 'terrain-disabled', 'unsupported-disabled'}:
+        if args.scenario in {'all-disabled', 'terrain-disabled', 'unsupported-disabled', 'questlog-disabled'}:
             import re
             keys = re.findall(r'\("([a-z_]+\.[a-z_]+)"', (ROOT / 'src/main/java/design/inherent/createskycompat/Feature.java').read_text())
             (run / 'config/create_sky_compat-features.properties').write_text(''.join(f'{key}=false\n' for key in keys))
@@ -103,7 +105,7 @@ def main():
                       seconds=round(time.monotonic() - started, 2), transformed_targets=references,
                       active_lines=[line for line in text.splitlines() if 'Create Sky Compat active adaptations:' in line],
                       generated_config=sorted(p.name for p in (run / 'config').iterdir()))
-        inactive = args.scenario in {'standalone', 'all-disabled', 'terrain-disabled', 'unsupported-disabled'}
+        inactive = args.scenario in {'standalone', 'all-disabled', 'terrain-disabled', 'unsupported-disabled', 'questlog-disabled'}
         report['passed'] = (done and process.returncode == 0 and bool(report['active_lines'])
                             and (not inactive or (not references and any('adaptations: []' in line for line in report['active_lines']))))
         if args.scenario == 'unsupported-enabled':

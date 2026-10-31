@@ -1,0 +1,24 @@
+{
+  "title": "Progress notice fixture",
+  "chapter": "main",
+  "toast_on_unlock": false,
+  "toast_on_complete": true,
+  "show_popup_on_unlock": false,
+  "details_open_by_default": true,
+  "requirements": [],
+  "description": "One diamond starts this entry. Four complete it.",
+  "objectives": [
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:diamond",
+      "required_amount": 4
+    }
+  ],
+  "rewards": [
+    {
+      "type": "questlog:item",
+      "item": "minecraft:bread",
+      "count": 1
+    }
+  ]
+}

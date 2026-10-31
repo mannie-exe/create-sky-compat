@@ -37,6 +37,9 @@ inactive selections.
 | `distant_horizons.client_handoff` | Concurrent client wrapper ownership | Client, DH 3.3.3 |
 | `distant_horizons.shutdown` | Bounded island unload passes | DH 3.3.3, Sky Archipelago 1.3.6 |
 | `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.3.6; default false |
+| `questlog.interface` | Wrapped conditions, reward preview and scrollbar/input adaptation | Client, Questlog 3.5.0 |
+| `questlog.notifications` | First-progress and completion toasts | Client, Questlog 3.5.0 |
+| `questlog.reward_validation` | Validate eligibility and choices before grants | Logical server, Questlog 3.5.0 |
 | `bluemap.viewer` | Viewer adapter registration | Dedicated server, BlueMap 5.7, Sky Archipelago 1.3.6; map opt-in below |
 | `rendering.veil_framebuffer` | Framebuffer preservation and active Iris target | Client, Veil 4.3.2, Iris 1.8.14-beta.1+mc1.21.1 |
 | `rendering.balloon_shadow_pass` | Exclude screen-space balloon effect from shadow pass | Client, Aeronautics 1.3.2, Iris version above |
@@ -286,3 +289,49 @@ markers fail when the adapter is active. Server databases are not renamed.
 The old per-world `savedWorldIdentity` setting is no longer read. Operators who
 used it must explicitly enable the startup cache switch on the applicable sides.
 See [DH implementation](development/lod.md) for boundaries and update checks.
+
+## Questlog
+
+`config/create_sky_compat-journal-client.toml` is registered when either client
+journal feature is active. The Settings bookmark opens grouped Display and
+Notifications preferences. Mods → Create Sky Compat → Config → Journal and village
+settings edits the same values. Changes save locally and apply without restart.
+The three startup switches remain independent.
+
+| Setting | Default | Behavior |
+| --- | --- | --- |
+| `itemImages` | `true` | Show authored objective icons and native reward ItemStacks |
+| `conditionSymbols` | `true` | Add small symbols beside explicit inventory, interaction, advancement and alternative labels |
+| `notifications` | `PROGRESS_AND_COMPLETION` | First positive objective progress and first completion; alternatives are `COMPLETION` and `OFF` |
+
+The Rewards tab is a preview; it never grants items. Incomplete choices are read-only.
+Completed entries use Questlog's native collection protocol. The server validation
+switch does not affect native automatic rewards or change inventory overflow rules.
+
+Notifications honor `toast_on_complete` exclusions. First-progress notices use
+that same flag unless a quest definition explicitly supplies
+`"create_sky_compat": {"toast_on_progress": false}` (or `true`). This optional
+metadata is not required by ordinary journals. Keep it in the owning authoring
+source if used; do not hand-edit generated quest files. With the notification
+adapter enabled, native unlock popups/toasts are suppressed. There are no notices
+for each subsequent counter increment.
+
+Full synchronization is silent. Completed-cycle resets may announce a new start;
+non-monotonic third-party objectives and resets before completion have limits
+explained in the [implementation contract](development/questlog.md#notifications).
+Questlog's own dependencies still apply; its 3.5.0 client needs Cloth Config even
+though its NeoForge metadata does not declare that prerequisite.
+
+
+## Configuration overview
+
+The Mods configuration entry also lists adaptation status and file-owned settings.
+Status describes this process, not a connected remote server. It distinguishes
+configured-on from active, shows missing dependencies/physical-side restrictions,
+and identifies omitted startup keys that use their defaults. Viewing status does
+not rewrite the properties file or change startup selection.
+
+Registered journal and village specs use NeoForge's ordinary editors. Terrain and
+BlueMap remain in their owning files, with restart/reload instructions shown in
+the overview. Generation settings retain saved-world identity checks. A local
+common configuration never substitutes for a dedicated server's configuration.

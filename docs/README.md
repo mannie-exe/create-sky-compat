@@ -3,6 +3,7 @@
 - [Configuration](configuration.md): placement controls and world behavior
 - [Development](development/README.md): implementation, checks and evidence
 - [Island generation](development/terrain.md): preset, geology and saved-world boundaries
+- [Questlog](development/questlog.md): journal UX, notification and reward contracts
 - [Publishing](publishing.md): GitHub and Modrinth release setup
 
 [Adapter maintenance](development/adapters.md) and [rendering boundaries](development/rendering.md)

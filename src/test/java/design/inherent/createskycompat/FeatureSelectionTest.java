@@ -18,7 +18,22 @@ class FeatureSelectionTest {
             Map.entry("bluemap", "5.7"), Map.entry("analogaudio", "0.1.5-hotfix.1"),
             Map.entry("create", "6.0.10"), Map.entry("veil", "4.3.2"),
             Map.entry("iris", "1.8.14-beta.1+mc1.21.1"), Map.entry("sodium", "0.8.13+mc1.21.1"),
-            Map.entry("aeronautics", "1.3.2"));
+            Map.entry("aeronautics", "1.3.2"), Map.entry("questlog", "3.5.0"));
+
+    @Test void journalFeaturesNeedOnlyQuestlogAndRespectPhysicalSides() {
+        var settings = only(Feature.QUESTLOG_INTERFACE, Feature.QUESTLOG_NOTIFICATIONS, Feature.QUESTLOG_REWARD_VALIDATION);
+        var versions = Map.of("questlog", "3.5.0");
+        assertEquals(3, FeatureSelection.select(settings, versions, true).active().size());
+        var server = FeatureSelection.select(settings, versions, false);
+        assertEquals(java.util.Set.of(Feature.QUESTLOG_REWARD_VALIDATION), server.active());
+        assertEquals(java.util.List.of("questlog.RewardClaimMixin"), server.mixins(false));
+        assertTrue(FeatureSelection.select(settings, Map.of(), true).active().isEmpty());
+        assertTrue(FeatureSelection.select(only(), Map.of("questlog", "future"), true).active().isEmpty());
+        assertThrows(IllegalStateException.class,
+                () -> FeatureSelection.select(settings, Map.of("questlog", "future"), true));
+        assertTrue(FeatureSelection.select(only(Feature.QUESTLOG_INTERFACE, Feature.QUESTLOG_NOTIFICATIONS),
+                Map.of("questlog", "future"), false).active().isEmpty());
+    }
 
     private static FeatureSettings only(Feature... features) {
         var values = new EnumMap<Feature, Boolean>(Feature.class);

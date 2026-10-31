@@ -33,6 +33,9 @@ The [client probes](#client-probes) cover legacy-cache construction and known
 fluid/material inputs. Scalar measurements do not replace native-versus-LOD
 visual comparison.
 
+See [Questlog integration](questlog.md) for client presentation, notification state,
+server validation and the isolated journal fixture.
+
 ## Implementation
 
 `FeatureSettings` reads immutable switches before Mixin target resolution.

@@ -46,6 +46,7 @@ versions where the adapter targets internals:
 | Sky Villages | 1.0.6, NeoForge (`3InSHTOp`) | Optional, requires Architectury |
 | Sable | 2.0.6 (`fg9dTRz9`) | Optional |
 | Aeronautics Delivery Quests | 1.1.1 | Optional |
+| Questlog | 3.5.0 (`Pykla7tJ`) | Optional |
 
 Sky Villages declares Architectury API as its own required dependency. Its
 13.0.11 release is the tested runtime. Do not upload dependency JARs or the test

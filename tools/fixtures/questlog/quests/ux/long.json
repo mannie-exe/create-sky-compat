@@ -1,0 +1,113 @@
+{
+  "title": "fixture.journal.title",
+  "chapter": "main",
+  "toast_on_unlock": false,
+  "toast_on_complete": true,
+  "show_popup_on_unlock": false,
+  "details_open_by_default": true,
+  "requirements": [],
+  "description": "Inspect conditions and rewards before completion. This fixture includes a long label, alternatives, many rows, and reward choices. Scroll using the wheel, thumb, and keyboard.\n\nThe native description remains wrapped and readable.",
+  "objectives": [
+    {
+      "type": "questlog:or",
+      "name": "Obtain either eight bread or eight baked potatoes; the two quantities do not combine",
+      "objectives": [
+        {
+          "type": "questlog:item_obtain",
+          "item": "minecraft:bread",
+          "required_amount": 8,
+          "name": "fixture.journal.bread",
+          "icon": {
+            "item": "minecraft:bread"
+          },
+          "translatable": true
+        },
+        {
+          "type": "questlog:item_obtain",
+          "item": "minecraft:baked_potato",
+          "required_amount": 8,
+          "icon": {
+            "item": "minecraft:baked_potato"
+          }
+        }
+      ]
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 2,
+      "name": "Row 1: keep this long inventory requirement readable at every supported GUI scale"
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 3,
+      "name": "Row 2: keep this long inventory requirement readable at every supported GUI scale"
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 4,
+      "name": "Row 3: keep this long inventory requirement readable at every supported GUI scale"
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 5,
+      "name": "Row 4: keep this long inventory requirement readable at every supported GUI scale"
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 6,
+      "name": "Row 5: keep this long inventory requirement readable at every supported GUI scale"
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 7,
+      "name": "Row 6: keep this long inventory requirement readable at every supported GUI scale"
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 8,
+      "name": "Row 7: keep this long inventory requirement readable at every supported GUI scale"
+    },
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:iron_ingot",
+      "required_amount": 9,
+      "name": "Row 8: keep this long inventory requirement readable at every supported GUI scale"
+    }
+  ],
+  "rewards": [
+    {
+      "type": "questlog:item",
+      "item": "minecraft:bread",
+      "count": 2
+    },
+    {
+      "type": "questlog:choice",
+      "pick_count": 1,
+      "choices": [
+        {
+          "type": "questlog:item",
+          "item": "minecraft:apple",
+          "count": 1
+        },
+        {
+          "type": "questlog:item",
+          "item": "minecraft:carrot",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "type": "questlog:experience",
+      "experience": 2,
+      "levels": true
+    }
+  ],
+  "translatable": true
+}

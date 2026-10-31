@@ -1,0 +1,23 @@
+{
+  "title": "Interaction and advancement fixture",
+  "chapter": "main",
+  "toast_on_unlock": false,
+  "toast_on_complete": true,
+  "show_popup_on_unlock": false,
+  "description": "Interact with a crafting table, then obtain iron for the advancement.",
+  "objectives": [
+    {
+      "type": "questlog:block_interact",
+      "block": "minecraft:crafting_table",
+      "required_amount": 2,
+      "icon": {
+        "item": "minecraft:crafting_table"
+      }
+    },
+    {
+      "type": "questlog:advancement",
+      "advancement": "minecraft:story/smelt_iron"
+    }
+  ],
+  "rewards": []
+}

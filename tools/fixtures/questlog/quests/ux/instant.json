@@ -1,0 +1,18 @@
+{
+  "title": "Instant completion fixture",
+  "chapter": "main",
+  "toast_on_unlock": false,
+  "toast_on_complete": true,
+  "show_popup_on_unlock": false,
+  "details_open_by_default": true,
+  "requirements": [],
+  "description": "One emerald completes this entry. No start notification should be shown.",
+  "objectives": [
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:emerald",
+      "required_amount": 1
+    }
+  ],
+  "rewards": []
+}

@@ -1,0 +1,28 @@
+{
+  "title": "Repeatable reward fixture",
+  "chapter": "main",
+  "repeatable": true,
+  "toast_on_unlock": false,
+  "toast_on_complete": true,
+  "show_popup_on_unlock": false,
+  "details_open_by_default": true,
+  "requirements": [],
+  "description": "Obtain one amethyst shard and collect the bread. Visiting Settings must preserve the completed cycle; leaving this entry normally starts another cycle.",
+  "icon": {
+    "item": "minecraft:amethyst_shard"
+  },
+  "objectives": [
+    {
+      "type": "questlog:item_obtain",
+      "item": "minecraft:amethyst_shard",
+      "required_amount": 1
+    }
+  ],
+  "rewards": [
+    {
+      "type": "questlog:item",
+      "item": "minecraft:bread",
+      "count": 1
+    }
+  ]
+}

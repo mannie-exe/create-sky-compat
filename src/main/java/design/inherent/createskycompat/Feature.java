@@ -26,7 +26,10 @@ public enum Feature {
     BALLOON("rendering.balloon_shadow_pass"),
     MATERIAL_IDS("rendering.construct_material_ids"),
     MODEL_DATA("rendering.single_block_model_data"),
-    SINGLE_BLOCK_PASSES("rendering.single_block_passes");
+    SINGLE_BLOCK_PASSES("rendering.single_block_passes"),
+    QUESTLOG_INTERFACE("questlog.interface"),
+    QUESTLOG_NOTIFICATIONS("questlog.notifications"),
+    QUESTLOG_REWARD_VALIDATION("questlog.reward_validation");
 
     public final String key;
     public final boolean defaultEnabled;
