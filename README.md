@@ -24,11 +24,13 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Sable | 2.0.6 | Island pressure; client single-block model-data correction |
 | Aeronautics Delivery Quests | 1.1.1 | Separate route distance, chunk loading, and village landing adaptations |
 | Analog Audio + Create | 0.1.5-hotfix.1 + 6.0.10 | Radio movement-handler registration |
+| Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
 | Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
 | Questlog | 3.5.0 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
 | BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
 | Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |
 | Aeronautics + Iris | 1.3.2 + the Iris version above | Exclude the balloon hot-air overlay from shadow rendering |
+| Colorwheel | 1.3.0+mc1.21.1 | Separate non-OIT sampler allocation and direct Sable material metadata repairs |
 | Sable + Iris + Sodium | 2.0.6 + the Iris version above + 0.8.13+mc1.21.1 | Shader block IDs and single-block render passes |
 
 Remove Veil Iris Fix when enabling the incorporated framebuffer adaptation.
@@ -47,6 +49,24 @@ balloon, and single-block glass comparisons. The original flickering/gapped airs
 shadow report remains unresolved; this is not a general shadow correction.
 The Analog Audio registration fix likewise does not establish moving playback or
 GUI behavior. See [verification](docs/development/verification.md) for exact scope.
+
+## Colorwheel
+
+Colorwheel supplies Iris-aware Flywheel backends for compatible shaders. It does
+not replace the framebuffer, single-block-pass or moving-light adaptations.
+With Colorwheel installed, separate client switches release unused OIT texture
+slots on unsupported renderers and extend construct material annotations to its
+terrain/emission protocol. Ordinary world annotations and
+backend selection remain Colorwheel's responsibility. See
+[rendering](docs/development/rendering.md#colorwheel) for boundaries and updates.
+
+## Moving lights
+
+With Sable Dynamic Lights and LambDynamicLights installed, independent client
+adaptations repair the selected Sodium API, keep transient illumination out of
+integrated-server lighting and clear Create light owners when leaving a world. Neither requires the island preset or Iris. These are optional
+repairs, not another lighting engine or a general cabin-occlusion fix. See
+[lighting](docs/development/lighting.md) for dependencies and known limits.
 
 ## Distant terrain
 

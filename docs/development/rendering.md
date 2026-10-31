@@ -56,6 +56,58 @@ The earlier Sable matrix-refresh and directional-shading corrections are already
 present in 2.0.6 and are not duplicated here. This material correction does not
 establish correct Ponder previews, Copycat normals, or shadow-map projection.
 
+## Colorwheel
+
+Colorwheel 1.3.0+mc1.21.1 supplies shader-aware Flywheel backends. The optional
+`rendering.colorwheel_materials` bridge requires the existing construct-material
+adaptation and is selected only on physical clients. Its compile artifact is
+Modrinth `8rq5KP4U`, SHA-256
+`3c7c1f91b1add47053f40a58375de492b87ce83309be378527f100cb842c07c0`.
+
+Colorwheel wraps NeoForge `ModelBlockRenderer.tesselateBlock`, but Sable 2.0.6's
+platform calls `tesselateWithoutAO` directly. The existing Compat scope reaches
+that path; plain Iris `beginBlock` alone does not set Colorwheel's terrain and
+emission fields. Colorwheel stores that emission in the fourth byte of Iris's
+mid-block vertex attribute. `ColorwheelMaterialMixin` selects a writer for
+Compat's own scope, using `clrwlBeginBlock`/`clrwlEndBlock` where supported and
+retaining the Iris protocol on plain mesh emitters. Nested scopes restore their
+parent writer and material through failures. No upstream mixin is cancelled.
+
+`rendering.colorwheel_samplers` is independent of Sable and the material bridge.
+Colorwheel reserves slots 0–6 for base rendering, 7–8 for OIT depth/noise and 9+
+for its coefficient textures. Its Apple renderer guard disables OIT drawing, but
+`ClrwlProgram.postLink` still reserves and registers all those OIT slots. With
+Complementary/Euphoria, the native embedded translucent program then exhausts
+Iris's sampler allocation at `shadowtex0`.
+
+`ColorwheelSamplerMixin` retains all base slots and omits OIT reservations and
+external registrations only when Colorwheel's own `SUPPORTS_OIT` is false.
+Unsupported OIT already falls back to ordinary translucent drawing upstream; the
+adaptation enables no hardware feature and changes no shader setting. On supported
+renderers the original sets and registrations pass through unchanged. Review
+Colorwheel's slot layout, OIT guard and binding order, and Iris's reserved/external
+sampler contract before updating. Retire when upstream skips unsupported OIT's
+reservations itself. This is not a general sampler-limit bypass.
+
+This bridge does not take ownership of ordinary world tessellation, mesh storage,
+Flywheel engines, Sable transforms or shader programs. It does not claim to repair
+all nested upstream annotation paths. The other rendering adaptations remain
+independent; disabling construct material IDs also disables this dependent bridge.
+Missing/disabled Colorwheel loads no Colorwheel API through Compat.
+
+Review Colorwheel's buffer API and mid-block encoding, its tessellation wrappers,
+Sable's direct flat/AO calls and Flywheel mesh emitters together before upgrading.
+Remove this bridge if Sable or Colorwheel covers direct construct tessellation with
+complete material metadata; do not retain duplicate annotation owners. Recheck
+Sable light-storage/embedded-environment APIs and supported shader backend/GL
+requirements independently. Version metadata alone does not establish these.
+
+Colorwheel's [backend documentation](https://djefrey.github.io/colorwheel/whatis/colorwheel/)
+explains shader integration. Complementary 5.7+ and Euphoria 1.7+ include native
+support; Patcher is unnecessary for the tested newer selection. Apple OpenGL 4.1
+uses the supported instancing path, with indirect rendering and OIT unavailable.
+This is not a promise of a measured performance improvement.
+
 ## Single-block render passes
 
 `SingleBlockPassMixin` flushes Sable's single-block queue at the end of each

@@ -1,5 +1,131 @@
 # Verification
 
+## Release 0.8.0
+
+2026-10-31, macOS arm64, Temurin 21.0.13, Minecraft 1.21.1, NeoForge
+21.1.264. Final local binary SHA-256:
+`8b60320ad5d0e98f18b084f52494f5a5aee78986966adbcbce137dd52c9a23f1`.
+`./gradlew --no-daemon check build clientProbeJar` passes 81 Java cases, five
+release-tool cases, released-target transformations, package boundaries and exact
+artifact checks. Colorwheel's real `ClrwlProgram.postLink` contains both sampler
+hooks; Compat's own material scope contains the selected Colorwheel writer hook.
+Writer cases cover recursive failure/restoration and plain Iris emitter fallback.
+Metadata cases cover missing, disabled, unsupported-but-disabled and server sides.
+
+Colorwheel 1.3.0+mc1.21.1 (`8rq5KP4U`) was compared with its material bridge
+disabled and enabled. Native transformed `BufferBuilder` observations with the
+shader active showed terrain=false/emission=-1/packed emission=-1 in the control,
+and terrain=true/emission=15/packed emission=15 in the adapted four-vertex draw.
+Sable's released platform directly calls non-AO tessellation, bypassing Colorwheel's
+outer wrapper; [rendering](rendering.md#colorwheel) owns the call-path explanation.
+
+The Apple renderer selected `colorwheel:instancing`. Its native embedded
+translucent shader failed before the sampler repair with
+`No more available texture units while activating sampler shadowtex0`. The same
+scene compiled and rendered after unused OIT slots were released. Colorwheel's own
+OIT support flag remained false. This is an upstream report candidate, not a
+submitted report. Supported-OIT hardware is not available in this check; its
+original allocation and registrations are retained by the guarded code path.
+
+The combined SDL/Lamb run retained virtual client light 14, authoritative server
+light 0 and removal back to 0. It exercised an ordinary Create bearing, moving
+Sable cabin, a bearing aboard it, source deletion, dimension travel and reload.
+Shader-on imagery showed the lantern-bearing translucent slime base and opaque
+cabin. No Colorwheel shader compilation failure recurred in that adapted scene.
+This native run used candidate
+`96a950dfa442922f4641ec85dccd865461c61ea6b3e328546eb1a1c6043a9d51`;
+the final binary adds status labels and a uniqueness annotation, with rendering
+logic unchanged. See [lighting](lighting.md) for the earlier independent controls.
+
+The final binary also ran without SDL/Lamb in the intended 134-JAR client fixture.
+With shaders off it selected `flywheel:instancing`; enabling Complementary/Euphoria
+selected `colorwheel:instancing` with Iris's 16-unit sampler limit. Static and
+single-block assembled glass/Copycat controls remained visible in both modes.
+Mechanical-press and wooden-propeller Ponder scenes rendered, as did the Macaw
+covered-lantern assembly after a shader reload. The final native shader vertex
+sample still carried emission 15; no Colorwheel compilation error occurred.
+Normal fixture shutdown saved and disconnected. An independent minimum client
+loaded a fresh flat world with only Compat and the opt-in probe on NeoForge, with
+no optional APIs installed and no selected adaptations. It also saved and closed.
+
+Final dedicated `unsupported-disabled` and `full` startup/shutdown probes pass.
+The former selects no hooks even with future-version metadata; the latter selects
+19 existing server adaptations and no client renderer hooks. Personal server data
+is a read-only source for the disposable startup harness. The standalone probe
+also passed on the preceding candidate. Native checks and dependency inventories
+are retained locally in `build/verification/colorwheel`.
+
+No performance improvement is claimed from these bounded observations. OIT,
+indirect rendering, every shader/driver combination, arbitrary modded models and
+the older airship-shadow report remain outside the verified scope. Existing Veil
+uniform/resource diagnostics and brief assembly packet warnings are not claimed
+fixed. Personal saves, caches and playing instances remain untouched.
+
+## Lighting adaptation
+
+2026-10-31, macOS arm64, Temurin 21.0.13, Minecraft 1.21.1 and NeoForge
+21.1.264. Checked artifact, compiled with version 0.7.0, SHA-256:
+`69dbc917619c0db18cb18a4784f8d60f771100a245f22994f19b6a761ade28f8`.
+This identifies the lighting implementation separately from the published 0.7.0
+binary below. `./gradlew --no-daemon check build clientProbeJar` passes 76 Java
+cases, five release-tool cases, exact dependency hashes and package boundaries.
+Actual transformations include the original SDL emission/value mixins, the scoped
+engine wrappers, resolver guard, source accessors, unload callbacks and released
+Sodium cache. Controlled execution of the transformed handler covers packed-field preservation and nested/exceptional scope
+restoration without cross-thread leakage.
+
+`tools/startup_probe.py --server <installed-server>/game --java <java21>
+--scenario <standalone|unsupported-disabled|full>` passes on that artifact.
+The first two select no adaptations; the complete dedicated fixture selects 19
+existing adaptations and no client lighting hooks. The tool selects the supported
+21.1.264 launch configuration even when an older installed loader remains nearby.
+Its source installation is read-only; saves and ports are disposable.
+
+Native checks cover a Compat-only client with three loader entries, a Create +
+SDL + Lamb + Sodium client without Sable/Iris/Sky Archipelago, and the installed
+full pack with SDL/Lamb added. With hooks disabled, the client selects no
+adaptations. In the fresh enabled control, virtual emission is 15, adjacent client
+light is 14 and returns to 0 after removal; the server stays 0. The same forced
+server `checkBlock` produces 14 without ownership protection. An ordinary static
+lantern still supplies server light 14 in the full fixture.
+
+A glued cabin, supported off-axis rotating lantern, ordinary Create bearing and
+bearing aboard the ship exercise movement and projection. The unadapted scene
+retains an Overworld Create source during the Nether visit. The repair removes it,
+re-registers it on return, removes it at travel unload and registers it on reload.
+Deleting the fresh cabin removes its light without a residual ground sample.
+The final disconnect check starts with one Create owner, 26 Sable owners and a
+cached client level; all owners become 0 and the reference becomes null. The
+no-Sable client also closes with empty holders and no cached level.
+
+Complementary Unbound r5.9.3/Euphoria 1.10.5 renders the cabin interior/exterior;
+the same native views remain visible after toggling shaders off. A separate Macaw
+covered-lantern assembly illuminates terrain with shaders off. A connected
+24-glowstone assembly also renders during the bounded busier check. These visual
+captures used artifact `e7513854ceed507837698bc010ac1881b063a1154d594820126ef6fb3874e7b4`;
+the final artifact adds Sable-holder/cache disposal, verified by the subsequent
+full and no-Sable disconnect checks. Rendering/engine implementations are identical.
+
+The earlier shader-off API/lifecycle comparison measured median/p95 frame intervals
+of 17.416/23.952 ms unadapted and 17.453/23.772 ms adapted over roughly 1,008
+frames/17.5 seconds at a 60 FPS cap. Render-thread CPU totals were 4.744/4.663
+seconds. That comparison predates the logical-side guards and does not establish
+their cost. The later shader-on run measured 17.255/25.360 ms and 7.689 seconds
+of render-thread CPU. A short shader-off process-CPU sample before/after the
+24-block bank measured 25.37/25.13 CPU-seconds over five wall seconds. Process CPU
+sums multiple threads/cores; these are bounded observations, not an isolated
+rebuild cost, GPU benchmark or statistically demonstrated improvement.
+
+The full client saved and disconnected normally using the fixture stop command.
+Short assembly packet warnings and existing resource/recipe diagnostics are not
+claimed fixed. Complete cabin occlusion, every modded lamp, shader hand-light
+preferences and the upstream reported hang are not established by these checks.
+DH's inspected light-storage path did not justify a hook or cache change. See
+[lighting](lighting.md) for contracts, limits, retirement and upstream-report
+candidates. Native manifests, scalar reports and selected captures are retained
+locally in `build/verification/lighting`; disposable instances and inspection
+sources are removed. No personal profile, server, world or LOD database was used.
+
 ## Release 0.7.0
 
 2026-10-31, macOS arm64, Temurin Java 21.0.13, Minecraft 1.21.1,

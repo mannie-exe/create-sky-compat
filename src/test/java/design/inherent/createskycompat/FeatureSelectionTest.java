@@ -18,7 +18,26 @@ class FeatureSelectionTest {
             Map.entry("bluemap", "5.7"), Map.entry("analogaudio", "0.1.5-hotfix.1"),
             Map.entry("create", "6.0.10"), Map.entry("veil", "4.3.2"),
             Map.entry("iris", "1.8.14-beta.1+mc1.21.1"), Map.entry("sodium", "0.8.13+mc1.21.1"),
+            Map.entry("sabledynlights", "2.0.1"), Map.entry("lambdynlights", "4.8.11+1.21.1"),
+            Map.entry("flywheel", "1.0.6"), Map.entry("colorwheel", "1.3.0+mc1.21.1"),
             Map.entry("aeronautics", "1.3.2"), Map.entry("questlog", "3.5.0"));
+
+    @Test void colorwheelBridgeRequiresItsOwnerAndRespectsAbsenceDisableAndSide() {
+        var settings = only(Feature.MATERIAL_IDS, Feature.COLORWHEEL_MATERIALS);
+        assertTrue(FeatureSelection.select(settings, SUPPORTED, true).enabled(Feature.COLORWHEEL_MATERIALS));
+        assertFalse(FeatureSelection.select(only(Feature.COLORWHEEL_MATERIALS), SUPPORTED, true)
+                .enabled(Feature.COLORWHEEL_MATERIALS));
+        var versions = new HashMap<>(SUPPORTED);
+        versions.remove("colorwheel");
+        var missing = FeatureSelection.select(settings, versions, true);
+        assertTrue(missing.enabled(Feature.MATERIAL_IDS));
+        assertFalse(missing.enabled(Feature.COLORWHEEL_MATERIALS));
+        versions.put("colorwheel", "future");
+        assertFalse(FeatureSelection.select(only(Feature.MATERIAL_IDS), versions, true)
+                .enabled(Feature.COLORWHEEL_MATERIALS));
+        assertFalse(FeatureSelection.select(settings, versions, false).enabled(Feature.COLORWHEEL_MATERIALS));
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, true));
+    }
 
     @Test void journalFeaturesNeedOnlyQuestlogAndRespectPhysicalSides() {
         var settings = only(Feature.QUESTLOG_INTERFACE, Feature.QUESTLOG_NOTIFICATIONS, Feature.QUESTLOG_REWARD_VALIDATION);
@@ -33,6 +52,46 @@ class FeatureSelectionTest {
                 () -> FeatureSelection.select(settings, Map.of("questlog", "future"), true));
         assertTrue(FeatureSelection.select(only(Feature.QUESTLOG_INTERFACE, Feature.QUESTLOG_NOTIFICATIONS),
                 Map.of("questlog", "future"), false).active().isEmpty());
+    }
+
+    @Test void lightCleanupNeedsNeitherSableNorSodium() {
+        var versions = Map.of("sabledynlights", "2.0.1", "lambdynlights", "4.8.11+1.21.1", "create", "6.0.10");
+        assertEquals(8, FeatureSelection.select(only(Feature.LIGHTING_LIFECYCLE), versions, true).mixins(true).size());
+        assertTrue(FeatureSelection.select(only(Feature.LIGHTING_LIFECYCLE), versions, false).active().isEmpty());
+    }
+
+    @Test void colorwheelSamplerRepairNeedsNeitherSableNorTerrain() {
+        var settings = only(Feature.COLORWHEEL_SAMPLERS);
+        var versions = new HashMap<>(Map.of("colorwheel", "1.3.0+mc1.21.1",
+                "iris", "1.8.14-beta.1+mc1.21.1", "flywheel", "1.0.6"));
+        assertEquals(java.util.List.of("client.ColorwheelSamplerMixin"),
+                FeatureSelection.select(settings, versions, true).mixins(true));
+        for (var missing : java.util.List.copyOf(versions.keySet())) {
+            var incomplete = new HashMap<>(versions); incomplete.remove(missing);
+            incomplete.replaceAll((id, version) -> "unsupported");
+            assertTrue(FeatureSelection.select(settings, incomplete, true).active().isEmpty());
+        }
+        versions.replaceAll((id, version) -> "unsupported");
+        assertTrue(FeatureSelection.select(only(), versions, true).active().isEmpty());
+        assertTrue(FeatureSelection.select(settings, versions, false).active().isEmpty());
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, true));
+    }
+
+    @Test void sodiumLightingNeedsEveryBridgeButNotSableOrShaders() {
+        var versions = new HashMap<>(Map.of("sabledynlights", "2.0.1", "lambdynlights", "4.8.11+1.21.1",
+                "sodium", "0.8.13+mc1.21.1", "create", "6.0.10"));
+        var settings = only(Feature.SODIUM_LIGHTING);
+        assertEquals(java.util.List.of("client.SodiumLightingMixin"),
+                FeatureSelection.select(settings, versions, true).mixins(true));
+        for (var missing : java.util.List.copyOf(versions.keySet())) {
+            var incomplete = new HashMap<>(versions); incomplete.remove(missing);
+            incomplete.replaceAll((id, version) -> "unsupported");
+            assertTrue(FeatureSelection.select(settings, incomplete, true).active().isEmpty());
+        }
+        versions.replaceAll((id, version) -> "unsupported");
+        assertTrue(FeatureSelection.select(only(), versions, true).active().isEmpty());
+        assertTrue(FeatureSelection.select(settings, versions, false).active().isEmpty());
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, true));
     }
 
     private static FeatureSettings only(Feature... features) {

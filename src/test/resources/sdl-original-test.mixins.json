@@ -1,0 +1,1 @@
+{"required":true,"package":"fr0nick.sabledynlights.mixin","compatibilityLevel":"JAVA_21","client":["BlockLightEngineEmissionMixin","LightEngineMixin"],"injectors":{"defaultRequire":1}}

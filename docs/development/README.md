@@ -36,6 +36,9 @@ visual comparison.
 See [Questlog integration](questlog.md) for client presentation, notification state,
 server validation and the isolated journal fixture.
 
+See [moving lights](lighting.md) for the optional SDL/Sodium hook, native fixture,
+upstream boundaries and pack-integration requirements.
+
 ## Implementation
 
 `FeatureSettings` reads immutable switches before Mixin target resolution.

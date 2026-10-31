@@ -29,14 +29,24 @@ configurations {
     localRuntime
     veilSource
     aeronauticsSource
+    sodiumSource
+    flywheelSource
     runtimeClasspath.extendsFrom localRuntime
 }
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    flywheelSource('maven.modrinth:create:UjX6dr61') { transitive = false }
+    compileOnly('maven.modrinth:colorwheel:8rq5KP4U') { transitive = false }
+    testRuntimeOnly('maven.modrinth:colorwheel:8rq5KP4U') { transitive = false }
+    compileOnly('maven.modrinth:create:UjX6dr61') { transitive = false }
+    testRuntimeOnly('maven.modrinth:create:UjX6dr61') { transitive = false }
+    compileOnly('maven.modrinth:sable-dynamic-lights:vjb0hAWB') { transitive = false }
+    testRuntimeOnly('maven.modrinth:sable-dynamic-lights:vjb0hAWB') { transitive = false }
     compileOnly('maven.modrinth:questlog:Pykla7tJ') { transitive = false }
     compileOnly('maven.modrinth:distanthorizons:9w34y8ai') { transitive = false }
     compileOnly('maven.modrinth:bluemap:8iJcPOHJ') { transitive = false }
+    sodiumSource('maven.modrinth:sodium:uMOpc5uV') { transitive = false }
     aeronauticsSource('maven.modrinth:create-aeronautics:44pLdPGg') { transitive = false }
     veilSource('maven.modrinth:sable:fg9dTRz9') { transitive = false }
     compileOnly('maven.modrinth:iris:KduFYu4t') { transitive = false }
@@ -87,6 +97,30 @@ tasks.register('verifyUpstream') {
             if (artifact == null) throw new GradleException("Missing pinned ${name}")
             def actual = java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString()
             if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
+        }
+
+        def colorwheel = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'colorwheel'
+        }?.file
+        if (colorwheel == null || java.security.MessageDigest.getInstance('SHA-256').digest(colorwheel.bytes).encodeHex().toString()
+                != '3c7c1f91b1add47053f40a58375de492b87ce83309be378527f100cb842c07c0') {
+            throw new GradleException('Unexpected Colorwheel compile-only dependency')
+        }
+
+        def create = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'create'
+        }?.file
+        if (create == null || java.security.MessageDigest.getInstance('SHA-256').digest(create.bytes).encodeHex().toString()
+                != 'ef87fe5709f1ba1f5b8bb20a2925b5afb4669e178fd6d8bf10c167759eefe37a') {
+            throw new GradleException('Unexpected Create compile-only dependency')
+        }
+
+        def lights = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'sable-dynamic-lights'
+        }?.file
+        if (lights == null || java.security.MessageDigest.getInstance('SHA-256').digest(lights.bytes).encodeHex().toString()
+                != '65893d1623b36670de0438752a7c1e7c023ce1226ead08beea8ee4d4e8938f7b') {
+            throw new GradleException('Unexpected Sable Dynamic Lights compile-only dependency')
         }
 
         def blueMap = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
@@ -180,6 +214,10 @@ def pinnedNestedJar = { String taskName, source, String entry, String outerHash,
     }
     files(output).builtBy(extraction)
 }
+def flywheelTestJar = pinnedNestedJar('extractFlywheel', configurations.flywheelSource,
+        'META-INF/jarjar/flywheel-neoforge-1.21.1-1.0.6.jar',
+        'ef87fe5709f1ba1f5b8bb20a2925b5afb4669e178fd6d8bf10c167759eefe37a',
+        '31dda15c205eb596d3b3449ef03f6af7363a6cd35b3da4bfe916b304f9e5337e')
 def veilTestJar = pinnedNestedJar('extractVeil', configurations.veilSource,
         'META-INF/jarjar/veil-neoforge-1.21.1-4.3.2.jar',
         '9c199157843bf953a47dff625fc5bb41c01a90538d35ad18e6996bbcb8a617c2',
@@ -188,7 +226,14 @@ def aeronauticsTestJar = pinnedNestedJar('extractAeronautics', configurations.ae
         'META-INF/jarjar/dev.eriksonn.aeronautics.aeronautics-neoforge-1.21.1-1.3.2.jar',
         'a3f330d4757640f8715d991a43eedb826e4d0e51558d859c843ae6693bd35f1e',
         '97fbf1e27f38674145b8521b140613dc8258bea7efca456dc2686e22bd683933')
+def sodiumTestJar = pinnedNestedJar('extractSodium', configurations.sodiumSource,
+        'META-INF/jarjar/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.1-mod.jar',
+        '575d187b15328d7bddd8a9b1bee64333c22c14735f5780ec49eac0cd5503c08d',
+        'd71acbffafd3d177add7624710114d8570cdd70d5553a2b5c8ab371852c59ce3')
 dependencies {
+    compileOnly flywheelTestJar
+    testImplementation flywheelTestJar
+    testImplementation sodiumTestJar
     testImplementation veilTestJar
     testImplementation aeronauticsTestJar
 }

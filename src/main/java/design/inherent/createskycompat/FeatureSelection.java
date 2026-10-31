@@ -54,13 +54,14 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case ORE_PLACEMENT, CARVERS, CAVE_BIOMES, ANCIENT_CITIES, SPAWN, STRUCTURE_LOCATION,
                     WATER_SPAWNS, CLIMATE, VILLAGE_PLACEMENT, PRESSURE, DELIVERY_DISTANCE,
                     DELIVERY_CHUNKS, DELIVERY_LANDING -> Feature.TERRAIN;
+            case COLORWHEEL_MATERIALS -> Feature.MATERIAL_IDS;
             default -> null;
         };
     }
 
     public static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
+            case COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
                     QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> true;
             default -> false;
         };
@@ -82,6 +83,11 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case FRAMEBUFFER -> Map.of("veil", "4.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
             case BALLOON -> Map.of("aeronautics", "1.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
             case MATERIAL_IDS, SINGLE_BLOCK_PASSES -> Map.of("sable", "2.0.6", "iris", "1.8.14-beta.1+mc1.21.1", "sodium", "0.8.13+mc1.21.1");
+            case COLORWHEEL_SAMPLERS -> Map.of("colorwheel", "1.3.0+mc1.21.1", "iris", "1.8.14-beta.1+mc1.21.1", "flywheel", "1.0.6");
+            case COLORWHEEL_MATERIALS -> Map.of("colorwheel", "1.3.0+mc1.21.1");
+            case LIGHTING_LIFECYCLE -> Map.of("sabledynlights", "2.0.1", "lambdynlights", "4.8.11+1.21.1", "create", "6.0.10");
+            case SODIUM_LIGHTING -> Map.of("sabledynlights", "2.0.1", "lambdynlights", "4.8.11+1.21.1",
+                    "sodium", "0.8.13+mc1.21.1", "create", "6.0.10");
             case MODEL_DATA -> Map.of("sable", "2.0.6");
         };
     }
@@ -118,6 +124,12 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case FRAMEBUFFER -> List.of("client.ShaderWrapperMixin");
                 case BALLOON -> List.of("client.BalloonShadowMixin");
                 case MATERIAL_IDS -> List.of("client.ConstructMaterialMixin");
+                case COLORWHEEL_SAMPLERS -> List.of("client.ColorwheelSamplerMixin");
+                case COLORWHEEL_MATERIALS -> List.of("client.ColorwheelMaterialMixin");
+                case LIGHTING_LIFECYCLE -> List.of("client.CreateLightSourcesAccessor", "client.SableLightStateAccessor", "client.LightingLifecycleMixin",
+                        "client.LightEngineOwnerAccessor", "client.VirtualEmissionSideMixin",
+                        "client.DynamicLightSideMixin", "client.ScopedLightQueryMixin", "client.ServerLightViewMixin");
+                case SODIUM_LIGHTING -> List.of("client.SodiumLightingMixin");
                 case MODEL_DATA -> List.of("client.SingleBlockModelDataMixin");
                 case SINGLE_BLOCK_PASSES -> List.of("client.SingleBlockPassMixin");
                 case QUESTLOG_INTERFACE -> List.of("client.QuestDetailsMixin", "client.QuestlogBookmarkMixin");

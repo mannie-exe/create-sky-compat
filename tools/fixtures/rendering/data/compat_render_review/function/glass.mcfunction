@@ -1,4 +1,5 @@
 # Run once per fresh scene; pause again after every client restart.
+gamemode spectator @s
 sable paused true
 setblock 332 191 2 minecraft:air
 setblock 334 191 2 minecraft:air

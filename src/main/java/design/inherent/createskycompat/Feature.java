@@ -25,8 +25,12 @@ public enum Feature {
     FRAMEBUFFER("rendering.veil_framebuffer"),
     BALLOON("rendering.balloon_shadow_pass"),
     MATERIAL_IDS("rendering.construct_material_ids"),
+    COLORWHEEL_SAMPLERS("rendering.colorwheel_samplers"),
+    COLORWHEEL_MATERIALS("rendering.colorwheel_materials"),
     MODEL_DATA("rendering.single_block_model_data"),
     SINGLE_BLOCK_PASSES("rendering.single_block_passes"),
+    LIGHTING_LIFECYCLE("lighting.lifecycle"),
+    SODIUM_LIGHTING("lighting.sodium"),
     QUESTLOG_INTERFACE("questlog.interface"),
     QUESTLOG_NOTIFICATIONS("questlog.notifications"),
     QUESTLOG_REWARD_VALIDATION("questlog.reward_validation");

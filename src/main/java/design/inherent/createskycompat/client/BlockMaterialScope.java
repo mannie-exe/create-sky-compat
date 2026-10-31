@@ -5,8 +5,21 @@ import java.util.IdentityHashMap;
 
 /** Balances Iris annotations across exceptions and recursive model rendering. */
 public final class BlockMaterialScope {
-    private static final ThreadLocal<IdentityHashMap<BlockSensitiveBufferBuilder, Material>> ACTIVE =
+    private static final ThreadLocal<IdentityHashMap<BlockSensitiveBufferBuilder, Frame>> ACTIVE =
             ThreadLocal.withInitial(IdentityHashMap::new);
+
+    public interface Writer {
+        void begin(BlockSensitiveBufferBuilder buffer, Material material);
+        void end(BlockSensitiveBufferBuilder buffer);
+    }
+
+    private static final Writer IRIS = new Writer() {
+        public void begin(BlockSensitiveBufferBuilder buffer, Material material) { material.begin(buffer); }
+        public void end(BlockSensitiveBufferBuilder buffer) { buffer.endBlock(); }
+    };
+    private record Frame(Material material, Writer writer) {
+        void begin(BlockSensitiveBufferBuilder buffer) { writer.begin(buffer, material); }
+    }
 
     private BlockMaterialScope() {}
 
@@ -15,16 +28,21 @@ public final class BlockMaterialScope {
     }
 
     public static void render(BlockSensitiveBufferBuilder buffer, Material material, Runnable render) {
+        renderWith(buffer, material, IRIS, render);
+    }
+
+    public static void renderWith(BlockSensitiveBufferBuilder buffer, Material material, Writer writer, Runnable render) {
         var active = ACTIVE.get();
         var previous = active.get(buffer);
-        if (material.equals(previous)) { render.run(); return; }
-        active.put(buffer, material);
+        var current = new Frame(material, writer);
+        if (current.equals(previous)) { render.run(); return; }
+        active.put(buffer, current);
         try {
-            material.begin(buffer);
+            current.begin(buffer);
             render.run();
         } finally {
             try {
-                if (previous == null) buffer.endBlock();
+                if (previous == null) writer.end(buffer);
                 else previous.begin(buffer);
             } finally {
                 if (previous == null) active.remove(buffer);

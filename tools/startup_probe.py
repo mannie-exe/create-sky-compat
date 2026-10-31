@@ -26,9 +26,9 @@ def main():
     version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines()
                    if line.startswith('mod_version='))
     mod = args.mod or ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
-    launch = list((server / 'libraries/net/neoforged/neoforge').glob('*/unix_args.txt'))
+    launch = list((server / 'libraries/net/neoforged/neoforge').glob('21.1.264/unix_args.txt'))
     if len(launch) != 1:
-        parser.error('Expected exactly one installed NeoForge launch configuration')
+        parser.error('Expected the supported NeoForge 21.1.264 launch configuration')
     output = ROOT / 'build/verification'
     output.mkdir(parents=True, exist_ok=True)
     report = {'scenario': args.scenario, 'artifact': str(mod), 'sha256': hashlib.sha256(mod.read_bytes()).hexdigest()}
@@ -45,7 +45,7 @@ def main():
             # Disabled adapters must neither reject their versions nor resolve their APIs.
             metadata = 'modLoader="lowcodefml"\nloaderVersion="[1,)"\nlicense="MIT"\n'
             for target in ['sky_archipelago', 'skyvillages', 'architectury', 'sable', 'aeronautics_delivery_quests',
-                           'distanthorizons', 'bluemap', 'analogaudio', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog']:
+                           'distanthorizons', 'bluemap', 'analogaudio', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog', 'sabledynlights', 'lambdynlights', 'colorwheel', 'flywheel']:
                 metadata += f'[[mods]]\nmodId="{target}"\nversion="999.0.0"\ndisplayName="Fixture {target}"\n'
             with zipfile.ZipFile(run / 'mods/future-targets-fixture.jar', 'w') as fixture:
                 fixture.writestr('META-INF/neoforge.mods.toml', metadata)

@@ -26,6 +26,7 @@ public final class PatchTest {
         // Load the original shipped mixin directly, without the game's full Veil plugin.
         Mixins.addConfiguration("veil-original-test.mixins.json");
         Mixins.addConfiguration("framebuffer-test.mixins.json");
+        Mixins.addConfiguration("sdl-original-test.mixins.json");
         Mixins.addConfiguration("rendering-test.mixins.json");
         byte[] original;
         try (var in = service.getResourceAsStream(TARGET.replace('.', '/') + ".class")) {
@@ -48,9 +49,47 @@ public final class PatchTest {
         var balloonNode = transformed(service, transformer, balloon);
         assertEquals(1, calls(method(balloonNode, "onRenderLevelStage"), "createSky$skipShadowComposite"));
         ShadowPassProbe.verify(balloonNode);
+        var emission = transformed(service, transformer, "net.minecraft.world.level.lighting.BlockLightEngine");
+        assertEquals(1, calls(method(emission, "getEmission"), "createSky$clientEmission"));
+        var dynamic = transformed(service, transformer, "net.minecraft.world.level.lighting.LightEngine");
+        assertEquals(1, calls(method(dynamic, "getLightValue"), "createSky$clientLight"));
+        assertFalse(method(emission, "createSky$clientEmission").tryCatchBlocks.isEmpty());
+        assertFalse(method(dynamic, "createSky$clientLight").tryCatchBlocks.isEmpty());
+        var virtual = transformed(service, transformer, "fr0nick.sabledynlights.virtual.VirtualLightManager");
+        assertEquals(1, calls(method(virtual, "getVirtualEmission"), "createSky$excludeClientLight"));
+        var lamb = transformed(service, transformer, "fr0nick.sabledynlights.lamb.LambDynLightsDelegate");
+        assertEquals(1, calls(method(lamb, "getDynamicLightLevel"), "createSky$excludeClientLight"));
+        var view = transformed(service, transformer, "fr0nick.sabledynlights.util.WorldPosResolver");
+        assertEquals(1, calls(method(view, "getCombinedWorldLight"), "createSky$serverLight"));
+        var sources = transformed(service, transformer, "fr0nick.sabledynlights.lamb.create.ContraptionEntityEventHandler");
+        assertEquals(1, Arrays.stream(sources.methods.stream().filter(m -> m.name.startsWith("createSky$trackedContraptions_"))
+                .findFirst().orElseThrow().instructions.toArray())
+                .filter(i -> i instanceof FieldInsnNode f && f.name.equals("contraptionEntities")).count());
+        var sableState = transformed(service, transformer, "fr0nick.sabledynlights.lamb.sable.SableSubLevelEventHandler");
+        assertEquals(2, sableState.methods.stream().filter(m -> m.name.startsWith("createSky$last")).count());
+        var lifecycle = transformed(service, transformer, "fr0nick.sabledynlights.LambModEventHandler");
+        assertEquals(1, calls(method(lifecycle, "onLevelUnload"), "createSky$unload"));
+        assertEquals(1, calls(method(lifecycle, "onLoggingOut"), "createSky$disconnect"));
+        assertEquals(1, calls(method(lifecycle, "createSky$clearSources"), "onContraptionEntityLeave"));
+        assertEquals(1, calls(method(lifecycle, "createSky$clearSources"), "clear"));
+        var sodium = transformed(service, transformer,
+                "net.caffeinemc.mods.sodium.client.model.light.data.LightDataAccess");
+        assertEquals(1, calls(method(sodium, "compute"), "createSky$dynamicLight"));
+        assertEquals(0, calls(method(sodium, "getLightmap"), "createSky$dynamicLight"),
+                "the static decoder has no world position");
+        assertEquals(1, calls(method(sodium, "createSky$dynamicLight"), "getCombinedWorldLight"));
+        assertEquals(2, Arrays.stream(method(sodium, "createSky$dynamicLight").instructions.toArray())
+                .filter(i -> i instanceof MethodInsnNode m && m.name.equals("packBL")).count());
+        SodiumPackingProbe.verify(sodium);
         var model = transformed(service, transformer, "net.minecraft.client.renderer.block.ModelBlockRenderer");
         assertEquals(2, model.methods.stream().filter(m -> calls(m, "createSky$material") > 0).count(),
                 "both AO and flat NeoForge methods must be wrapped");
+        var colorwheel = transformed(service, transformer, "dev.djefrey.colorwheel.compile.ClrwlProgram");
+        assertEquals(1, calls(method(colorwheel, "postLink"), "createSky$availableSamplers"));
+        assertEquals(9, calls(method(colorwheel, "postLink"), "createSky$unusedOitSampler"));
+        var materials = transformed(service, transformer, "design.inherent.createskycompat.client.BlockMaterialScope");
+        assertEquals(1, calls(method(materials, "render"), "createSky$colorwheelMaterial"));
+        assertEquals(1, calls(method(materials, "createSky$colorwheelMaterial"), "renderWith"));
         var single = transformed(service, transformer, "dev.ryanhcode.sable.neoforge.platform.SableSubLevelRenderPlatformImpl");
         assertEquals(1, calls(method(single, "getRenderLayers"), "createSky$matchingModelData"));
         var dispatcher = transformed(service, transformer, "dev.ryanhcode.sable.sublevel.render.dispatcher.VanillaSubLevelRenderDispatcher");

@@ -92,5 +92,9 @@
   "create_sky_compat.configuration.feature.questlog.interface": "Journal interface",
   "create_sky_compat.configuration.feature.questlog.notifications": "Journal notifications",
   "create_sky_compat.configuration.feature.questlog.reward_validation": "Journal reward validation",
-  "create_sky_compat.configuration.no_registered": "No registered settings are active. See Adaptation status for the dependency and startup selections."
+  "create_sky_compat.configuration.no_registered": "No registered settings are active. See Adaptation status for the dependency and startup selections.",
+  "create_sky_compat.configuration.feature.lighting.sodium": "Sodium moving lights",
+  "create_sky_compat.configuration.feature.lighting.lifecycle": "Moving-light ownership",
+  "create_sky_compat.configuration.feature.rendering.colorwheel_materials": "Colorwheel construct materials",
+  "create_sky_compat.configuration.feature.rendering.colorwheel_samplers": "Colorwheel sampler allocation"
 }

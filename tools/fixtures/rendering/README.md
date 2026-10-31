@@ -22,7 +22,8 @@ client, and launch with `-Dcreate_sky_compat.probe.rendering=true`.
 presence and construct bounds. Remove the probe after testing.
 
 `compat_render_review:glass` creates assembled/static glass Copycat and ordinary
-glass controls. Use a fresh scene or remove its previous constructs first.
+glass controls and sets spectator mode so the comparison camera does not fall.
+Teleport to `335 191 10` and wait for chunks before running it. Use a fresh scene or remove its previous constructs first.
 Physics pause is not retained across client restarts: pause again and rebuild
 floating controls before comparing, or confirm their current bounds in telemetry.
 Use `/compatprobe_stop` before closing the test client. It explicitly halts the
