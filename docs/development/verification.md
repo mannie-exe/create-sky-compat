@@ -1118,3 +1118,9 @@ overview list, forwarding to the existing superclass method. All adapter classes
 match the native-check binary; the published JAR also passed the full recovery
 fixture. Version 0.12.1 adds missing English audio, recovery and Linkage labels and a check
 that every feature has one; it does not alter adapter behavior.
+
+The published 0.12.1 JAR is
+`ad42b6566763d35fbec46f577645e4f64bda85dd7c53cee60d4d0da76509e9ed`.
+All 246 production classes match published 0.12.0. The full native recovery
+fixture passed again with this exact public artifact; the final check/build has
+93 passing unit tests, including startup feature-label coverage.
