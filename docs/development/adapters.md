@@ -14,6 +14,8 @@ implementation tests to the exact released artifacts.
 | Sable pressure | `DimensionPhysicsMixin`, pressure built-in pack | Review Sable physics profile codec and island-only selection; preserve upstream machine/block weights. |
 | ADQ | Separate distance, chunk-loading, and landing mixins | Review private route lambdas, injection counts, ticket lifetime and cleanup. Landing requires Sky Villages but does not enable its placement adaptations. |
 | Analog Audio | `AnalogAudioCreateMixin` | Review public Create registry erasure and upstream reflective lookup. Retire when released Analog Audio registers the handler correctly. See [procedure](README.md#analog-audio). |
+| Radio timeline | Client clocks, native queue correction and guarded async callbacks | Review the exact bundled media engine, queue positions and session ownership; see [audio](audio.md). |
+| Construct recovery | Server support sampling, YiGD placement metadata and lifecycle/tracking hooks | Review both mods' save, plot, death, claim, disassembly and compass paths; see [recovery](recovery.md). |
 | Linear Bearing | Separate constructor/loot, carriage lifecycle, kinetic links and gyro hooks | Review [contracts and native fixtures](linear-bearing.md), exact constructor shape, repair ownership, Sable frames/handles and native Create accounting. |
 | Transmission & Linkage | Optional server-authorized mutations, deliberate rod removal and Jade state | Review [packet, binding, protection and client input boundaries](transmission-linkage.md) against the exact release; preserve native physics/save ownership. |
 | DH | Separate client handoff, shutdown, cache selections | Review ownership and dimension guards, ordinary/default keys, reconnect and shutdown. See [DH](lod.md). |

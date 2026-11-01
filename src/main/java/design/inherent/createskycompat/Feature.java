@@ -18,6 +18,8 @@ public enum Feature {
     DELIVERY_CHUNKS("delivery.chunk_loading"),
     DELIVERY_LANDING("delivery.village_landing"),
     ANALOG_AUDIO("analog_audio.movement_registration"),
+    SABLE_GRAVES("yigd.construct_recovery"),
+    AUDIO_TIMELINE("analog_audio.playback_timeline"),
     LINKAGE_INTERACTIONS("transmission_linkage.interactions"),
     LINKAGE_JADE("transmission_linkage.jade"),
     LINEAR_BOOTSTRAP("linear_bearing.bootstrap"),

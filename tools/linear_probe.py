@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run bounded Linear Bearing checks in a disposable, loopback-only server."""
+"""Run bounded machinery and recovery checks in a disposable, loopback-only server."""
 import argparse
 import hashlib
 import json
@@ -12,7 +12,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 LINEAR_HASH = '29563cdb52a82ac7d8b3aca823cd47a15c443e06314df06ca1a635ae9e91a253'
 FIX_HASH = '04afaaaf62951fc4cccfbb4468572fea2a876a6b5e872a6c60545d171fb21976'
-SCENES = {'bootstrap': 'linear/BootstrapProbe', 'carriage': 'linear/CarriageProbe',
+SCENES = {'recovery': 'recovery/RecoveryProbe', 'bootstrap': 'linear/BootstrapProbe', 'carriage': 'linear/CarriageProbe',
           'parent': 'linear/ParentProbe', 'reopen': 'linear/ParentProbe',
           'disassembly': 'linear/DisassemblyProbe', 'transmission': 'linear/TransmissionProbe',
           'linkage': 'linkage/LinkageProbe',
@@ -29,15 +29,20 @@ def main():
     parser.add_argument('--server', type=Path, required=True, help='Read-only installed game directory')
     parser.add_argument('--pack', type=Path, required=True, help='Read-only authored Create Sky directory')
     parser.add_argument('--java', type=Path, required=True, help='Java 21 executable; javac must be alongside it')
-    parser.add_argument('--linear', type=Path, required=True, help='Unmodified Linear Bearing 1.3.5 JAR')
+    parser.add_argument('--linear', type=Path, help='Unmodified Linear Bearing 1.3.5 JAR')
+    parser.add_argument('--yigd', type=Path, help='Exact YiGD recovery fixture dependency')
     parser.add_argument('--linkage', type=Path, help='Unmodified Transmission & Linkage 0.2.9 JAR')
     parser.add_argument('--linkage-baseline', action='store_true', help='Disable the Linkage adapters for a native failure control')
     parser.add_argument('--fix', type=Path, help='Optional unmodified Linear Bearings Fix 1.0.3 JAR')
     parser.add_argument('--mod', type=Path)
-    parser.add_argument('--minimal', action='store_true', help='Only Create, Sable and bundled Simulated/Aeronautics targets')
+    parser.add_argument('--minimal', action='store_true', help='Only the selected scene’s required target dependencies')
     parser.add_argument('--scenario', choices=SCENES, required=True)
     parser.add_argument('--orientation', choices=['floor', 'ceiling', 'wall-front', 'wall-back', 'height', 'quarter'], default='floor')
     args = parser.parse_args()
+    if args.scenario == 'recovery' and not args.yigd:
+        parser.error('--scenario recovery requires --yigd')
+    if args.scenario != 'recovery' and not args.linear:
+        parser.error('Machinery scenes require --linear')
     allowed = {'carriage': {'floor', 'ceiling', 'wall-front', 'wall-back'},
                'disassembly': {'floor', 'height', 'quarter'}}.get(args.scenario, {'floor'})
     if args.orientation not in allowed:
@@ -45,20 +50,29 @@ def main():
     args.server = args.server.expanduser().resolve()
     args.pack = args.pack.expanduser().resolve()
     args.java = args.java.expanduser().resolve()
-    if digest(args.linear) != LINEAR_HASH or (args.fix and digest(args.fix) != FIX_HASH):
+    if (args.linear and digest(args.linear) != LINEAR_HASH) or (args.fix and digest(args.fix) != FIX_HASH):
         parser.error('Unexpected Linear Bearing or standalone-fix bytes')
+    if args.yigd and digest(args.yigd) != 'dd2142a3c6a9d5b990ab36220be482f7aa9f528755f93b8fef8996f509ddcda2':
+        parser.error('Unexpected YiGD 2.0.13 bytes')
     version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines()
                    if line.startswith('mod_version='))
     mod = args.mod or ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
     runtime = json.loads(subprocess.check_output(['node', str(args.pack / 'web/scripts/runtime-inputs.mjs'), str(args.pack)], text=True))
     excluded = {'create-sky-compat', 'linear-bearing', 'linear-bearings-fix'}
+    if args.yigd:
+        excluded.add('yigd')
     if args.linkage:
         excluded.add('create-aeronautics-transmission-linkage')
+    minimal_keys = {'sable', 'cloth-config'} if args.scenario == 'recovery' else {'create', 'ponder', 'sable', 'create-aeronautics'}
     files = [Path(row['path']) for row in runtime['mods'] if row['key'] not in excluded
-             and (not args.minimal or row['key'] in {'create', 'ponder', 'sable', 'create-aeronautics'})]
+             and (not args.minimal or row['key'] in minimal_keys)]
     if not args.minimal:
         files.extend((args.pack / 'overrides/common/mods').glob('*.jar'))
-    files.extend([mod, args.linear])
+    files.append(mod)
+    if args.linear:
+        files.append(args.linear)
+    if args.yigd:
+        files.append(args.yigd)
     if args.fix:
         files.append(args.fix)
     if args.scenario.startswith('linkage'):
@@ -91,6 +105,8 @@ def main():
         classes.mkdir()
         source = ROOT / 'tools/fixtures' / f'{SCENES[args.scenario]}.java'
         compile_command = [str(args.java.with_name('javac')), '-proc:none', '-cp', classpath, '-d', str(classes), str(source)]
+        if args.scenario == 'recovery' and not args.minimal:
+            compile_command.append(str(ROOT / 'tools/fixtures/recovery/BackpackRecovery.java'))
         result = subprocess.run(compile_command, capture_output=True, text=True)
         (output / 'compile.log').write_text(result.stdout + result.stderr)
         if result.returncode:
@@ -98,7 +114,7 @@ def main():
         with zipfile.ZipFile(run / 'mods/linear-review-probe.jar', 'w') as jar:
             for path in classes.rglob('*.class'):
                 jar.write(path, path.relative_to(classes))
-            jar.writestr('META-INF/neoforge.mods.toml', 'modLoader="javafml"\nloaderVersion="[4,)"\nlicense="MIT"\n[[mods]]\nmodId="linear_review_probe"\nversion="1.0.0"\ndisplayName="Isolated machinery checks"\n')
+            jar.writestr('META-INF/neoforge.mods.toml', 'modLoader="javafml"\nloaderVersion="[4,)"\nlicense="MIT"\n[[mods]]\nmodId="linear_review_probe"\nversion="1.0.0"\ndisplayName="Isolated compatibility checks"\n')
         shutil.copytree(args.pack / 'overrides/common/config', run / 'config')
         if args.linkage_baseline:
             settings = run / 'config/create_sky_compat-features.properties'
@@ -114,9 +130,12 @@ def main():
         (run / 'server.properties').write_text('server-ip=127.0.0.1\nserver-port=0\nonline-mode=false\nlevel-name=fixture\nlevel-type=minecraft:flat\ngenerate-structures=false\nview-distance=2\nsimulation-distance=2\nmax-tick-time=0\n')
         manifest['probeSha256'] = digest(run / 'mods/linear-review-probe.jar')
         manifest['sources'] = {str(source.relative_to(ROOT)): digest(source)}
+        if args.scenario == 'recovery' and not args.minimal:
+            helper = ROOT / 'tools/fixtures/recovery/BackpackRecovery.java'
+            manifest['sources'][str(helper.relative_to(ROOT))] = digest(helper)
         manifest['config'] = {str(path.relative_to(run)): digest(path) for path in sorted((run / 'config').rglob('*')) if path.is_file()}
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-        phases = ['save', 'restore'] if args.scenario in {'reopen', 'transmission', 'linkage-lifecycle'} else ['run']
+        phases = ['save', 'restore'] if args.scenario in {'reopen', 'transmission', 'linkage-lifecycle', 'recovery'} else ['run']
         for phase in phases:
             report = output / f'{phase}.json'
             report.unlink(missing_ok=True)
@@ -129,6 +148,8 @@ def main():
                        '@' + str(libraries / 'net/neoforged/neoforge/21.1.264/unix_args.txt'), 'nogui']
             with (output / f'{phase}.log').open('w') as log:
                 result = subprocess.run(command, cwd=run, stdout=log, stderr=subprocess.STDOUT, timeout=180)
+            if args.scenario == 'recovery' and (run / 'config/yigd.json').is_file():
+                shutil.copy2(run / 'config/yigd.json', output / 'generated-yigd.json')
             if result.returncode or not report.exists() or Path(str(report) + '.failure').exists():
                 raise SystemExit(f'Native {args.scenario}/{phase} failed: {output}')
             print(phase, json.loads(report.read_text()), flush=True)

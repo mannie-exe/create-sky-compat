@@ -33,6 +33,9 @@ The [client probes](#client-probes) cover legacy-cache construction and known
 fluid/material inputs. Scalar measurements do not replace native-versus-LOD
 visual comparison.
 
+See [radio synchronization](audio.md) and [construct grave recovery](recovery.md)
+for their independent optional boundaries, native fixtures and update checks.
+
 See [Questlog integration](questlog.md) for client presentation, notification state,
 server validation and the isolated journal fixture.
 

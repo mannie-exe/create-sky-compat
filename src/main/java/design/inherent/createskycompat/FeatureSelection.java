@@ -71,7 +71,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
 
     public static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
+            case AUDIO_TIMELINE, LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
                     QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> true;
             default -> false;
         };
@@ -86,6 +86,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case PRESSURE -> Map.of("sable", "2.0.6");
             case DELIVERY_DISTANCE, DELIVERY_CHUNKS -> Map.of("aeronautics_delivery_quests", "1.1.1");
             case DELIVERY_LANDING -> Map.of("aeronautics_delivery_quests", "1.1.1", "skyvillages", "1.0.6", "architectury", "13.");
+            case SABLE_GRAVES -> Map.of("sable", "2.0.6", "yigd", "2.0.13");
+            case AUDIO_TIMELINE -> Map.of("analogaudio", "0.1.5-hotfix.1", "analoglib", "0.1.0");
             case ANALOG_AUDIO -> Map.of("analogaudio", "0.1.5-hotfix.1", "create", "6.0.10");
             case LINKAGE_INTERACTIONS -> Map.of("aeronautics_utility_objects", "0.2.9", "create", "6.0.10", "sable", "2.0.6", "simulated", "1.3.2");
             case LINKAGE_JADE -> Map.of("aeronautics_utility_objects", "0.2.9", "jade", "15.10.6+neoforge");
@@ -133,6 +135,9 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case DELIVERY_DISTANCE -> List.of("DeliveryDistanceMixin");
                 case DELIVERY_CHUNKS -> List.of("DeliveryChunksMixin");
                 case DELIVERY_LANDING -> List.of("DeliveryLandingMixin");
+                case SABLE_GRAVES -> List.of("recovery.GraveRecoveryMixin", "recovery.GraveBlockRecoveryMixin",
+                        "recovery.GraveCompassRecoveryMixin", "recovery.CompassTrackingMixin", "recovery.GraveRespawnRecoveryMixin");
+                case AUDIO_TIMELINE -> List.of("audio.RadioTimelineMixin", "audio.AudioEngineTimelineMixin", "audio.NativeTimelineMixin");
                 case ANALOG_AUDIO -> List.of("AnalogAudioCreateMixin");
                 case LINKAGE_INTERACTIONS -> client
                         ? List.of("linkage.LinkagePacketMixin", "linkage.LinkageBindingMixin", "linkage.LinkageJointBindingMixin", "linkage.LinkageBlockMixin", "linkage.LinkageUseMixin", "linkage.LinkageWrenchMixin", "linkage.LinkageMenuButtonMixin", "client.LinkageRodInputMixin")

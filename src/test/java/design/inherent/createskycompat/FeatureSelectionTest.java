@@ -11,6 +11,27 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void constructRecoveryRequiresBothTargetsAndSupportsIntegratedServers() {
+        var settings = only(Feature.SABLE_GRAVES);
+        for (boolean client : new boolean[]{true, false}) {
+            assertTrue(FeatureSelection.select(settings, Map.of("sable", "2.0.6", "yigd", "2.0.13"), client)
+                    .enabled(Feature.SABLE_GRAVES));
+            assertTrue(FeatureSelection.select(settings, Map.of("sable", "2.0.6"), client).active().isEmpty());
+            assertTrue(FeatureSelection.select(settings, Map.of("yigd", "2.0.13"), client).active().isEmpty());
+            assertTrue(FeatureSelection.select(only(), Map.of("sable", "future", "yigd", "future"), client).active().isEmpty());
+        }
+    }
+    @Test void radioTimelineNeedsOnlyTheAudioPairOnPhysicalClients() {
+        var settings = only(Feature.AUDIO_TIMELINE);
+        var versions = Map.of("analogaudio", "0.1.5-hotfix.1", "analoglib", "0.1.0");
+        assertTrue(FeatureSelection.select(settings, versions, true).enabled(Feature.AUDIO_TIMELINE));
+        assertTrue(FeatureSelection.select(settings, versions, false).active().isEmpty());
+        assertTrue(FeatureSelection.select(settings, Map.of("analogaudio", "0.1.5-hotfix.1"), true).active().isEmpty());
+        assertTrue(FeatureSelection.select(settings, Map.of("analoglib", "0.1.0"), true).active().isEmpty());
+        assertTrue(FeatureSelection.select(only(), Map.of("analoglib", "future", "analogaudio", "future"), true).active().isEmpty());
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings,
+                Map.of("analoglib", "future", "analogaudio", "0.1.5-hotfix.1"), true));
+    }
     @Test void linkageRequiresItsCompletePairAndKeepsJadeIndependent() {
         var settings = only(Feature.LINKAGE_INTERACTIONS, Feature.LINKAGE_JADE);
         var versions = new HashMap<>(Map.of("aeronautics_utility_objects", "0.2.9", "create", "6.0.10",

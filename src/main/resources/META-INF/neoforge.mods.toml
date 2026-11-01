@@ -164,3 +164,15 @@ modId="aeronautics_utility_objects"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
+
+[[dependencies.create_sky_compat]]
+modId="analoglib"
+type="optional"
+versionRange="[0,)"
+side="CLIENT"
+
+[[dependencies.create_sky_compat]]
+modId="yigd"
+type="optional"
+versionRange="[0,)"
+side="BOTH"

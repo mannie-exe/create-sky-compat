@@ -18,6 +18,8 @@ public final class CreateSkyCompat {
         var selection = OptionalIntegrations.selection();
         com.mojang.logging.LogUtils.getLogger().info("Create Sky Compat active adaptations: {}", selection.active());
         com.mojang.logging.LogUtils.getLogger().debug("Create Sky Compat inactive adaptations: {}", selection.inactive());
+        if (selection.enabled(Feature.SABLE_GRAVES))
+            design.inherent.createskycompat.recovery.ShipGraves.register();
         if (OptionalIntegrations.skyVillages()) {
             LegacyConfiguration.migrate(FMLPaths.CONFIGDIR.get());
             container.registerConfig(ModConfig.Type.COMMON, NeighborConfig.SPEC);

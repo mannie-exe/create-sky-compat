@@ -17,6 +17,14 @@ import org.slf4j.LoggerFactory;
 public final class ClientFlightProbe {
     private int ticks;
     public ClientFlightProbe() {
+        if (Boolean.getBoolean("create_sky_compat.probe.recovery")) {
+            new ClientRecoveryProbe();
+            return;
+        }
+        if (Boolean.getBoolean("create_sky_compat.probe.audio")) {
+            new ClientAudioProbe();
+            return;
+        }
         if (Boolean.getBoolean("create_sky_compat.probe.guidance")) new ClientGuidanceProbe();
         if (Boolean.getBoolean("create_sky_compat.probe.colorwheel")) new ClientColorwheelProbe();
         if (Boolean.getBoolean("create_sky_compat.probe.linkage")) {

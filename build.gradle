@@ -35,11 +35,16 @@ configurations {
     aeronauticsSource
     sodiumSource
     flywheelSource
+    analogSource
     runtimeClasspath.extendsFrom localRuntime
 }
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    analogSource('maven.modrinth:analog-audio:BshMjyFt') { transitive = false }
+    compileOnly('maven.modrinth:analog-audio:BshMjyFt') { transitive = false }
+    compileOnly('maven.modrinth:cloth-config:izKINKFg') { transitive = false }
+    compileOnly('maven.modrinth:yigd:Axk4bfXT') { transitive = false }
     compileOnly('maven.modrinth:jade:eYz2YBGT') { transitive = false }
     compileOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
     testRuntimeOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
@@ -110,6 +115,14 @@ tasks.register('verifyUpstream') {
             if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
         }
 
+        ['yigd': 'dd2142a3c6a9d5b990ab36220be482f7aa9f528755f93b8fef8996f509ddcda2',
+         'analog-audio': 'effc623ad0b3e332bb29252f5c41f767cb194a47ce5ae195d186f442124807a3'].each { name, expected ->
+            def artifact = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+                it.moduleVersion.id.group == 'maven.modrinth' && it.name == name
+            }?.file
+            if (artifact == null || java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString() != expected)
+                throw new GradleException("Unexpected ${name} compile-only dependency")
+        }
         def jade = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
             it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'jade'
         }?.file
@@ -259,6 +272,10 @@ def pinnedNestedJar = { String taskName, source, String entry, String outerHash,
     }
     files(output).builtBy(extraction)
 }
+def analogJar = pinnedNestedJar('extractAnalogLib', configurations.analogSource,
+        'META-INF/jarjar/analoglib-neoforge-0.1.0.jar',
+        'effc623ad0b3e332bb29252f5c41f767cb194a47ce5ae195d186f442124807a3',
+        '308ddfef67dd15020c165932e6f6917354c41a19925cdfd4ace41441284ab1cd')
 def flywheelTestJar = pinnedNestedJar('extractFlywheel', configurations.flywheelSource,
         'META-INF/jarjar/flywheel-neoforge-1.21.1-1.0.6.jar',
         'ef87fe5709f1ba1f5b8bb20a2925b5afb4669e178fd6d8bf10c167759eefe37a',
@@ -284,6 +301,8 @@ def sodiumTestJar = pinnedNestedJar('extractSodium', configurations.sodiumSource
         '575d187b15328d7bddd8a9b1bee64333c22c14735f5780ec49eac0cd5503c08d',
         'd71acbffafd3d177add7624710114d8570cdd70d5553a2b5c8ab371852c59ce3')
 dependencies {
+    compileOnly analogJar
+    testImplementation analogJar
     compileOnly simulatedJar
     compileOnly companionJar
     testImplementation simulatedJar

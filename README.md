@@ -27,6 +27,8 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Linear Bearing guidance | 1.3.5 + Ponder 1.0.87+mc1.21.1 / Jade 15.10.6+neoforge | Optional tutorials and server-backed inspection; active carriage adaptation required |
 | Transmission & Linkage + Create/Sable/Simulated | 0.2.9 + 6.0.10/2.0.6/1.3.2 | Deliberate rod removal, server-authorized edits and optional Jade inspection |
 | Analog Audio + Create | 0.1.5-hotfix.1 + 6.0.10 | Radio movement-handler registration |
+| Analog Audio + AnalogLib | 0.1.5-hotfix.1 + 0.1.0 | Client playback timeline correction after loading and standby |
+| Sable + You're in Grave Danger | 2.0.6 + 2.0.13 | Construct-relative graves, bounded loss fallback and moving location tracking |
 | Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
 | Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
 | Questlog | 3.5.0, 3.5.3 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
@@ -52,6 +54,11 @@ balloon, and single-block glass comparisons. The original flickering/gapped airs
 shadow report remains unresolved; this is not a general shadow correction.
 The Analog Audio registration fix likewise does not establish moving playback or
 GUI behavior. See [verification](docs/development/verification.md) for exact scope.
+
+[Playback synchronization](docs/development/audio.md) and
+[construct grave recovery](docs/development/recovery.md) are separate adaptations.
+They preserve upstream media and inventory ownership; neither requires island
+generation. Recovery keeps its metadata in YiGD's saved grave records.
 
 ## Linear Bearing
 

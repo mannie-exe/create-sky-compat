@@ -1021,3 +1021,93 @@ this layout in an old world. Nether/End and ordinary-generator scope were retain
 this pass did not survey every foreign structure, complete cave connectivity or
 repeat the earlier release's cargo flight. The previous bounded DH pregen check
 is historical evidence, not proof that a new overnight pregen has finished.
+
+## Audio and construct recovery, 0.12.0
+
+Verified on 2026-11-01 with Java 21.0.13, NeoForge 21.1.264 and macOS ARM64.
+Final binary SHA-256:
+`b46118d651e66dac8ed8a48667b8b7466c33b35fd80fa6a8186dfa8afb28af12`.
+`./gradlew --no-daemon check build clientProbeJar` passed. Probes are separate
+artifacts and are not distributed with the mod.
+
+### Playback
+
+Analog Audio `BshMjyFt` (0.1.5-hotfix.1) bundles the inspected AnalogLib 0.1.0.
+A direct-WAV fixture delayed HTTP loading by five seconds. The unadapted engine's
+reported native playback cursor remained about 5.14 seconds behind the level
+clock; the initial adaptation reduced the median to about 0.13 seconds over 114
+playing samples. This measures a native queue cursor, with chunk-sized precision,
+not sample-perfect audible synchronization.
+
+Two isolated clients then used native block interaction to insert cassettes on a
+loopback dedicated server, swapping inserter/observer roles. A second HTTP fixture
+introduced unequal request delays. Final playback medians were approximately
+0.09/0.08 seconds for the first roles and 0.12/0.06 seconds after swapping.
+Pause/resume, range departure and return, a late reconnect, replacement, repeated
+short loops and an online YouTube cassette were exercised. Online loops retained
+the native server cadence rather than producing duplicate track advances. Both
+clients received native radio and speaker ranges of 128; a client at 100 blocks
+still had an active emitter. Gains, attenuation and spatiality settings were not
+changed. An eight-second window recording contained non-silent application audio.
+
+The final binary's eight audio classes are byte-identical to the two-client tested
+artifact (`11430d462500f815f60b7702bbac54ca8cf44b7aa235c4bb2ed0e05b7ad71ba6`).
+Later binary changes concern recovery and release metadata. This does not verify
+every media site, arbitrary network failure, all GPUs/operating systems or voice-chat
+integrations. Initial internet silence remains expected.
+
+The reusable client probe accepts `-Dcreate_sky_compat.probe.audio=true` and an
+optional `-Dcreate_sky_compat.probe.audio.server=127.0.0.1:PORT`. The server fixture is
+`tools/fixtures/audio/AudioProbe.java`. Compile it against the selected server and
+mod JARs in a disposable harness, serve a finite WAV through loopback port 18849,
+at `/stagger.wav` (including query variants), and use
+`audiofixture cassette PLAYER VARIANT` before native insertion. The
+fixture's `audio-control.json` accepts numbered insert/observe/disconnect/connect/
+close actions. Install neither probe in a personal instance. The test initially
+used a client-only disconnect without closing the connection; that fixture mistake
+was corrected, rather than adding an engine workaround for a server timeout.
+
+### Recovery
+
+Exact native targets were Sable 2.0.6 and YiGD 2.0.13 (`Axk4bfXT`), with Cloth
+Config 15.0.140. The minimum fixture has no Create or Aeronautics dependency.
+Both minimum and full-pack runs passed save and cold-reopen phases:
+
+```sh
+python3 tools/linear_probe.py --scenario recovery --minimal \
+  --yigd /path/to/yigd.jar --server /path/to/server/game \
+  --pack /path/to/pack --java /path/to/java
+```
+
+Omit `--minimal` for the full pack. The same finite fixture verified:
+
+- Actual plot placement, a dry grave and projected world coordinates.
+- Ordinary deck death and an ordinary world death retaining native YiGD placement.
+- Loss before death, a supported world fallback and loss after grave placement.
+- Translated/rotated claiming, remote/non-owner refusal and stale-address refusal.
+- A placement veto retaining the same recovery, followed by a permitted retry.
+- Unloading remaining distinct from destruction without a second recovery record.
+- Native Simulated disassembly, cold reopen and a single owner claim.
+- Accessories-equipped backpack, 13 named emeralds, goggles and boots restored
+  once, with no loose duplicate backpack. Competing death placement was disabled.
+
+The headless fixture uses FakePlayer; its blocked retry calls the same deferred
+placement operation directly because the fake is not an online player. It does
+not independently prove every real-player collision or online retry schedule.
+
+A separate full-client fixture (`probe.recovery=true`) verified natural grounded
+Sable tracking, native death and respawn, a client ray hitting the real plot grave,
+and native right-click claiming. It restored seven diamonds, the equipped backpack
+and nested contents, goggles, boots and the expected vanilla death drop of 98 XP.
+Screenshots confirmed a dry model and matching world-coordinate notices.
+
+That visual fixture caught two adapter defects before publication: an unspecified
+waterlogged state inherited the block's true default, and bottom-face projection
+could round down at a transformed block boundary. Air placements now set the state
+explicitly; location display and distance checks project block centers. Its ship
+setup waits for client-world readiness after an early-entry Create registry error.
+
+Protection evidence covers vanilla checks and the cancellable placement event,
+not every external claims system. Arbitrary construct splitting, other inventory
+mods, incompatible saved metadata versions and foreign relocation tools remain
+unverified. See the [recovery contract](recovery.md) before changing those boundaries.
