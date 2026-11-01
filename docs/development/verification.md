@@ -33,6 +33,8 @@ by the final UI refinements. Personal worlds and installations were not used.
 The opt-in configuration probe and concise observations/captures are retained
 under ignored `build/verification/config-ux/` during development. Production
 verification uses the public artifact separately before the pack pin is updated.
+The downloaded GitHub 0.13.0 JAR matched both published checksum manifests and
+the native candidate byte for byte; all three CI platforms passed.
 
 ## Transmission & Linkage 0.11.1
 
