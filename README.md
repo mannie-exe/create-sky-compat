@@ -24,6 +24,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Sable | 2.0.6 | Island pressure; client single-block model-data correction |
 | Aeronautics Delivery Quests | 1.1.1 | Separate route distance, chunk loading, and village landing adaptations |
 | Linear Bearing + Create/Sable/Simulated | 1.3.5 + 6.0.10/2.0.6/1.3.2 | Separate startup/drop, carriage brake/recovery, transmission and gyro sensor adaptations |
+| Linear Bearing guidance | 1.3.5 + Ponder 1.0.87+mc1.21.1 / Jade 15.10.6+neoforge | Optional tutorials and server-backed inspection; active carriage adaptation required |
 | Analog Audio + Create | 0.1.5-hotfix.1 + 6.0.10 | Radio movement-handler registration |
 | Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
 | Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
@@ -59,6 +60,11 @@ Create's real source and stress network. The gyro supplies a signal with zero
 stress capacity. Linear Bearings Fix 1.0.3 can remain installed; Compat defers its
 overlapping startup/drop repairs. Read [machinery contracts and dependency
 ownership](docs/development/linear-bearing.md) before changing or removing these adapters.
+
+Optional Ponder scenes explain assembly, motion, braking, recovery, transmission,
+and sensing. Jade shows actual brake/link state with extra detail on demand.
+Both integrations can be disabled independently; neither makes Ponder or Jade
+a mandatory dependency.
 
 ## Colorwheel
 

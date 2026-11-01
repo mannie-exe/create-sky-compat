@@ -46,7 +46,7 @@ def main():
                    if line.startswith('mod_version='))
     mod = args.mod or ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
     runtime = json.loads(subprocess.check_output(['node', str(args.pack / 'web/scripts/runtime-inputs.mjs'), str(args.pack)], text=True))
-    files = [Path(row['path']) for row in runtime['mods'] if row['key'] != 'create-sky-compat'
+    files = [Path(row['path']) for row in runtime['mods'] if row['key'] not in {'create-sky-compat', 'linear-bearing', 'linear-bearings-fix'}
              and (not args.minimal or row['key'] in {'create', 'ponder', 'sable', 'create-aeronautics'})]
     if not args.minimal:
         files.extend((args.pack / 'overrides/common/mods').glob('*.jar'))

@@ -62,13 +62,14 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                     WATER_SPAWNS, CLIMATE, VILLAGE_PLACEMENT, PRESSURE, DELIVERY_DISTANCE,
                     DELIVERY_CHUNKS, DELIVERY_LANDING -> Feature.TERRAIN;
             case COLORWHEEL_MATERIALS -> Feature.MATERIAL_IDS;
+            case LINEAR_PONDER, LINEAR_JADE -> Feature.LINEAR_CARRIAGE;
             default -> null;
         };
     }
 
     public static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
+            case LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
                     QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> true;
             default -> false;
         };
@@ -87,6 +88,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case LINEAR_BOOTSTRAP -> Map.of("linearbearing", "1.3.5");
             case LINEAR_CARRIAGE, LINEAR_TRANSMISSION -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "sable", "2.0.6", "simulated", "1.3.2");
             case LINEAR_GYRO -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "sable", "2.0.6");
+            case LINEAR_PONDER -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "ponder", "1.0.87+mc1.21.1");
+            case LINEAR_JADE -> Map.of("linearbearing", "1.3.5", "jade", "15.10.6+neoforge");
             case DH_HANDOFF -> Map.of("distanthorizons", "3.3.3");
             case DH_SHUTDOWN, DH_CACHE -> Map.of("distanthorizons", "3.3.3", "sky_archipelago", "1.3.6");
             case BLUEMAP -> Map.of("bluemap", "5.7", "sky_archipelago", "1.3.6");
@@ -134,7 +137,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case DH_HANDOFF -> List.of("dh.ClientWrapperHandoffMixin");
                 case DH_SHUTDOWN -> List.of("dh.ChunkUnloadBudgetMixin");
                 case DH_CACHE -> client ? List.of("dh.WorldLevelKeyMixin", "dh.LegacyCacheMixin") : List.of("dh.WorldLevelKeyMixin");
-                case BLUEMAP -> List.of();
+                case BLUEMAP, LINEAR_PONDER, LINEAR_JADE -> List.of();
                 case FRAMEBUFFER -> List.of("client.ShaderWrapperMixin");
                 case BALLOON -> List.of("client.BalloonShadowMixin");
                 case MATERIAL_IDS -> List.of("client.ConstructMaterialMixin");

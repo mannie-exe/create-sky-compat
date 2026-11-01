@@ -11,6 +11,22 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void linearGuidanceRequiresItsApisAndAnActiveCarriageAdapter() {
+        var versions = new HashMap<>(Map.of("linearbearing", "1.3.5", "create", "6.0.10",
+                "sable", "2.0.6", "simulated", "1.3.2", "ponder", "1.0.87+mc1.21.1", "jade", "15.10.6+neoforge"));
+        var settings = only(Feature.LINEAR_CARRIAGE, Feature.LINEAR_PONDER, Feature.LINEAR_JADE);
+        assertTrue(FeatureSelection.select(settings, versions, true).enabled(Feature.LINEAR_PONDER));
+        assertTrue(FeatureSelection.select(settings, versions, false).enabled(Feature.LINEAR_JADE));
+        assertFalse(FeatureSelection.select(settings, versions, false).enabled(Feature.LINEAR_PONDER));
+        assertTrue(FeatureSelection.select(only(Feature.LINEAR_PONDER, Feature.LINEAR_JADE), versions, true).active().isEmpty());
+        versions.remove("jade");
+        assertFalse(FeatureSelection.select(settings, versions, true).enabled(Feature.LINEAR_JADE));
+        versions.put("jade", "future");
+        assertFalse(FeatureSelection.select(only(Feature.LINEAR_CARRIAGE, Feature.LINEAR_PONDER), versions, true).enabled(Feature.LINEAR_JADE));
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, true));
+        versions.remove("ponder");
+        assertFalse(FeatureSelection.select(only(Feature.LINEAR_CARRIAGE, Feature.LINEAR_PONDER), versions, true).enabled(Feature.LINEAR_PONDER));
+    }
     @Test void linearMachineryNeedsItsOwnApisAndSurvivesStandaloneFixCoexistence() {
         var settings = only(Feature.LINEAR_BOOTSTRAP, Feature.LINEAR_CARRIAGE, Feature.LINEAR_TRANSMISSION, Feature.LINEAR_GYRO);
         var versions = new HashMap<>(Map.of("linearbearing", "1.3.5", "linearbearingsfix", "1.0.3",

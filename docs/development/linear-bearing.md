@@ -157,6 +157,41 @@ opt-in `-Dcreate_sky_compat.probe.linear=true` integrated review scene. Its
 
 [Verification](verification.md) owns measured results and outstanding limits.
 
+## Ponder and Jade
+
+`linear_bearing.ponder` adds six client tutorials for assembly, external motion and
+braking, recovery, magnetic transmission, spring transmission, and angular-rate
+sensing. It requires the active carriage adaptation, Create 6.0.10 and Ponder
+1.0.87+mc1.21.1. Transmission and gyro scenes appear only with their owning
+adaptations enabled. No client registration runs on a dedicated server.
+
+The released upstream JAR contains one dormant tutorial: its service declaration
+is not discovered by this Ponder version, and its raw Item-array registration does
+not match the ResourceLocation-array API. Its kinetic-drive prose also differs
+from the passive guide. Compat registers an independent plugin explicitly; it
+does not activate that plugin or duplicate an upstream scene that already works.
+
+Scenes use normal Ponder section animations, staged reveals, control prompts,
+keyframes, and roughly four seconds of reading time per short explanation.
+They illustrate verified mechanics without starting a Sable physics simulation
+inside Ponder. The Java scene owns English prose; `python3 tools/generate_ponder.py`
+generates its language keys and bounded workbench structure. `--check` is part of Gradle
+verification. Other translations can override the normal Ponder language keys.
+
+`linear_bearing.jade` adds optional inspection through Jade 15.10.6+neoforge.
+It also requires the active carriage adaptation. The server sends actual brake
+and transmission-link state; a client without that data does not invent a status.
+Hold Jade's detail key for assembly/recovery hints and mechanism distinctions.
+Gyro and transmission descriptions require their respective adaptations. Existing
+Create/Jade kinetic statistics remain owned by those integrations.
+
+When updating Linear, Ponder or Jade, inspect scene registration, resource paths,
+blockstate properties, server-data providers and physical-side discovery. Check
+with each optional API absent and with guidance disabled. Review the tutorials
+in-game, including replay, later scenes, and the selected shader stack. Keep
+English internal-block names and any pack-owned advancement wording aligned with
+the shipping machinery contract.
+
 ## Upstream report candidates
 
 The released carriage uses an obsolete physics lookup and a level-type guard that

@@ -38,6 +38,8 @@ inactive selections.
 | `linear_bearing.carriage` | Checked assembly, relative carriage brake and guarded recovery | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
 | `linear_bearing.transmission` | Native kinetic edges for paired springs and aligned magnetic ports | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
 | `linear_bearing.gyro_sensor` | Angular-rate output with zero stress capacity | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6 |
+| `linear_bearing.ponder` | Six machinery tutorials; transmission/gyro scenes follow their owning switches | Client, active carriage adapter, Create 6.0.10, Ponder 1.0.87+mc1.21.1 |
+| `linear_bearing.jade` | Server-backed brake/link status and inspection hints | Active carriage adapter, Jade 15.10.6+neoforge |
 | `distant_horizons.client_handoff` | Concurrent client wrapper ownership | Client, DH 3.3.3 |
 | `distant_horizons.shutdown` | Bounded island unload passes | DH 3.3.3, Sky Archipelago 1.3.6 |
 | `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.3.6; default false |

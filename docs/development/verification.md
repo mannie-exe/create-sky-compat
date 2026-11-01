@@ -1,5 +1,34 @@
 # Verification
 
+## Release 0.10.0
+
+Java 21 / NeoForge 21.1.264, Linear Bearing 1.3.5, standalone Fix 1.0.3,
+Create 6.0.10, Sable 2.0.6, Simulated 1.3.2, Ponder 1.0.87+mc1.21.1 and
+Jade 15.10.6+neoforge form the guidance fixture. `./gradlew --no-daemon check build`
+passes 86 Java cases and five release-tool checks, exact upstream/package checks and
+Ponder resource generation check. Metadata-selection coverage includes absent,
+disabled, wrong-side and unsupported guidance dependencies.
+
+`tools/startup_probe.py` passed `standalone` and `jade`: Compat needs neither
+optional API, and Jade without Linear loads without resolving Linear providers.
+The full-pack carriage fixture selected the new server adapter, exercised real
+native assembly/braking/release, and required the actual Jade server-data provider
+to agree with the brake constraint in both states. Free travel remained about
+0.69 blocks under the fixture impulse; braked displacement was below 1e-12.
+Native docking and rail-removal controls also passed. The runner now excludes
+pack-selected Linear/Fix before adding the explicitly requested test artifacts.
+
+An isolated Prism client compiled and sought all six Compat scenes and the six
+Absolute Kinematics scenes. Visual inspection caught the empty-template bounds
+problem that compilation alone missed; the maintained workbench now establishes
+the complete editable envelope before instructions run. Actual playback shows
+rails, payload, staged text and controls. Jade displays the English carriage name
+and server-backed brake status. F8 reloads the selected Complementary/Euphoria
+shader and produces Iris's native reload confirmation; ordinary R is untouched.
+These observations concern the selected renderer
+stack, not every shader, driver, locale or aircraft arrangement.
+
+
 ## Release 0.9.0
 
 2026-10-31, macOS arm64, Temurin 21.0.13, Minecraft 1.21.1, NeoForge

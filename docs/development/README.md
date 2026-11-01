@@ -44,6 +44,13 @@ scroll limits, a proposed client adapter, and remaining Connector/runtime checks
 
 See [Linear Bearing](linear-bearing.md) for machinery contracts, standalone-fix
 ownership, finite native fixtures and dependency-update boundaries.
+Its optional client tutorials and Jade inspection use the same machinery contract.
+Run `python3 tools/generate_ponder.py` after editing scene prose or the bounded
+workbench; Gradle checks those resources. The disposable client probe accepts
+`-Dcreate_sky_compat.probe.guidance=true` alongside `probe.linear=true`. Use
+`compatprobe_guidance_check` to compile and seek the selected scenes, and
+`compatprobe_ponder <item-id>` to inspect real playback. A successful compile/seek
+does not establish visible geometry, reading time or correct interaction cues.
 
 ## Implementation
 

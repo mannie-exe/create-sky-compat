@@ -16,6 +16,8 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public final class ClientConfiguration {
     public ClientConfiguration(ModContainer container, IEventBus modBus) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationOverview::new);
+        if (OptionalIntegrations.enabled(Feature.LINEAR_PONDER))
+            design.inherent.createskycompat.linear.client.LinearPonder.register();
         if (OptionalIntegrations.enabled(Feature.QUESTLOG_INTERFACE)
                 || OptionalIntegrations.enabled(Feature.QUESTLOG_NOTIFICATIONS)) {
             container.registerConfig(ModConfig.Type.CLIENT, JournalPreferences.SPEC,

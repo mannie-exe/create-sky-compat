@@ -20,6 +20,15 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import java.nio.file.*;
 @Mod("linear_review_probe")
 public class CarriageProbe {
+ private void jade(net.minecraft.world.level.block.entity.BlockEntity entity,boolean expected)throws Exception{
+  if(!net.neoforged.fml.ModList.get().isLoaded("jade"))return;
+  var accessor=Class.forName("snownee.jade.api.BlockAccessor");
+  Object proxy=java.lang.reflect.Proxy.newProxyInstance(accessor.getClassLoader(),new Class[]{accessor},(object,method,args)->method.getName().equals("getBlockEntity")?entity:null);
+  var type=Class.forName("design.inherent.createskycompat.linear.LinearJadeProvider");var provider=type.getField("INSTANCE").get(null);var data=new net.minecraft.nbt.CompoundTag();
+  type.getMethod("appendServerData",net.minecraft.nbt.CompoundTag.class,accessor).invoke(provider,data,proxy);
+  var state=data.getCompound("create_sky_compat:linear");if(!state.contains("braked")||state.getBoolean("braked")!=expected)throw new AssertionError("Jade brake status disagrees with native constraint");
+  report.addProperty(expected?"jadeBraked":"jadeReleased",true);
+ }
  private boolean start;private int tick;private ServerSubLevel ship;private BlockPos carriage;private Vec3 initial, freeStart, lockStart, releaseStart;private Direction normal=Direction.UP, rail=Direction.SOUTH;private BlockPos control;private final BlockPos connector=new BlockPos(20,150,20);private final JsonObject report=new JsonObject();
  public CarriageProbe(){NeoForge.EVENT_BUS.addListener((ServerStartedEvent event)->start=true);NeoForge.EVENT_BUS.addListener(this::tick);}
  private void tick(ServerTickEvent.Post event){if(!start)return;try{
@@ -61,12 +70,14 @@ public class CarriageProbe {
   }
   if(tick==40){
    var entity=level.getBlockEntity(carriage);var field=entity.getClass().getDeclaredField("isLocked");field.setAccessible(true);if(!field.getBoolean(entity))throw new AssertionError("Brake did not lock");
+   jade(entity,true);
    lockStart=Sable.HELPER.projectOutOfSubLevel(level,carriage.getCenter());dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(ship).applyLinearImpulse(new org.joml.Vector3d(rail.getStepX()*6,rail.getStepY()*6,rail.getStepZ()*6));
   }
   if(tick==48){double moved=Sable.HELPER.projectOutOfSubLevel(level,carriage.getCenter()).distanceTo(lockStart);report.addProperty("brakedLoadTravel",moved);if(moved>0.03)throw new AssertionError("Brake slipped under load "+moved);}
   if(tick==50){level.setBlock(control,Blocks.STONE.defaultBlockState(),3);level.setBlock(connector.below(),Blocks.AIR.defaultBlockState(),3);}
   if(tick==55){
    var entity=level.getBlockEntity(carriage);var field=entity.getClass().getDeclaredField("isLocked");field.setAccessible(true);if(field.getBoolean(entity))throw new AssertionError("Brake did not release");
+   jade(entity,false);
    releaseStart=Sable.HELPER.projectOutOfSubLevel(level,carriage.getCenter());dev.ryanhcode.sable.api.physics.handle.RigidBodyHandle.of(ship).applyLinearImpulse(new org.joml.Vector3d(rail.getStepX()*6,rail.getStepY()*6,rail.getStepZ()*6));
   }
   if(tick==63){double moved=Math.abs(Sable.HELPER.projectOutOfSubLevel(level,carriage.getCenter()).subtract(releaseStart).dot(Vec3.atLowerCornerOf(rail.getNormal())));report.addProperty("releasedTravel",moved);if(moved<0.01)throw new AssertionError("Released carriage did not move "+moved);}

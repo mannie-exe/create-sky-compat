@@ -22,6 +22,8 @@ public enum Feature {
     LINEAR_CARRIAGE("linear_bearing.carriage"),
     LINEAR_TRANSMISSION("linear_bearing.transmission"),
     LINEAR_GYRO("linear_bearing.gyro_sensor"),
+    LINEAR_PONDER("linear_bearing.ponder"),
+    LINEAR_JADE("linear_bearing.jade"),
     DH_HANDOFF("distant_horizons.client_handoff"),
     DH_SHUTDOWN("distant_horizons.shutdown"),
     DH_CACHE("distant_horizons.world_cache", false),

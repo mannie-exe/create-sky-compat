@@ -1,30 +1,21 @@
-# Create Sky Compat 0.9.0
+# Create Sky Compat 0.10.0
 
-Add four optional adaptations for Linear Bearing 1.3.5:
+Add optional Linear Bearing guidance alongside the existing machinery repairs:
 
-- Preserve safe dedicated-server registrations while removing client-only startup
-  linkage, and supply the missing bubble-gum drop. With Linear Bearings Fix 1.0.3
-  installed, it remains the sole owner of these overlapping repairs.
-- Check assembly before converting the bearing, engage a relative carriage brake
-  through current Sable/Simulated APIs, and recover aligned, braked machinery
-  without overwriting occupied destinations or losing cargo.
-- Connect magnetic ports and spring anchors through Create's actual kinetic
-  network. Loads use the real drive's stress budget; endpoints generate no power.
-- Make the gyroscopic gearbox a zero-capacity angular-rate sensor and let its
-  reading settle to zero after stopping.
+- Six Ponder tutorials cover assembly, external motion and braking, recovery,
+  magnetic ports, spring anchors, and angular-rate sensing. They use staged
+  reveals, interaction prompts, animations and localized English text.
+- Jade shows server-observed brake and transmission-link state, with detail-key
+  hints for assembly, recovery and the difference between sensing and driving.
+- Independent startup switches control both integrations. Ponder requires the
+  active carriage adapter and the reviewed Ponder/Create pair; Jade requires
+  that adapter and the reviewed Jade version. Transmission and gyro guidance
+  follows its owning adapter. Minimum installation remains NeoForge plus Compat.
 
-The passive guide, recipes, yields, weights and other utility mechanics retain
-their existing roles. These changes do not add a powered linear actuator or an
-automatic stabilizer. Independent startup switches control each adaptation;
-Create 6.0.10, Sable 2.0.6 and Simulated 1.3.2 are the reviewed machinery targets.
+The original passive-guide, brake, transmission and sensor contracts are
+unchanged. Terrain, saved generation identity, rendering, lighting, Questlog,
+DH and BlueMap adaptations retain their existing behavior.
 
-Existing Colorwheel and SDL/Lamb lighting repairs remain included. Terrain,
-Questlog, DH, BlueMap, rendering and saved generation identity are unchanged.
-No SeedGen integration is added. Hoofprint zoom remains a documented investigation,
-with no applied adapter or settings changes.
-
-See [machinery contracts](docs/development/linear-bearing.md) and
-[verification](docs/development/verification.md) for native loading, physics,
-recovery, reload and client checks. Old upstream injected-source network saves,
-arbitrary third-party assembly exceptions and every aircraft arrangement are
-outside those fixtures. Modrinth publication remains deferred.
+See [machinery guidance](docs/development/linear-bearing.md#ponder-and-jade) and
+[verification](docs/development/verification.md) for tested scope and limitations.
+Modrinth publication remains deferred.

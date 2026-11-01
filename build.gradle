@@ -40,6 +40,7 @@ configurations {
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    compileOnly('maven.modrinth:jade:eYz2YBGT') { transitive = false }
     compileOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
     testRuntimeOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
     compileOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
@@ -105,6 +106,14 @@ tasks.register('verifyUpstream') {
             if (artifact == null) throw new GradleException("Missing pinned ${name}")
             def actual = java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString()
             if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
+        }
+
+        def jade = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'jade'
+        }?.file
+        if (jade == null || java.security.MessageDigest.getInstance('SHA-256').digest(jade.bytes).encodeHex().toString()
+                != '276f1f65a20d04f536989c4f311949d770b52c440c23c2b904a08860f3c93810') {
+            throw new GradleException('Unexpected Jade compile-only dependency')
         }
 
         def linear = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
@@ -213,6 +222,10 @@ tasks.register('releaseToolTest', Exec) {
     commandLine 'python3', '-m', 'unittest', 'discover', '-s', 'tools/tests'
 }
 tasks.named('check') { dependsOn 'verifyPackage', 'releaseToolTest' }
+tasks.register('verifyPonderResources', Exec) {
+    commandLine 'python3', 'tools/generate_ponder.py', '--check'
+}
+tasks.named('check') { dependsOn 'verifyPonderResources' }
 
 // Test released nested targets without bundling them in the output mod.
 def pinnedNestedJar = { String taskName, source, String entry, String outerHash, String innerHash ->

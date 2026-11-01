@@ -19,7 +19,7 @@ def main():
     parser.add_argument('--server', type=Path, required=True, help='Read-only installed game directory')
     parser.add_argument('--java', required=True)
     parser.add_argument('--scenario', choices=['standalone', 'all-disabled', 'terrain-disabled', 'terrain', 'full',
-                                             'unsupported-disabled', 'unsupported-enabled', 'questlog', 'questlog-disabled'], required=True)
+                                             'unsupported-disabled', 'unsupported-enabled', 'questlog', 'questlog-disabled', 'jade'], required=True)
     parser.add_argument('--mod', type=Path)
     args = parser.parse_args()
     server = args.server.expanduser().resolve()
@@ -60,6 +60,8 @@ def main():
                 if args.scenario in {'terrain', 'terrain-disabled'} and 'sky_archipelago' not in ids:
                     continue
                 if args.scenario in {'questlog', 'questlog-disabled'} and 'questlog' not in ids:
+                    continue
+                if args.scenario == 'jade' and 'jade' not in ids:
                     continue
                 shutil.copy2(source, run / 'mods' / source.name)
                 selected[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
