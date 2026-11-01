@@ -136,6 +136,8 @@
   "create_sky_compat.jade.linkage.suppressed": "Output limited by %s",
   "message.create_sky_compat.recovery.placed": "Grave: %1$s (%2$s). Recovery ID: %3$s",
   "message.create_sky_compat.recovery.pending": "Grave placement pending near %1$s (%2$s). Items remain saved. Recovery ID: %3$s",
+  "create_sky_compat.configuration.feature.analog_audio.playback_timeline": "Radio playback timeline",
+  "create_sky_compat.configuration.feature.yigd.construct_recovery": "Construct grave recovery",
   "create_sky_compat.ponder.linear_assembly.header": "Assembling a Linear Bearing",
   "create_sky_compat.ponder.linear_assembly.text_1": "Linear Casings form a passive guide. Match the bearing and casing orientations.",
   "create_sky_compat.ponder.linear_assembly.text_2": "Glue the payload together above the bearing.",

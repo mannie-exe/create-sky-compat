@@ -11,6 +11,17 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void overviewNamesEveryConfigurableFeature() throws Exception {
+        try (var stream = getClass().getResourceAsStream("/assets/create_sky_compat/lang/en_us.json")) {
+            assertNotNull(stream);
+            var labels = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(stream,
+                    java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            for (var feature : Feature.values()) {
+                var key = "create_sky_compat.configuration.feature." + feature.key;
+                assertTrue(labels.has(key) && !labels.get(key).getAsString().isBlank(), key);
+            }
+        }
+    }
     @Test void constructRecoveryRequiresBothTargetsAndSupportsIntegratedServers() {
         var settings = only(Feature.SABLE_GRAVES);
         for (boolean client : new boolean[]{true, false}) {

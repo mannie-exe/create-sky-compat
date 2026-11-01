@@ -1025,7 +1025,7 @@ is historical evidence, not proof that a new overnight pregen has finished.
 ## Audio and construct recovery, 0.12.0
 
 Verified on 2026-11-01 with Java 21.0.13, NeoForge 21.1.264 and macOS ARM64.
-Final binary SHA-256:
+Local native-check binary SHA-256:
 `b46118d651e66dac8ed8a48667b8b7466c33b35fd80fa6a8186dfa8afb28af12`.
 `./gradlew --no-daemon check build clientProbeJar` passed. Probes are separate
 artifacts and are not distributed with the mod.
@@ -1111,3 +1111,10 @@ Protection evidence covers vanilla checks and the cancellable placement event,
 not every external claims system. Arbitrary construct splitting, other inventory
 mods, incompatible saved metadata versions and foreign relocation tools remain
 unverified. See the [recovery contract](recovery.md) before changing those boundaries.
+
+The published 0.12.0 binary is `ad94fd9756f4aa78a1d75f42fb64a1a772491f03b0472a26410795325faece9b`.
+Its only entry difference is a generated `getFocused()` bridge in the configuration
+overview list, forwarding to the existing superclass method. All adapter classes
+match the native-check binary; the published JAR also passed the full recovery
+fixture. Version 0.12.1 adds the two missing English overview labels and a check
+that every feature has one; it does not alter adapter behavior.

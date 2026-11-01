@@ -1,4 +1,4 @@
-# Create Sky Compat 0.12.0
+# Create Sky Compat 0.12.1
 
 Add two independently configurable adaptations:
 
@@ -21,3 +21,6 @@ Terrain generation and existing LOD identities are unchanged. Keep the recovery
 adapter enabled while using its saved construct graves. Initial internet loading
 can remain silent; this is not sample-perfect cross-client playback or universal
 claims-mod integration.
+
+The startup overview names both new adaptations in English. A coverage check
+requires a readable label for every feature switch.
