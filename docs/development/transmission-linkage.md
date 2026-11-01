@@ -52,6 +52,28 @@ case described in [upstream issue 5](https://github.com/userenxv/aeronautics-uti
 Do not enlarge the range without aligning rendering, selection bounds and
 physical length. No range extension is implemented here.
 
+## Ponder wording
+
+The six native tutorials use shared English keys under
+`aeronautics_utility_objects.ponder.shared`. Text corrections can be supplied by a
+resource pack or resource-only mod; they do not require a new optional runtime
+adapter. Keep them with the distributing pack's maintained resources rather than
+duplicating them in Compat.
+
+Review tutorial claims against the actual implementation: Expected Length is a
+distance, Stretch Resistance damps axial motion, and Return Force restores target
+length. The regulator requires kinetic input but its set pressure/flow does not
+establish fluid consumption. Brass strain uses absolute link length; andesite
+strain uses deviation from the connected rest length, including compression.
+Conversion bearings require physical rotation and expose a separate kinetic output;
+Resistance opposes that motion rather than setting its RPM.
+
+The settings tutorial's initial pointer targets the lower head although normal rod
+settings open from the rod body. Correcting prose does not move that pointer.
+Preserve native scene timing and animations unless a separate demonstrated scene
+defect justifies a bounded runtime adaptation. Recheck source keys and native
+playback when updating upstream.
+
 ## Checks and updates
 
 `tools/linear_probe.py --scenario linkage --linkage /path/to/0.2.9.jar` reuses the
