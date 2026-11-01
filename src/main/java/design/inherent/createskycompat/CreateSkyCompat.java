@@ -34,7 +34,8 @@ public final class CreateSkyCompat {
                             + "Restore its recorded configuration; automatic world conversion is unsupported.");
             });
         }
-        if (selection.enabled(Feature.TERRAIN)) modBus.addListener(IntegrationPacks::register);
+        if (selection.enabled(Feature.TERRAIN) || selection.enabled(Feature.LINEAR_BOOTSTRAP))
+            modBus.addListener(IntegrationPacks::register);
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isDedicatedServer() && OptionalIntegrations.blueMap()) {
             design.inherent.createskycompat.bluemap.BlueMapIntegration.register();
         }

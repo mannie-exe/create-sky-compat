@@ -50,6 +50,8 @@ public final class ConfigurationOverview extends Screen {
                     || feature == Feature.BLUEMAP && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) reason = text("wrong_side");
             else if (FeatureSelection.prerequisite(feature) != null && !selection.enabled(FeatureSelection.prerequisite(feature)))
                 reason = text("prerequisite", FeatureSelection.prerequisite(feature).key);
+            else if (feature == Feature.LINEAR_BOOTSTRAP && OptionalIntegrations.loaded("linearbearingsfix"))
+                reason = text("external_linear_fix");
             else reason = text("missing", String.join(", ", FeatureSelection.dependencies(feature).keySet().stream().filter(id -> !OptionalIntegrations.loaded(id)).sorted().toList()));
             String dependencies = String.join(", ", FeatureSelection.dependencies(feature).entrySet().stream().sorted(java.util.Map.Entry.comparingByKey()).map(e -> e.getKey() + " " + (e.getValue().endsWith(".") ? e.getValue() + "x" : e.getValue())).toList());
             Component configured = Component.translatable(OptionalIntegrations.configured(feature) ? "options.on" : "options.off");

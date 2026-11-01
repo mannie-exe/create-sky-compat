@@ -37,16 +37,9 @@ Modrinth publication is deferred. Use these fields if publication is approved:
 
 For the current prerelease, select **Beta**, **Minecraft 1.21.1**, and **NeoForge**.
 Upload `create-sky-compat-<version>-mc1.21.1-neoforge.jar` as the primary file.
-Declare all integrated content mods optional, including Sky Archipelago. Pin exact
-versions where the adapter targets internals:
-
-| Dependency | Version | Relationship |
-| --- | --- | --- |
-| Sky Archipelago | 1.3.6 (`RwLz4CJb`) | Optional |
-| Sky Villages | 1.0.6, NeoForge (`3InSHTOp`) | Optional, requires Architectury |
-| Sable | 2.0.6 (`fg9dTRz9`) | Optional |
-| Aeronautics Delivery Quests | 1.1.1 | Optional |
-| Questlog | 3.5.0 (`Pykla7tJ`) | Optional |
+Declare all integrated content mods optional, including Sky Archipelago. Use the
+[configuration matrix](configuration.md#adaptation-switches) for supported versions
+and multi-mod requirements instead of maintaining another dependency list.
 
 Sky Villages declares Architectury API as its own required dependency. Its
 13.0.11 release is the tested runtime. Do not upload dependency JARs or the test

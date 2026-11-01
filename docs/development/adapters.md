@@ -14,6 +14,7 @@ implementation tests to the exact released artifacts.
 | Sable pressure | `DimensionPhysicsMixin`, pressure built-in pack | Review Sable physics profile codec and island-only selection; preserve upstream machine/block weights. |
 | ADQ | Separate distance, chunk-loading, and landing mixins | Review private route lambdas, injection counts, ticket lifetime and cleanup. Landing requires Sky Villages but does not enable its placement adaptations. |
 | Analog Audio | `AnalogAudioCreateMixin` | Review public Create registry erasure and upstream reflective lookup. Retire when released Analog Audio registers the handler correctly. See [procedure](README.md#analog-audio). |
+| Linear Bearing | Separate constructor/loot, carriage lifecycle, kinetic links and gyro hooks | Review [contracts and native fixtures](linear-bearing.md), exact constructor shape, repair ownership, Sable frames/handles and native Create accounting. |
 | DH | Separate client handoff, shutdown, cache selections | Review ownership and dimension guards, ordinary/default keys, reconnect and shutdown. See [DH](lod.md). |
 | BlueMap | Dedicated-server registration only | Review extension schema, map opt-in and renderer boundaries. See [BlueMap](bluemap.md). |
 | Moving lights | `SodiumLightingMixin` and independent Create-owner cleanup, physical client; no terrain prerequisite | See [lighting](lighting.md). Retire each hook when SDL supports the selected Sodium cache API or clears its Create holders on world unload. |

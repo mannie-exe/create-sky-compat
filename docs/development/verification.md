@@ -1,5 +1,70 @@
 # Verification
 
+## Release 0.9.0
+
+2026-10-31, macOS arm64, Temurin 21.0.13, Minecraft 1.21.1, NeoForge
+21.1.264. Native-checked artifact SHA-256:
+`eadbdb99e9e32b96352e56e7953818caf0682b866ff24b82a7cd96e52c570b5d`.
+`./gradlew --no-daemon check build clientProbeJar` passes 85 Java cases,
+five release-tool cases, exact upstream hashes and package boundaries. The
+constructor test uses the released class, preserves safe registrations and rejects
+a changed call site before editing. Metadata tests cover absent, disabled,
+unsupported-but-disabled, dedicated/client and standalone-fix ownership selections.
+
+The final candidate passes a full dedicated fixture with Linear Bearings Fix 1.0.3:
+all nine obtainable blocks and recipes load; one gum block drops; the standalone
+fix owns startup/loot. Thirteen signed converter thresholds, all 32 lamp emission
+states, crouching gum collision and copied-plank/fixed-friction behavior pass.
+An empty-front assembly creates one body; a bedrock refusal preserves the bearing,
+target and body count. Both transmissions drive a real fan at 32 RPM magnitude
+with one real source, share its stress budget, stall on insufficient capacity and
+stop when that source is removed. Driven wrong-facing, obstructed, out-of-range
+and other-dimension controls reject coupling. Bootstrap without the standalone
+fix also loads in the minimum target fixture. A Compat-only server selects no
+adaptations and shuts down normally.
+
+A cold-reopen fixture on the final candidate assembles a guide on a parent rotated
+60 degrees, then applies real angular and linear impulses. Relative locked travel
+is about 0.0000022 blocks with no measured relative angle error. Both body roots
+see the Sable connection. After saving and reopening the same disposable world,
+the brake and reciprocal links rebuild; relative position error is about 0.003
+blocks and manual release works.
+
+Earlier fixtures of the same carriage implementation exercise floor, ceiling and
+both wall profiles, free travel, repeated brake/release, rail removal and a native
+docking control. Quarter-turn recovery preserves four named copper ingots in a
+chest, four rails and one bearing with no loose item drops; the empty body disappears
+and the bearing reassembles. Blocked and above-ceiling destinations refuse without
+changing cargo or the brake. These checks use actual ticks, rigid bodies and
+impulses rather than only checking a lock flag.
+
+The transmission fixture exercises a 90-degree magnetic ship endpoint, a spring
+link to a ship, incompatible driven inputs, reattachment, saved static links and
+source removal. A physically rotating gyro feeds a zero-load converter, reaching
+118 RPM in this fixture. Stopping the body returns both readings to zero. Before
+the rounding correction, both a repeated-orientation sample and the physical stop
+remained at +0.5 RPM. Zero stress capacity is independently checked.
+
+`tools/linear_probe.py` owns repeatable commands and input freezing; manifests and
+results are in `build/verification/linear`. No performance or arbitrary-aircraft
+claims follow from these small scenes. Ordinary recipe costs and weight policy
+are unchanged. Utility collision/material checks do not establish gum as physical
+glue or copied-material mass. Old networks saved by the upstream injected-source
+implementation and every arbitrary third-party assembly callback are not covered
+by the new-world fixtures.
+
+The final artifact also loaded the intended client selection with Linear added
+and the standalone fix absent. The opt-in integrated scene accepted a real
+empty-hand use packet, assembled one unbraked carriage, engaged its brake and
+recovered one bearing with zero remaining bodies. Native rail/carriage/payload
+models rendered in the selected resource stack with shaders disabled. Saving,
+quitting, reopening the same save and reassembling worked; the powered payload
+rebuilt the brake. Screenshots, state snapshots and sanitized logs are retained
+under `build/verification/linear/client`. Existing optional-resource/model warnings
+are not claimed fixed. This is not a shader/performance or every utility-block
+animation comparison. The disposable profile was closed normally; personal
+instances, launcher settings and saves are untouched.
+
 ## Release 0.8.0
 
 2026-10-31, macOS arm64, Temurin 21.0.13, Minecraft 1.21.1, NeoForge

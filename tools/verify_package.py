@@ -20,14 +20,14 @@ with zipfile.ZipFile(root / f'build/libs/create-sky-compat-{version}-mc1.21.1-ne
             assert dependency['type'] == 'optional', name
             assert dependency['versionRange'] == '[0,)', name
     assert not any(name.startswith('data/') and not name.endswith('/') for name in names), 'Integration data must be gated'
-    for group in ['terrain', 'ores', 'pressure']:
+    for group in ['terrain', 'ores', 'pressure', 'linear']:
         assert f'packs/{group}/pack.mcmeta' in names
     assert 'packs/terrain/data/create_sky_compat/worldgen/world_preset/islands_v1.json' in names
     assert 'packs/pressure/data/create_sky_compat/dimension_physics/islands_v1.json' in names
     assert 'seedrenderer' not in deps
     assert not any('/createskycompat/lod/' in n or '/mixin/lod/' in n or '/clientprobe/' in n for n in names)
     assert 'LICENSE' in names
-    assert not any(n.startswith(('org/sathrek/', 'com/aureljz/', 'de/bluecolored/', 'com/palm1/', 'com/simibubi/', 'fr0nick/', 'dev/lambdaurora/', 'net/caffeinemc/', 'dev/djefrey/', 'dev/engine_room/')) or '/probe/' in n or n.endswith('.jar') for n in names)
+    assert not any(n.startswith(('org/sathrek/', 'com/aureljz/', 'de/bluecolored/', 'com/palm1/', 'com/simibubi/', 'fr0nick/', 'dev/lambdaurora/', 'net/caffeinemc/', 'dev/djefrey/', 'dev/engine_room/', 'com/bearing/', 'dev/simulated_team/', 'dev/ryanhcode/', 'net/createmod/')) or '/probe/' in n or n.endswith('.jar') for n in names)
     mixin = json.loads(jar.read('create_sky_compat.mixins.json'))
     assert mixin['required'] and mixin['injectors']['defaultRequire'] == 1
     assert mixin['mixins'] == [] and mixin['client'] == [], 'Every target hook must be selected at startup'

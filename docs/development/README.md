@@ -39,6 +39,12 @@ server validation and the isolated journal fixture.
 See [moving lights](lighting.md) for the optional SDL/Sodium hook, native fixture,
 upstream boundaries and pack-integration requirements.
 
+See the [Hoofprint zoom investigation](hoofprint.md) for the pinned config and
+scroll limits, a proposed client adapter, and remaining Connector/runtime checks.
+
+See [Linear Bearing](linear-bearing.md) for machinery contracts, standalone-fix
+ownership, finite native fixtures and dependency-update boundaries.
+
 ## Implementation
 
 `FeatureSettings` reads immutable switches before Mixin target resolution.

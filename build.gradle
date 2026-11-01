@@ -16,6 +16,10 @@ repositories {
         content { includeGroup 'maven.modrinth' }
     }
     maven { url = 'https://maven.architectury.dev' }
+    maven {
+        url = 'https://maven.createmod.net'
+        content { includeGroup 'net.createmod.ponder' }
+    }
 }
 neoForge {
     version = '21.1.264'
@@ -36,6 +40,10 @@ configurations {
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    compileOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
+    testRuntimeOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
+    compileOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
+    testRuntimeOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
     flywheelSource('maven.modrinth:create:UjX6dr61') { transitive = false }
     compileOnly('maven.modrinth:colorwheel:8rq5KP4U') { transitive = false }
     testRuntimeOnly('maven.modrinth:colorwheel:8rq5KP4U') { transitive = false }
@@ -97,6 +105,21 @@ tasks.register('verifyUpstream') {
             if (artifact == null) throw new GradleException("Missing pinned ${name}")
             def actual = java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString()
             if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
+        }
+
+        def linear = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'linear-bearing'
+        }?.file
+        if (linear == null || java.security.MessageDigest.getInstance('SHA-256').digest(linear.bytes).encodeHex().toString()
+                != '29563cdb52a82ac7d8b3aca823cd47a15c443e06314df06ca1a635ae9e91a253') {
+            throw new GradleException('Unexpected Linear Bearing compile-only dependency')
+        }
+        def ponder = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'net.createmod.ponder' && it.name == 'ponder-neoforge'
+        }?.file
+        if (ponder == null || java.security.MessageDigest.getInstance('SHA-256').digest(ponder.bytes).encodeHex().toString()
+                != 'd6b7fdf94359f73dc1fee730eded898d51b3bf0d626710753253becd8e4e6bef') {
+            throw new GradleException('Unexpected Ponder compile-only dependency')
         }
 
         def colorwheel = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
@@ -226,11 +249,23 @@ def aeronauticsTestJar = pinnedNestedJar('extractAeronautics', configurations.ae
         'META-INF/jarjar/dev.eriksonn.aeronautics.aeronautics-neoforge-1.21.1-1.3.2.jar',
         'a3f330d4757640f8715d991a43eedb826e4d0e51558d859c843ae6693bd35f1e',
         '97fbf1e27f38674145b8521b140613dc8258bea7efca456dc2686e22bd683933')
+def simulatedJar = pinnedNestedJar('extractSimulated', configurations.aeronauticsSource,
+        'META-INF/jarjar/dev.simulated_team.simulated.simulated-neoforge-1.21.1-1.3.2.jar',
+        'a3f330d4757640f8715d991a43eedb826e4d0e51558d859c843ae6693bd35f1e',
+        'fdf9d250996a084b52fced3a5b0089e879a5cac05dc7bcf295ac1f4ebe5e2bff')
+def companionJar = pinnedNestedJar('extractSableCompanion', configurations.veilSource,
+        'META-INF/jarjar/sable-companion-common-1.21.1-1.6.0.jar',
+        '9c199157843bf953a47dff625fc5bb41c01a90538d35ad18e6996bbcb8a617c2',
+        '873633e35046e3761b277ff8a1ecad0d55d9a3014fa81a0b084c9aecba1f3bed')
 def sodiumTestJar = pinnedNestedJar('extractSodium', configurations.sodiumSource,
         'META-INF/jarjar/net.caffeinemc.sodium-neoforge-0.8.13+mc1.21.1-mod.jar',
         '575d187b15328d7bddd8a9b1bee64333c22c14735f5780ec49eac0cd5503c08d',
         'd71acbffafd3d177add7624710114d8570cdd70d5553a2b5c8ab371852c59ce3')
 dependencies {
+    compileOnly simulatedJar
+    compileOnly companionJar
+    testImplementation simulatedJar
+    testImplementation companionJar
     compileOnly flywheelTestJar
     testImplementation flywheelTestJar
     testImplementation sodiumTestJar

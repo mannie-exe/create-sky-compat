@@ -15,6 +15,7 @@ final class IntegrationPacks {
         add(event, Feature.TERRAIN, "terrain", "Create Sky island preset");
         add(event, Feature.ORE_PLACEMENT, "ores", "Create Sky relative feature placement");
         add(event, Feature.PRESSURE, "pressure", "Create Sky island pressure");
+        add(event, Feature.LINEAR_BOOTSTRAP, "linear", "Linear Bearing block drops");
     }
 
     private static void add(AddPackFindersEvent event, Feature feature, String path, String title) {

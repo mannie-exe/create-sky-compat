@@ -31,6 +31,13 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             var required = dependencies(feature);
             var missing = required.keySet().stream().filter(id -> !mods.containsKey(id)).sorted().toList();
             if (!missing.isEmpty()) { inactive.put(feature, "missing " + String.join(", ", missing)); continue; }
+            if (feature == Feature.LINEAR_BOOTSTRAP && mods.containsKey("linearbearingsfix")) {
+                if (!mods.get("linearbearingsfix").equals("1.0.3"))
+                    throw new IllegalStateException("Review the installed Linear Bearings Fix before enabling "
+                            + feature.key + "; supported companion version is 1.0.3. Disable this adaptation in " + FeatureSettings.FILE + ".");
+                inactive.put(feature, "provided by Linear Bearings Fix 1.0.3");
+                continue;
+            }
             for (var entry : required.entrySet()) {
                 String version = mods.get(entry.getKey()), expected = entry.getValue();
                 if (!(expected.endsWith(".") ? version.startsWith(expected) : version.equals(expected)))
@@ -77,6 +84,9 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case DELIVERY_DISTANCE, DELIVERY_CHUNKS -> Map.of("aeronautics_delivery_quests", "1.1.1");
             case DELIVERY_LANDING -> Map.of("aeronautics_delivery_quests", "1.1.1", "skyvillages", "1.0.6", "architectury", "13.");
             case ANALOG_AUDIO -> Map.of("analogaudio", "0.1.5-hotfix.1", "create", "6.0.10");
+            case LINEAR_BOOTSTRAP -> Map.of("linearbearing", "1.3.5");
+            case LINEAR_CARRIAGE, LINEAR_TRANSMISSION -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "sable", "2.0.6", "simulated", "1.3.2");
+            case LINEAR_GYRO -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "sable", "2.0.6");
             case DH_HANDOFF -> Map.of("distanthorizons", "3.3.3");
             case DH_SHUTDOWN, DH_CACHE -> Map.of("distanthorizons", "3.3.3", "sky_archipelago", "1.3.6");
             case BLUEMAP -> Map.of("bluemap", "5.7", "sky_archipelago", "1.3.6");
@@ -117,6 +127,10 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case DELIVERY_CHUNKS -> List.of("DeliveryChunksMixin");
                 case DELIVERY_LANDING -> List.of("DeliveryLandingMixin");
                 case ANALOG_AUDIO -> List.of("AnalogAudioCreateMixin");
+                case LINEAR_BOOTSTRAP -> client ? List.of() : List.of("linear.LinearBootstrapMixin");
+                case LINEAR_CARRIAGE -> List.of("linear.DockingBrakeAccessor", "linear.LinearMovingMixin", "linear.LinearCasingMixin", "linear.LinearAssemblyMixin", "linear.LinearCasingBlockMixin");
+                case LINEAR_TRANSMISSION -> List.of("linear.TransmissionMixin", "linear.MagneticPortMixin");
+                case LINEAR_GYRO -> List.of("linear.GyroSensorMixin");
                 case DH_HANDOFF -> List.of("dh.ClientWrapperHandoffMixin");
                 case DH_SHUTDOWN -> List.of("dh.ChunkUnloadBudgetMixin");
                 case DH_CACHE -> client ? List.of("dh.WorldLevelKeyMixin", "dh.LegacyCacheMixin") : List.of("dh.WorldLevelKeyMixin");

@@ -96,5 +96,14 @@
   "create_sky_compat.configuration.feature.lighting.sodium": "Sodium moving lights",
   "create_sky_compat.configuration.feature.lighting.lifecycle": "Moving-light ownership",
   "create_sky_compat.configuration.feature.rendering.colorwheel_materials": "Colorwheel construct materials",
-  "create_sky_compat.configuration.feature.rendering.colorwheel_samplers": "Colorwheel sampler allocation"
+  "create_sky_compat.configuration.feature.rendering.colorwheel_samplers": "Colorwheel sampler allocation",
+  "create_sky_compat.configuration.feature.linear_bearing.bootstrap": "Linear Bearing startup and drops",
+  "create_sky_compat.configuration.external_linear_fix": "Provided by Linear Bearings Fix 1.0.3",
+  "create_sky_compat.configuration.feature.linear_bearing.transmission": "Linear Bearing kinetic connections",
+  "create_sky_compat.configuration.feature.linear_bearing.gyro_sensor": "Gyroscopic angular-rate sensor",
+  "create_sky_compat.configuration.feature.linear_bearing.carriage": "Linear Bearing carriage brake",
+  "create_sky_compat.linear.carriage_obstructed": "Assembly positions changed. Check the assembled structure before retrying.",
+  "create_sky_compat.linear.brake_required": "Engage one carriage brake before disassembling.",
+  "create_sky_compat.linear.align_before_disassembly": "Align the carriage to the rail grid before disassembling.",
+  "create_sky_compat.linear.disassembly_obstructed": "Clear and load the destination before disassembling. Existing blocks were kept."
 }

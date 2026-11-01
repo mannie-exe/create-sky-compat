@@ -23,6 +23,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Sky Villages + Architectury | 1.0.6 + 13.x (tested 13.0.11) | Village clearance and placement; needs Sky Archipelago |
 | Sable | 2.0.6 | Island pressure; client single-block model-data correction |
 | Aeronautics Delivery Quests | 1.1.1 | Separate route distance, chunk loading, and village landing adaptations |
+| Linear Bearing + Create/Sable/Simulated | 1.3.5 + 6.0.10/2.0.6/1.3.2 | Separate startup/drop, carriage brake/recovery, transmission and gyro sensor adaptations |
 | Analog Audio + Create | 0.1.5-hotfix.1 + 6.0.10 | Radio movement-handler registration |
 | Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
 | Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
@@ -49,6 +50,15 @@ balloon, and single-block glass comparisons. The original flickering/gapped airs
 shadow report remains unresolved; this is not a general shadow correction.
 The Analog Audio registration fix likewise does not establish moving playback or
 GUI behavior. See [verification](docs/development/verification.md) for exact scope.
+
+## Linear Bearing
+
+Independent switches repair dedicated startup and gum drops, passive-guide braking
+and recovery, magnetic/spring kinetic transmission, and gyro sensing. Links use
+Create's real source and stress network. The gyro supplies a signal with zero
+stress capacity. Linear Bearings Fix 1.0.3 can remain installed; Compat defers its
+overlapping startup/drop repairs. Read [machinery contracts and dependency
+ownership](docs/development/linear-bearing.md) before changing or removing these adapters.
 
 ## Colorwheel
 

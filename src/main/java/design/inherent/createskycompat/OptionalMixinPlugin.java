@@ -16,6 +16,9 @@ public final class OptionalMixinPlugin implements IMixinConfigPlugin {
     @Override public String getRefMapperConfig() { return null; }
     @Override public boolean shouldApplyMixin(String targetClassName, String mixinClassName) { return true; }
     @Override public void acceptTargets(Set<String> myTargets, Set<String> otherTargets) {}
-    @Override public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
+    @Override public void preApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
+        if (mixinClassName.equals("design.inherent.createskycompat.mixin.linear.LinearBootstrapMixin"))
+            design.inherent.createskycompat.linear.LinearBootstrapPatch.apply(targetClass);
+    }
     @Override public void postApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {}
 }

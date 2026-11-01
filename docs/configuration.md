@@ -34,6 +34,10 @@ inactive selections.
 | `delivery.chunk_loading` | Retained chunk requests and cleanup | Active preset, ADQ 1.1.1 |
 | `delivery.village_landing` | Bounded village surface retry | Active preset, ADQ 1.1.1, Sky Villages 1.0.6, Architectury 13.x |
 | `analog_audio.movement_registration` | Radio handler registration | Analog Audio 0.1.5-hotfix.1, Create 6.0.10 |
+| `linear_bearing.bootstrap` | Dedicated startup and missing bubble-gum drop; defers to Linear Bearings Fix 1.0.3 when present | Linear Bearing 1.3.5; terrain is not required |
+| `linear_bearing.carriage` | Checked assembly, relative carriage brake and guarded recovery | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
+| `linear_bearing.transmission` | Native kinetic edges for paired springs and aligned magnetic ports | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
+| `linear_bearing.gyro_sensor` | Angular-rate output with zero stress capacity | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6 |
 | `distant_horizons.client_handoff` | Concurrent client wrapper ownership | Client, DH 3.3.3 |
 | `distant_horizons.shutdown` | Bounded island unload passes | DH 3.3.3, Sky Archipelago 1.3.6 |
 | `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.3.6; default false |

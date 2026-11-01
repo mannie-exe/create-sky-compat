@@ -11,6 +11,45 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void linearMachineryNeedsItsOwnApisAndSurvivesStandaloneFixCoexistence() {
+        var settings = only(Feature.LINEAR_BOOTSTRAP, Feature.LINEAR_CARRIAGE, Feature.LINEAR_TRANSMISSION, Feature.LINEAR_GYRO);
+        var versions = new HashMap<>(Map.of("linearbearing", "1.3.5", "linearbearingsfix", "1.0.3",
+                "create", "6.0.10", "sable", "2.0.6", "simulated", "1.3.2"));
+        for (boolean client : new boolean[]{false, true}) {
+            var selection = FeatureSelection.select(settings, versions, client);
+            assertEquals(java.util.Set.of(Feature.LINEAR_CARRIAGE, Feature.LINEAR_TRANSMISSION, Feature.LINEAR_GYRO), selection.active());
+            assertEquals(8, selection.mixins(client).size());
+        }
+        versions.remove("simulated");
+        var noSpringApi = FeatureSelection.select(settings, versions, false);
+        assertFalse(noSpringApi.enabled(Feature.LINEAR_TRANSMISSION));
+        assertFalse(noSpringApi.enabled(Feature.LINEAR_CARRIAGE));
+        assertTrue(noSpringApi.enabled(Feature.LINEAR_GYRO));
+        versions.remove("sable");
+        assertTrue(FeatureSelection.select(settings, versions, false).active().isEmpty());
+        versions.replaceAll((id, version) -> "future");
+        assertTrue(FeatureSelection.select(only(), versions, false).active().isEmpty());
+    }
+    @Test void linearBootstrapIsOptionalAndDefersOnlyItsOverlappingRepairs() {
+        var settings = only(Feature.LINEAR_BOOTSTRAP);
+        var versions = new HashMap<>(Map.of("linearbearing", "1.3.5"));
+        assertEquals(java.util.List.of("linear.LinearBootstrapMixin"),
+                FeatureSelection.select(settings, versions, false).mixins(false));
+        var client = FeatureSelection.select(settings, versions, true);
+        assertTrue(client.enabled(Feature.LINEAR_BOOTSTRAP), "client still needs the gated loot pack");
+        assertTrue(client.mixins(true).isEmpty(), "client initialization must remain unchanged");
+        assertTrue(FeatureSelection.select(settings, Map.of(), false).active().isEmpty());
+        versions.put("linearbearingsfix", "1.0.3");
+        var coexist = FeatureSelection.select(settings, versions, false);
+        assertTrue(coexist.active().isEmpty());
+        assertEquals("provided by Linear Bearings Fix 1.0.3", coexist.inactive().get(Feature.LINEAR_BOOTSTRAP));
+        versions.put("linearbearingsfix", "future");
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, false));
+        versions.put("linearbearing", "future");
+        assertTrue(FeatureSelection.select(only(), versions, false).active().isEmpty());
+        versions.remove("linearbearingsfix");
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, false));
+    }
     private static final Map<String, String> SUPPORTED = Map.ofEntries(
             Map.entry("sky_archipelago", "1.3.6"), Map.entry("skyvillages", "1.0.6"),
             Map.entry("architectury", "13.0.11"), Map.entry("sable", "2.0.6"),
