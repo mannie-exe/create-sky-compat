@@ -28,7 +28,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Analog Audio + Create | 0.1.5-hotfix.1 + 6.0.10 | Radio movement-handler registration |
 | Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
 | Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
-| Questlog | 3.5.0 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
+| Questlog | 3.5.0, 3.5.3 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
 | BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
 | Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |
 | Aeronautics + Iris | 1.3.2 + the Iris version above | Exclude the balloon hot-air overlay from shadow rendering |

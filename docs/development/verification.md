@@ -1,5 +1,18 @@
 # Verification
 
+## Questlog 3.5.3 support
+
+Compared exact 3.5.0 and 3.5.3 JARs. Quest details, display records, objective
+interfaces and reward-collection packet classes are unchanged. Changes cover the
+upstream editor, scrollable description, loot-table reward implementation and
+structure/biome tag objectives. The adaptation compiles against checked 3.5.3;
+version selection accepts only the two reviewed versions.
+
+`./gradlew --no-daemon check build` passed 86 Java cases and five tool checks.
+`tools/startup_probe.py --scenario questlog` passed a dedicated server with only
+Compat, Questlog 3.5.3 and its required animation library; only server reward
+validation activated. The updated full-pack native exporter exercised all 72 authored entries and 25 fixed reward grants, including repeated-claim rejection. The isolated client displayed the wrapped OR conditions, reward preview and settings bookmark with Questlog 3.5.3, and Jade retained its server-observed carriage state. These checks do not establish every upstream editor or loot-table reward path.
+
 ## Release 0.10.1
 
 Java 21 / NeoForge 21.1.264, Linear Bearing 1.3.5, standalone Fix 1.0.3,

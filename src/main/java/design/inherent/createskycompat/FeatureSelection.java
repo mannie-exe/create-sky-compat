@@ -40,7 +40,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             }
             for (var entry : required.entrySet()) {
                 String version = mods.get(entry.getKey()), expected = entry.getValue();
-                if (!(expected.endsWith(".") ? version.startsWith(expected) : version.equals(expected)))
+                if (!(expected.endsWith(".") ? version.startsWith(expected) : version.equals(expected))
+                        && !(entry.getKey().equals("questlog") && expected.equals("3.5.0") && version.equals("3.5.3")))
                     throw new IllegalStateException("Create Sky Compat " + feature.key + " requires "
                             + entry.getKey() + " " + expected + "; found " + version
                             + ". Disable this adaptation in " + FeatureSettings.FILE + " or install the supported version.");

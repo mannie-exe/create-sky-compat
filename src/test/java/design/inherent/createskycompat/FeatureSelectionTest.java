@@ -96,7 +96,8 @@ class FeatureSelectionTest {
 
     @Test void journalFeaturesNeedOnlyQuestlogAndRespectPhysicalSides() {
         var settings = only(Feature.QUESTLOG_INTERFACE, Feature.QUESTLOG_NOTIFICATIONS, Feature.QUESTLOG_REWARD_VALIDATION);
-        var versions = Map.of("questlog", "3.5.0");
+        var versions = Map.of("questlog", "3.5.3");
+        assertEquals(3, FeatureSelection.select(settings, Map.of("questlog", "3.5.0"), true).active().size());
         assertEquals(3, FeatureSelection.select(settings, versions, true).active().size());
         var server = FeatureSelection.select(settings, versions, false);
         assertEquals(java.util.Set.of(Feature.QUESTLOG_REWARD_VALIDATION), server.active());

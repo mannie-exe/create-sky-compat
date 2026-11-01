@@ -52,7 +52,7 @@ dependencies {
     testRuntimeOnly('maven.modrinth:create:UjX6dr61') { transitive = false }
     compileOnly('maven.modrinth:sable-dynamic-lights:vjb0hAWB') { transitive = false }
     testRuntimeOnly('maven.modrinth:sable-dynamic-lights:vjb0hAWB') { transitive = false }
-    compileOnly('maven.modrinth:questlog:Pykla7tJ') { transitive = false }
+    compileOnly('maven.modrinth:questlog:qnCcrOl2') { transitive = false }
     compileOnly('maven.modrinth:distanthorizons:9w34y8ai') { transitive = false }
     compileOnly('maven.modrinth:bluemap:8iJcPOHJ') { transitive = false }
     sodiumSource('maven.modrinth:sodium:uMOpc5uV') { transitive = false }
@@ -167,7 +167,7 @@ tasks.register('verifyUpstream') {
             it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'questlog'
         }?.file
         if (questlog == null || java.security.MessageDigest.getInstance('SHA-256').digest(questlog.bytes).encodeHex().toString()
-                != 'a78b76ff010ea227fcfabc133689bffd24c76e1572d88ec26a26258ca1b96bd0') {
+                != '7f0a449d26b75abc12a15a4795ecb3dc30525bdcedd81c576b23d56c70df1020') {
             throw new GradleException('Unexpected Questlog compile-only dependency')
         }
 
