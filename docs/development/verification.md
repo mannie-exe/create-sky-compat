@@ -5,6 +5,14 @@
 2026-10-31, macOS arm64, Temurin 21.0.13, Minecraft 1.21.1, NeoForge
 21.1.264. Native-checked artifact SHA-256:
 `eadbdb99e9e32b96352e56e7953818caf0682b866ff24b82a7cd96e52c570b5d`.
+The published binary has SHA-256
+`6806eba864105219ced3c7dcf376e67ebd4c5a02eb4f363b869e3eebd78e7eee`.
+Linux, Windows and macOS CI produced identical binary and source JARs. Its only
+entry difference from the native candidate is a compiler-generated `getFocused()`
+bridge in the configuration list, delegating to the inherited implementation.
+All machinery, lighting and rendering entries match byte for byte. The published
+binary also loaded in the complete Create Sky Atlas capture and decoded 70 entries.
+
 `./gradlew --no-daemon check build clientProbeJar` passes 85 Java cases,
 five release-tool cases, exact upstream hashes and package boundaries. The
 constructor test uses the released class, preserves safe registrations and rejects
