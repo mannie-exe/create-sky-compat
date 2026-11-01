@@ -1116,5 +1116,5 @@ The published 0.12.0 binary is `ad94fd9756f4aa78a1d75f42fb64a1a772491f03b0472a26
 Its only entry difference is a generated `getFocused()` bridge in the configuration
 overview list, forwarding to the existing superclass method. All adapter classes
 match the native-check binary; the published JAR also passed the full recovery
-fixture. Version 0.12.1 adds the two missing English overview labels and a check
+fixture. Version 0.12.1 adds missing English audio, recovery and Linkage labels and a check
 that every feature has one; it does not alter adapter behavior.

@@ -22,5 +22,5 @@ adapter enabled while using its saved construct graves. Initial internet loading
 can remain silent; this is not sample-perfect cross-client playback or universal
 claims-mod integration.
 
-The startup overview names both new adaptations in English. A coverage check
+The startup overview names the audio, recovery and Linkage adaptations in English. A coverage check
 requires a readable label for every feature switch.
