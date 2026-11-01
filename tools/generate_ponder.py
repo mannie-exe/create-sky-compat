@@ -45,7 +45,7 @@ def outputs():
     nbt += b'\x00'
     structure = ROOT / 'src/main/resources/assets/create_sky_compat/ponder/linear/workbench.nbt'
     return {lang: (json.dumps(strings, ensure_ascii=False, indent=2) + '\n').encode(),
-            structure: gzip.compress(nbt, mtime=0)}
+            structure: gzip.compress(nbt, compresslevel=9, mtime=0)}
 
 
 def main():
@@ -53,8 +53,12 @@ def main():
     parser.add_argument('--check', action='store_true')
     args = parser.parse_args()
     for path, data in outputs().items():
-        if path.exists() and path.read_bytes() == data:
-            continue
+        if path.exists():
+            current = path.read_bytes()
+            # The committed gzip is the distributed artifact. Python/zlib versions
+            # may encode the same authored NBT differently; verify the full content.
+            if (gzip.decompress(current) == gzip.decompress(data) if path.suffix == '.nbt' else current == data):
+                continue
         if args.check:
             raise SystemExit(f'Stale Ponder resource: {path.relative_to(ROOT)}')
         path.parent.mkdir(parents=True, exist_ok=True)

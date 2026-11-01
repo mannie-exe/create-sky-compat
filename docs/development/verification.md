@@ -1,6 +1,6 @@
 # Verification
 
-## Release 0.10.0
+## Release 0.10.1
 
 Java 21 / NeoForge 21.1.264, Linear Bearing 1.3.5, standalone Fix 1.0.3,
 Create 6.0.10, Sable 2.0.6, Simulated 1.3.2, Ponder 1.0.87+mc1.21.1 and

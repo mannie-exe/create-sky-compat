@@ -176,7 +176,8 @@ keyframes, and roughly four seconds of reading time per short explanation.
 They illustrate verified mechanics without starting a Sable physics simulation
 inside Ponder. The Java scene owns English prose; `python3 tools/generate_ponder.py`
 generates its language keys and bounded workbench structure. `--check` is part of Gradle
-verification. Other translations can override the normal Ponder language keys.
+verification. The NBT check compares decompressed content; committed compressed
+bytes are retained across Python/zlib versions. Other translations can override the normal Ponder language keys.
 
 `linear_bearing.jade` adds optional inspection through Jade 15.10.6+neoforge.
 It also requires the active carriage adaptation. The server sends actual brake
