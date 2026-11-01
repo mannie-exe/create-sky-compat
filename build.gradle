@@ -50,6 +50,10 @@ dependencies {
     testRuntimeOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
     compileOnly('maven.modrinth:create-aeronautics-transmission-linkage:WoUjC6d4') { transitive = false }
     testRuntimeOnly('maven.modrinth:create-aeronautics-transmission-linkage:WoUjC6d4') { transitive = false }
+    compileOnly('maven.modrinth:create-redstone-link-gui:s8Yw7I6l') { transitive = false }
+    testRuntimeOnly('maven.modrinth:create-redstone-link-gui:s8Yw7I6l') { transitive = false }
+    compileOnly('maven.modrinth:create-redstone-additions:4P4QJB3m') { transitive = false }
+    testRuntimeOnly('maven.modrinth:create-redstone-additions:4P4QJB3m') { transitive = false }
     compileOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
     testRuntimeOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
     flywheelSource('maven.modrinth:create:UjX6dr61') { transitive = false }
@@ -129,6 +133,15 @@ tasks.register('verifyUpstream') {
         if (jade == null || java.security.MessageDigest.getInstance('SHA-256').digest(jade.bytes).encodeHex().toString()
                 != '276f1f65a20d04f536989c4f311949d770b52c440c23c2b904a08860f3c93810') {
             throw new GradleException('Unexpected Jade compile-only dependency')
+        }
+
+        ['create-redstone-link-gui': '34cb29227e7aa2a497956aa6f5bb74f07f40f134346ca847c0d4350b87345c97',
+         'create-redstone-additions': 'e030a25518b757c037d80e9ba25f9631074d3936d157f4d6fd129337b434e706'].each { name, expected ->
+            def artifact = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+                it.moduleVersion.id.group == 'maven.modrinth' && it.name == name
+            }?.file
+            if (artifact == null || java.security.MessageDigest.getInstance('SHA-256').digest(artifact.bytes).encodeHex().toString() != expected)
+                throw new GradleException("Unexpected ${name} compile-only dependency")
         }
 
         def linkage = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {

@@ -176,3 +176,15 @@ modId="yigd"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
+
+[[dependencies.create_sky_compat]]
+modId="createredstonelinkgui"
+type="optional"
+versionRange="[0,)"
+side="BOTH"
+
+[[dependencies.create_sky_compat]]
+modId="create_redstone_additions"
+type="optional"
+versionRange="[0,)"
+side="BOTH"

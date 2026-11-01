@@ -98,8 +98,9 @@ public final class ConfigurationOverview extends Screen {
             if (OptionalIntegrations.enabled(Feature.QUESTLOG_INTERFACE) || OptionalIntegrations.enabled(Feature.QUESTLOG_NOTIFICATIONS)) buildPreferences();
             else content.row(text("preferences"), text("unavailable"));
         }
-        content.heading(text("fixes"));
-        for (Feature feature : SettingsCatalog.features(selected)) addFeature(feature, false);
+        var features = SettingsCatalog.features(selected);
+        if (!features.isEmpty()) content.heading(text("fixes"));
+        for (Feature feature : features) addFeature(feature, false);
         var files = SettingsCatalog.FILES.stream().filter(file -> file.group() == selected && selected != Group.JOURNAL).toList();
         if (!files.isEmpty()) content.heading(text("tuning"));
         for (var file : files) addFile(file);
@@ -155,6 +156,7 @@ public final class ConfigurationOverview extends Screen {
         var mod = net.neoforged.fml.loading.LoadingModList.get().getMods().stream().filter(m -> m.getModId().equals(id)).findFirst();
         return mod.map(net.neoforged.neoforgespi.language.IModInfo::getDisplayName).orElseGet(() -> {
             String key = switch (id) {
+                case "createredstonelinkgui" -> "redstone_link_gui"; case "create_redstone_additions" -> "redstone_additions";
                 case "sky_archipelago" -> "sky_archipelago"; case "skyvillages" -> "sky_villages";
                 case "aeronautics_delivery_quests" -> "delivery"; case "analogaudio" -> "analog_audio";
                 case "aeronautics_utility_objects" -> "transmission_linkage"; case "linearbearing" -> "linear_bearing";

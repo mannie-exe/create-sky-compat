@@ -33,6 +33,9 @@ final class ClientGuidanceProbe {
                     items.put("aeronautics_utility_objects:damping_stress_bearing",1);
                     items.put("aeronautics_utility_objects:brass_universal_joint",1);
                 }
+                if (net.neoforged.fml.ModList.get().isLoaded("create_redstone_additions")) {
+                    for(String item : new String[]{"diode","conjunctor","disjunctor","inverter","crossroad","iron_resistor"}) items.put("create_redstone_additions:"+item,1);
+                }
                 for (String item : new String[]{"linearbearing:linear_bearing", "linearbearing:magnetic_port",
                         "linearbearing:torsional_anchor", "linearbearing:gyroscopic_gearbox",
                         "absolute_kinematics:hinge", "absolute_kinematics:ball_joint"}) {

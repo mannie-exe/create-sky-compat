@@ -1160,3 +1160,38 @@ The published 0.12.1 JAR is
 All 246 production classes match published 0.12.0. The full native recovery
 fixture passed again with this exact public artifact; the final check/build has
 93 passing unit tests, including startup feature-label coverage.
+
+## Redstone adapters, 0.14.0
+
+Java 21 / NeoForge 21.1.264 checks used unmodified Link GUI 1.21.1-1.9.2 and
+Additions 1.0.5 with Create 6.0.10. `check build clientProbeJar` passed.
+The final local binary SHA-256 is
+`d38184414450a4408a33746fd8d05404fa212eddb544b07994a81d8a70fc6338`.
+
+The finite redstone fixture reproduced adventure frequency editing and
+placement-query world mutation with the adapters disabled. Enabled runs covered
+GUI-only, Additions-only, both targets without Sable, a full pack and standalone
+Compat startup. Native handlers verified authorized edits, four preset rows,
+invalid-slot refusal, ghost-item counts, a protection veto, stale/distant menus,
+plain-link relocation after menu closure and duplicate-move refusal. The full
+fixture additionally verified projected Sable menus, same-frame relocation
+eligibility and cross-frame rejection. Its ship check exercises the permission
+boundary, not a long-running moving-vessel simulation.
+
+Native block checks covered AND partial/full inputs and support loss, the OR
+default, Crossroad strong-output attenuation and feedback clearing, native wrench
+rotation, successful axe scraping and canceled scraping. The full pack resolved
+all nine authored block drops. These checks do not establish every circuit timing
+combination, external claim system, copper-door interaction or Tiny/Void Link path.
+
+The isolated client opened the real link menu, selected an emerald ghost frequency
+without consuming its inventory stack, and opened a vector-thruster channel. The
+corrected move button was inactive on that machine. All six Additions Ponders
+compiled and sought their final frame alongside existing machinery tutorials.
+The lit inverter was visible without an opaque texture background. Configuration
+catalogue navigation showed the native click-mode file under Client / Link GUI;
+its shared permission and relocation switches remain under Server / shared.
+
+Early fixture failures came from incorrect synthetic method targets and checking
+Create behavior before initialization. Both were corrected before publication;
+foreign resource warnings already present in the full pack are not claimed fixed.

@@ -39,7 +39,7 @@ final class ClientConfigurationProbe {
         var mc = Minecraft.getInstance();
         if (++ticks % 10 != 0 || mc.getOverlay() != null) return;
         try {
-            if (!opened && !Boolean.getBoolean("create_sky_compat.probe.configuration.journal") && mc.screen instanceof TitleScreen) { opened = true; open(); }
+            if (!opened && !Boolean.getBoolean("create_sky_compat.probe.redstone") && !Boolean.getBoolean("create_sky_compat.probe.configuration.journal") && mc.screen instanceof TitleScreen) { opened = true; open(); }
             Path control = root.resolve("config-review-control.json");
             if (Files.isRegularFile(control) && Files.size(control) < 16384) {
                 var command = JsonParser.parseString(Files.readString(control)).getAsJsonObject();

@@ -17,6 +17,12 @@ import org.slf4j.LoggerFactory;
 public final class ClientFlightProbe {
     private int ticks;
     public ClientFlightProbe() {
+        if (Boolean.getBoolean("create_sky_compat.probe.redstone")) {
+            new ClientGuidanceProbe();
+            new ClientConfigurationProbe();
+            new ClientRedstoneProbe();
+            return;
+        }
         if (Boolean.getBoolean("create_sky_compat.probe.configuration")) {
             new ClientConfigurationProbe();
             return;

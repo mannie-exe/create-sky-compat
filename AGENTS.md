@@ -18,6 +18,12 @@ out of dedicated-server paths. Verify the minimum installation and the complete
 integration set; add intermediate combinations when a changed dependency boundary
 needs them, rather than assuming one successful full-pack run covers absence.
 
+Redstone adapters must authorize both custom packets and native menu actions;
+distance alone is insufficient. Preserve signal-strength contracts and keep
+input reads free of world mutations. Restrict relocation to verified block and
+coordinate-frame combinations. Retire version-pinned hooks only after checking
+the corresponding upstream repair; keep loot and wording fixes with their pack.
+
 Use saved generation identity and the island-relative geological frame as the
 authority for placement and height adaptations. Keep tuning in its owning config,
 not duplicated here. Test clipping, sparsity and resource availability across

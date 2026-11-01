@@ -1,24 +1,23 @@
-# Create Sky Compat 0.13.0
+# Create Sky Compat 0.14.0
 
-Configure adaptations through a category and mod sidebar. Client, Server / shared,
-World generation, and Status & files replace the separate configuration entrances.
-Individual fixes retain their existing keys, defaults, dependencies, and side rules.
+Add optional adaptations for Redstone Link GUI 1.21.1-1.9.2 and Redstone Additions
+1.0.5, each with independent startup switches and configuration catalogue entries.
+Neither mod becomes required; upstream JARs remain unchanged.
 
-Journal preferences apply immediately through either entrance. Startup fixes use
-Save changes; current activation, saved next-start values, and unsaved edits remain
-separate. Missing targets stay inactive. Details contain dependency versions,
-prerequisites, file locations, and defaults without repeating them in every row.
+Link editing now checks player permissions, current menu/channel, original target
+identity, valid indices and range on the server. Sable access uses projected world
+positions. Relocation is limited to ordinary Redstone Links without factory-panel
+connections, within one world or construct frame; unsupported moves are rejected.
 
-The startup editor preserves unrelated properties and omitted defaults, refuses
-stale overwrites, and replaces valid files atomically. Failed writes retain drafts.
-Generation edits require confirmation and retain saved-world identity safeguards.
-The village editor also rejects inverted minimum/maximum distances before saving.
+Additions repairs cover Conjunctor placement and settled ticks, Crossroad feedback
+and coherent state updates, support loss, unpowered Disjunctor defaults, Create
+wrench interactions, successful-only verdigris scraping, and the lit inverter's
+cutout render layer. Crossroad strong output through solid blocks loses one level;
+wire behavior retains its upstream contract. Missing loot and language resources
+remain the installing pack's responsibility.
 
-Use wrapped rows, independent scrolling, native keyboard controls, and contextual
-narration. The journal bookmark keeps its existing skin and parent-screen state.
-No new UI dependency or configuration migration is required.
-
-Minimum and full-pack clients and dedicated-server combinations were checked.
-See [verification](docs/development/verification.md) for exact artifacts and limits,
-and the [editor reference](docs/development/configuration.md) for update procedures.
-Generation, gameplay adaptations, and LOD identities retain their existing behavior.
+Verification covers disabled-adapter controls, independent target absence,
+minimum/full dedicated servers, native packet and block interactions, Sable
+coordinate frames, client menus and Ponder scenes. See the redstone development
+reference for limits, resource ownership and dependency-update considerations.
+Terrain, saved generation identity and LOD cache policy are unchanged.

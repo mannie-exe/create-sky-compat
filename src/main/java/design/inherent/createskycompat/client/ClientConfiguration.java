@@ -16,6 +16,11 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public final class ClientConfiguration {
     public ClientConfiguration(ModContainer container, IEventBus modBus) {
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationOverview::new);
+        if (OptionalIntegrations.enabled(Feature.REDSTONE_RENDERING))
+            modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) -> event.enqueueWork(() ->
+                    net.minecraft.client.renderer.ItemBlockRenderTypes.setRenderLayer(
+                            net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.parse("create_redstone_additions:inverter")),
+                            net.minecraft.client.renderer.RenderType.cutout())));
         if (OptionalIntegrations.enabled(Feature.LINEAR_PONDER))
             design.inherent.createskycompat.linear.client.LinearPonder.register();
         if (OptionalIntegrations.enabled(Feature.QUESTLOG_INTERFACE)

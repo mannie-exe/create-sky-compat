@@ -298,3 +298,19 @@ Before release, rerun native checks after changes to upstream dependencies or th
 predicate. Update the [verification evidence](verification.md), inspect package
 contents and test the release staging process. Keep downloaded classes, worlds,
 logs and inspection files out of Git.
+
+## Redstone checks
+
+See [redstone adapters](redstone.md) for signal contracts, authorization and update
+boundaries. `tools/linear_probe.py --scenario redstone` reuses the finite machinery
+runner with `--redstone-gui /path/to/gui.jar` and
+`--redstone-additions /path/to/additions.jar`. Use `--minimal` for Create/Ponder
+without Sable; `--redstone-target gui` or `additions` checks target absence. Both
+JAR arguments remain available to the fixture compiler. `--redstone-baseline`
+disables only these adapters for the upstream control. The full run also checks
+projected Sable coordinates and the installing pack's block drops.
+
+The disposable client probe accepts `-Dcreate_sky_compat.probe.redstone=true`,
+requires `config-review-fixture.json`, and creates only its `redstone-review`
+fixture save. It exposes the existing finite configuration controls and Ponder
+commands. Never install probe JARs or fixture markers in personal instances.

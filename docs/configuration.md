@@ -38,6 +38,13 @@ inactive selections.
 | `yigd.construct_recovery` | Construct graves, bounded fallback and world-space tracking | Sable 2.0.6, YiGD 2.0.13; item and XP storage enabled |
 | `transmission_linkage.interactions` | Authorized endpoint/settings changes and deliberate rod removal | Transmission & Linkage 0.2.9, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
 | `transmission_linkage.jade` | Server-backed link/actuator inspection | Active interaction adapter, Jade 15.10.6+neoforge |
+| `redstone_link_gui.interactions` | Authorize packets and native menu actions | Link GUI 1.21.1-1.9.2, Create 6.0.10 |
+| `redstone_link_gui.relocation` | Restrict moves to ordinary links in one coordinate frame | Link GUI 1.21.1-1.9.2, Create 6.0.10 |
+| `redstone_link_gui.ship_access` | Project menu and relocation distances | Active interaction adapter, Link GUI 1.21.1-1.9.2, Create 6.0.10, Sable 2.0.6 |
+| `redstone_additions.logic` | Pure placement, coherent signals and support loss | Additions 1.0.5, Create 6.0.10 |
+| `redstone_additions.scraping` | Award verdigris after successful axe scraping | Additions 1.0.5, Create 6.0.10 |
+| `redstone_additions.wrench` | Native rotation and recovery | Additions 1.0.5, Create 6.0.10 |
+| `redstone_additions.transparency` | Lit inverter cutout layer | Client, Additions 1.0.5, Create 6.0.10 |
 | `linear_bearing.bootstrap` | Dedicated startup and missing bubble-gum drop; defers to Linear Bearings Fix 1.0.3 when present | Linear Bearing 1.3.5; terrain is not required |
 | `linear_bearing.carriage` | Checked assembly, relative carriage brake and guarded recovery | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
 | `linear_bearing.transmission` | Native kinetic edges for paired springs and aligned magnetic ports | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
@@ -361,3 +368,12 @@ checks. Disabling terrain does not convert a marked save.
 
 The [implementation reference](development/configuration.md) owns editor safety,
 optional loading, native UI fixtures, and dependency-update checks.
+
+## Redstone Link GUI
+
+The catalogue links its native client click-mode file and common relocation-range
+file under their owning mod groups. These are upstream settings, separate from
+Compat startup switches. Default `clickMode="SHIFT_SLOT"` requires an empty hand
+and Shift + right-click on a frequency slot; default `moveRange=24` applies to
+the relocation tool. Keep the common value consistent on both sides. Client
+settings are personal; common settings are not server-to-client configuration sync.

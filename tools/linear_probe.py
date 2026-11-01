@@ -12,7 +12,7 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 LINEAR_HASH = '29563cdb52a82ac7d8b3aca823cd47a15c443e06314df06ca1a635ae9e91a253'
 FIX_HASH = '04afaaaf62951fc4cccfbb4468572fea2a876a6b5e872a6c60545d171fb21976'
-SCENES = {'recovery': 'recovery/RecoveryProbe', 'bootstrap': 'linear/BootstrapProbe', 'carriage': 'linear/CarriageProbe',
+SCENES = {'redstone': 'redstone/RedstoneProbe', 'recovery': 'recovery/RecoveryProbe', 'bootstrap': 'linear/BootstrapProbe', 'carriage': 'linear/CarriageProbe',
           'parent': 'linear/ParentProbe', 'reopen': 'linear/ParentProbe',
           'disassembly': 'linear/DisassemblyProbe', 'transmission': 'linear/TransmissionProbe',
           'linkage': 'linkage/LinkageProbe',
@@ -30,6 +30,10 @@ def main():
     parser.add_argument('--pack', type=Path, required=True, help='Read-only authored Create Sky directory')
     parser.add_argument('--java', type=Path, required=True, help='Java 21 executable; javac must be alongside it')
     parser.add_argument('--linear', type=Path, help='Unmodified Linear Bearing 1.3.5 JAR')
+    parser.add_argument('--redstone-gui', type=Path)
+    parser.add_argument('--redstone-additions', type=Path)
+    parser.add_argument('--redstone-target', choices=['both', 'gui', 'additions'], default='both')
+    parser.add_argument('--redstone-baseline', action='store_true')
     parser.add_argument('--yigd', type=Path, help='Exact YiGD recovery fixture dependency')
     parser.add_argument('--linkage', type=Path, help='Unmodified Transmission & Linkage 0.2.9 JAR')
     parser.add_argument('--linkage-baseline', action='store_true', help='Disable the Linkage adapters for a native failure control')
@@ -41,7 +45,7 @@ def main():
     args = parser.parse_args()
     if args.scenario == 'recovery' and not args.yigd:
         parser.error('--scenario recovery requires --yigd')
-    if args.scenario != 'recovery' and not args.linear:
+    if args.scenario not in {'recovery', 'redstone'} and not args.linear:
         parser.error('Machinery scenes require --linear')
     allowed = {'carriage': {'floor', 'ceiling', 'wall-front', 'wall-back'},
                'disassembly': {'floor', 'height', 'quarter'}}.get(args.scenario, {'floor'})
@@ -64,11 +68,19 @@ def main():
     if args.linkage:
         excluded.add('create-aeronautics-transmission-linkage')
     minimal_keys = {'sable', 'cloth-config'} if args.scenario == 'recovery' else {'create', 'ponder', 'sable', 'create-aeronautics'}
+    if args.scenario == 'redstone':
+        minimal_keys = {'create', 'ponder'}
     files = [Path(row['path']) for row in runtime['mods'] if row['key'] not in excluded
              and (not args.minimal or row['key'] in minimal_keys)]
     if not args.minimal:
         files.extend((args.pack / 'overrides/common/mods').glob('*.jar'))
     files.append(mod)
+    for target, expected in [(args.redstone_gui, '34cb29227e7aa2a497956aa6f5bb74f07f40f134346ca847c0d4350b87345c97'), (args.redstone_additions, 'e030a25518b757c037d80e9ba25f9631074d3936d157f4d6fd129337b434e706')]:
+        if target:
+            if digest(target) != expected:
+                parser.error('Unexpected redstone target bytes')
+            if args.redstone_target == "both" or (target == args.redstone_gui and args.redstone_target == "gui") or (target == args.redstone_additions and args.redstone_target == "additions"):
+                files.append(target.resolve())
     if args.linear:
         files.append(args.linear)
     if args.yigd:
@@ -84,6 +96,10 @@ def main():
     output = ROOT / 'build/verification/linear' / f'{args.scenario}-{args.orientation}-{"coexist" if args.fix else "absent"}'
     if args.minimal:
         output = output.with_name(output.name + '-minimal')
+    if args.scenario == 'redstone':
+        output = output.with_name(output.name + '-' + args.redstone_target)
+    if args.redstone_baseline:
+        output = output.with_name(output.name + '-baseline')
     if args.linkage_baseline:
         output = output.with_name(output.name + '-baseline')
     output.mkdir(parents=True, exist_ok=True)
@@ -100,13 +116,17 @@ def main():
         (run / 'libraries').symlink_to(libraries, target_is_directory=True)
         game = libraries / 'net/neoforged/neoforge/21.1.264/neoforge-21.1.264-server.jar'
         dependencies = list((ROOT / 'build/dependencies').glob('*.jar'))
-        classpath = ':'.join(map(str, [game, *sorted(libraries.rglob('*.jar')), *sorted((run / 'mods').glob('*.jar')), *dependencies]))
+        classpath = ':'.join(map(str, [game, *sorted(libraries.rglob('*.jar')), *sorted((run / 'mods').glob('*.jar')), *dependencies, *[p.resolve() for p in [args.redstone_gui, args.redstone_additions] if p]]))
         classes = run / 'classes'
         classes.mkdir()
         source = ROOT / 'tools/fixtures' / f'{SCENES[args.scenario]}.java'
         compile_command = [str(args.java.with_name('javac')), '-proc:none', '-cp', classpath, '-d', str(classes), str(source)]
         if args.scenario == 'recovery' and not args.minimal:
             compile_command.append(str(ROOT / 'tools/fixtures/recovery/BackpackRecovery.java'))
+        if args.scenario == 'redstone':
+            compile_command.append(str(ROOT / 'tools/fixtures/redstone/RedstoneGuiProbe.java'))
+        if args.scenario == 'redstone' and not args.minimal:
+            compile_command.append(str(ROOT / 'tools/fixtures/redstone/RedstoneShipProbe.java'))
         result = subprocess.run(compile_command, capture_output=True, text=True)
         (output / 'compile.log').write_text(result.stdout + result.stderr)
         if result.returncode:
@@ -122,6 +142,12 @@ def main():
             text = settings.read_text() if settings.exists() else ''
             text = re.sub(r'(?m)^transmission_linkage\.[^\n]*\n?', '', text)
             settings.write_text(text + '\ntransmission_linkage.interactions=false\ntransmission_linkage.jade=false\n')
+        if args.redstone_baseline:
+            settings = run / 'config/create_sky_compat-features.properties'
+            import re
+            text = re.sub(r'(?m)^(redstone_link_gui|redstone_additions)\.[^\n]*\n?', '', settings.read_text() if settings.exists() else '')
+            keys = ['redstone_link_gui.interactions', 'redstone_link_gui.relocation', 'redstone_link_gui.ship_access', 'redstone_additions.logic', 'redstone_additions.scraping', 'redstone_additions.wrench', 'redstone_additions.transparency']
+            settings.write_text(text + '\n' + ''.join(key + '=false\n' for key in keys))
         blue = run / 'config/bluemap'
         blue.mkdir(exist_ok=True)
         (blue / 'webserver.conf').write_text('enabled: false\n')
@@ -130,6 +156,10 @@ def main():
         (run / 'server.properties').write_text('server-ip=127.0.0.1\nserver-port=0\nonline-mode=false\nlevel-name=fixture\nlevel-type=minecraft:flat\ngenerate-structures=false\nview-distance=2\nsimulation-distance=2\nmax-tick-time=0\n')
         manifest['probeSha256'] = digest(run / 'mods/linear-review-probe.jar')
         manifest['sources'] = {str(source.relative_to(ROOT)): digest(source)}
+        if args.scenario == 'redstone':
+            for helper in ['RedstoneGuiProbe.java', *(['RedstoneShipProbe.java'] if not args.minimal else [])]:
+                path = ROOT / 'tools/fixtures/redstone' / helper
+                manifest['sources'][str(path.relative_to(ROOT))] = digest(path)
         if args.scenario == 'recovery' and not args.minimal:
             helper = ROOT / 'tools/fixtures/recovery/BackpackRecovery.java'
             manifest['sources'][str(helper.relative_to(ROOT))] = digest(helper)
@@ -143,6 +173,7 @@ def main():
             command = [str(args.java), '-Xmx4G', f'-Dlinear.review.case={args.orientation}',
                        f'-Dlinear.review.output={report}', f'-Dlinear.review.previous={output / "save.json"}',
                        f'-Dlinear.review.restore={str(phase == "restore").lower()}',
+                       f'-Dredstone.review.baseline={str(args.redstone_baseline).lower()}',
                        f'-Dlinkage.review.baseline={str(args.linkage_baseline).lower()}',
                        f'-Dlinear.review.reopen={str(args.scenario == "reopen").lower()}',
                        '@' + str(libraries / 'net/neoforged/neoforge/21.1.264/unix_args.txt'), 'nogui']

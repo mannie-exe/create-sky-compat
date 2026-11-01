@@ -13,7 +13,9 @@ public final class SettingsCatalog {
         DH_CLIENT(Category.CLIENT, "distant_horizons"), SABLE_CLIENT(Category.CLIENT, "sable"),
         VEIL(Category.CLIENT, "veil"), AERONAUTICS(Category.CLIENT, "aeronautics"),
         COLORWHEEL(Category.CLIENT, "colorwheel"), LIGHTS(Category.CLIENT, "lighting"),
-        LINEAR_CLIENT(Category.CLIENT, "linear_bearing"),
+        GUI_CLIENT(Category.CLIENT, "redstone_link_gui"),
+        LINEAR_CLIENT(Category.CLIENT, "linear_bearing"), REDSTONE_CLIENT(Category.CLIENT, "redstone_additions"),
+        LINK_GUI(Category.SERVER, "redstone_link_gui"), REDSTONE(Category.SERVER, "redstone_additions"),
         LINKAGE(Category.SERVER, "transmission_linkage"), LINEAR(Category.SERVER, "linear_bearing"),
         GRAVES(Category.SERVER, "yigd"), AUDIO(Category.SERVER, "analog_audio"),
         DELIVERY(Category.SERVER, "delivery"), QUESTLOG_SERVER(Category.SERVER, "questlog"),
@@ -39,7 +41,7 @@ public final class SettingsCatalog {
                 case "journal" -> Timing.IMMEDIATE;
                 case "villages" -> Timing.SERVER_START;
                 case "generation", "interiors", "water", "oceans" -> Timing.NEW_WORLD;
-                case "bluemap" -> Timing.RELOAD;
+                case "bluemap", "link_gui_client", "link_gui_common" -> Timing.RELOAD;
                 default -> Timing.GAME_RESTART;
             };
         }
@@ -56,6 +58,9 @@ public final class SettingsCatalog {
             case LIGHTING_LIFECYCLE, SODIUM_LIGHTING -> Group.LIGHTS;
             case LINEAR_PONDER -> Group.LINEAR_CLIENT;
             case LINKAGE_INTERACTIONS, LINKAGE_JADE -> Group.LINKAGE;
+            case LINK_GUI_INTERACTIONS, LINK_GUI_RELOCATION, LINK_GUI_SABLE -> Group.LINK_GUI;
+            case REDSTONE_LOGIC, REDSTONE_SCRAPING, REDSTONE_WRENCH -> Group.REDSTONE;
+            case REDSTONE_RENDERING -> Group.REDSTONE_CLIENT;
             case LINEAR_BOOTSTRAP, LINEAR_CARRIAGE, LINEAR_TRANSMISSION, LINEAR_GYRO, LINEAR_JADE -> Group.LINEAR;
             case SABLE_GRAVES -> Group.GRAVES;
             case ANALOG_AUDIO -> Group.AUDIO;
@@ -77,6 +82,8 @@ public final class SettingsCatalog {
     }
     public static final List<FileEntry> FILES = List.of(
             new FileEntry(FeatureSettings.FILE, null, "startup", List.of()),
+            new FileEntry("createredstonelinkgui-client.toml", Group.GUI_CLIENT, "link_gui_client", List.of(Feature.LINK_GUI_INTERACTIONS)),
+            new FileEntry("createredstonelinkgui-common.toml", Group.LINK_GUI, "link_gui_common", List.of(Feature.LINK_GUI_RELOCATION)),
             new FileEntry("create_sky_compat-journal-client.toml", Group.JOURNAL, "journal", List.of(Feature.QUESTLOG_INTERFACE, Feature.QUESTLOG_NOTIFICATIONS)),
             new FileEntry("create_sky_compat-common.toml", Group.VILLAGES, "villages", List.of(Feature.VILLAGE_CLEARANCE, Feature.VILLAGE_PLACEMENT)),
             new FileEntry("create_sky_compat-generation.json", Group.TERRAIN, "generation", List.of(Feature.TERRAIN)),
