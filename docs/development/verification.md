@@ -1,6 +1,6 @@
 # Verification
 
-## Transmission & Linkage 0.11.0
+## Transmission & Linkage 0.11.1
 
 2026-11-01, Java 21.0.13 / NeoForge 21.1.264, Create 6.0.10, Sable 2.0.6,
 Simulated 1.3.2, Transmission & Linkage 0.2.9 and Jade 15.10.6.
@@ -46,6 +46,9 @@ hinge layout, long configuration or GPU/shader combination. Explicit wake reques
 after resting are fixture coverage, not proof of a particular engine sleep state.
 The stock length range avoids the documented enlarged-range visual cap; no new
 renderer or range-extension patch is installed.
+
+The Ponder resource checker reads UTF-8 explicitly; a subprocess check rejects
+accidental dependence on the host default encoding, including Windows locales.
 
 ## Questlog 3.5.3 support
 

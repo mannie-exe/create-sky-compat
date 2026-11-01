@@ -11,9 +11,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def outputs():
-    source = (ROOT / 'src/main/java/design/inherent/createskycompat/linear/client/LinearScenes.java').read_text()
+    source = (ROOT / 'src/main/java/design/inherent/createskycompat/linear/client/LinearScenes.java').read_text(encoding="utf-8")
     lang = ROOT / 'src/main/resources/assets/create_sky_compat/lang/en_us.json'
-    strings = {k: v for k, v in json.loads(lang.read_text()).items()
+    strings = {k: v for k, v in json.loads(lang.read_text(encoding="utf-8")).items()
                if not k.startswith('create_sky_compat.ponder.linear_')}
     for match in re.finditer(r'public static void (\w+)\(.*?\n    }', source, re.S):
         body = match.group()
