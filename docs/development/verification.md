@@ -1,5 +1,52 @@
 # Verification
 
+## Transmission & Linkage 0.11.0
+
+2026-11-01, Java 21.0.13 / NeoForge 21.1.264, Create 6.0.10, Sable 2.0.6,
+Simulated 1.3.2, Transmission & Linkage 0.2.9 and Jade 15.10.6.
+Native candidate SHA-256:
+`e1377ebbaab92fa07a85c6f1148b9297f31a2ef7936f5f0e9b586c4223eea822`.
+
+`./gradlew --no-daemon check build clientProbeJar` passed 87 Java cases,
+release-tool checks, artifact pins and generated-resource checks. The minimum
+NeoForge-plus-Compat startup passed. The native machinery runner's `linkage`
+scene passed in the full pack; its reduced runtime omits Jade. The original
+adapter-disabled control reproduced instant bare removal. Enabled checks reject
+adventure/spectator removal, protected peers, stale menu edits and protected
+binding without rod consumption; authorized settings, binding and repeated
+removal controls pass.
+
+The `linkage-lifecycle` scene covers three native normal/giant pairs, reversed
+link order, rotated/off-center bodies, assembly of an already linked endpoint,
+one live rod constraint per pair, cold save/reopen and isolated endpoint removal.
+All eight registered AUO blocks report mass 1.0, matching a Create mechanical
+bearing. Three actual head-plus-stone bodies report mass 3.0 (stone is 2.0 in
+this runtime). No weight override is justified.
+
+The `linkage-physics` observation moves normal and giant endpoints about 3.61
+and 2.80 blocks without supply blocks. A fixture imposing 2 rad/s at the native
+pre-physics event produces 19 RPM and about 3,710.94 SU from the separate output
+object. Capacity per RPM is 195.3125; it is not the total SU. This controlled drive
+checks conversion, not a practical prime mover, balanced production or a closed
+self-powered loop. Native actuation and operating costs are deliberately retained.
+
+An isolated Prism client exercised ordinary attack, settings opening and
+sneak-wrench rod removal. Jade displayed server link length/target and the
+conversion bearing's separate output. Normal/giant rod models and outlines rendered with shaders off and with
+Complementary Unbound 5.9.3 plus Euphoria 1.10.5 on the installed
+Iris/Sodium/Colorwheel stack; the assembled converter was also inspected with
+that default shader. All six native
+AUO tutorials and twelve existing Linear/AK tutorials compiled and sought to the
+end. Representative native rod playback showed geometry, the settings overlay
+and the pack-corrected interaction wording; compilation alone is not playback
+verification of every scene.
+
+These checks do not establish every claim-mod API, mid-session chunk-unload order,
+hinge layout, long configuration or GPU/shader combination. Explicit wake requests
+after resting are fixture coverage, not proof of a particular engine sleep state.
+The stock length range avoids the documented enlarged-range visual cap; no new
+renderer or range-extension patch is installed.
+
 ## Questlog 3.5.3 support
 
 Compared exact 3.5.0 and 3.5.3 JARs. Quest details, display records, objective

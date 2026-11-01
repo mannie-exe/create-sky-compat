@@ -45,7 +45,7 @@ def main():
             # Disabled adapters must neither reject their versions nor resolve their APIs.
             metadata = 'modLoader="lowcodefml"\nloaderVersion="[1,)"\nlicense="MIT"\n'
             for target in ['sky_archipelago', 'skyvillages', 'architectury', 'sable', 'aeronautics_delivery_quests',
-                           'distanthorizons', 'bluemap', 'analogaudio', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog', 'sabledynlights', 'lambdynlights', 'colorwheel', 'flywheel', 'linearbearing', 'linearbearingsfix', 'simulated']:
+                           'distanthorizons', 'bluemap', 'analogaudio', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog', 'sabledynlights', 'lambdynlights', 'colorwheel', 'flywheel', 'linearbearing', 'linearbearingsfix', 'simulated', 'aeronautics_utility_objects']:
                 metadata += f'[[mods]]\nmodId="{target}"\nversion="999.0.0"\ndisplayName="Fixture {target}"\n'
             with zipfile.ZipFile(run / 'mods/future-targets-fixture.jar', 'w') as fixture:
                 fixture.writestr('META-INF/neoforge.mods.toml', metadata)

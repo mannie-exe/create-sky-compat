@@ -64,6 +64,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                     DELIVERY_CHUNKS, DELIVERY_LANDING -> Feature.TERRAIN;
             case COLORWHEEL_MATERIALS -> Feature.MATERIAL_IDS;
             case LINEAR_PONDER, LINEAR_JADE -> Feature.LINEAR_CARRIAGE;
+            case LINKAGE_JADE -> Feature.LINKAGE_INTERACTIONS;
             default -> null;
         };
     }
@@ -86,6 +87,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case DELIVERY_DISTANCE, DELIVERY_CHUNKS -> Map.of("aeronautics_delivery_quests", "1.1.1");
             case DELIVERY_LANDING -> Map.of("aeronautics_delivery_quests", "1.1.1", "skyvillages", "1.0.6", "architectury", "13.");
             case ANALOG_AUDIO -> Map.of("analogaudio", "0.1.5-hotfix.1", "create", "6.0.10");
+            case LINKAGE_INTERACTIONS -> Map.of("aeronautics_utility_objects", "0.2.9", "create", "6.0.10", "sable", "2.0.6", "simulated", "1.3.2");
+            case LINKAGE_JADE -> Map.of("aeronautics_utility_objects", "0.2.9", "jade", "15.10.6+neoforge");
             case LINEAR_BOOTSTRAP -> Map.of("linearbearing", "1.3.5");
             case LINEAR_CARRIAGE, LINEAR_TRANSMISSION -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "sable", "2.0.6", "simulated", "1.3.2");
             case LINEAR_GYRO -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "sable", "2.0.6");
@@ -131,6 +134,10 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case DELIVERY_CHUNKS -> List.of("DeliveryChunksMixin");
                 case DELIVERY_LANDING -> List.of("DeliveryLandingMixin");
                 case ANALOG_AUDIO -> List.of("AnalogAudioCreateMixin");
+                case LINKAGE_INTERACTIONS -> client
+                        ? List.of("linkage.LinkagePacketMixin", "linkage.LinkageBindingMixin", "linkage.LinkageJointBindingMixin", "linkage.LinkageBlockMixin", "linkage.LinkageUseMixin", "linkage.LinkageWrenchMixin", "linkage.LinkageMenuButtonMixin", "client.LinkageRodInputMixin")
+                        : List.of("linkage.LinkagePacketMixin", "linkage.LinkageBindingMixin", "linkage.LinkageJointBindingMixin", "linkage.LinkageBlockMixin", "linkage.LinkageUseMixin", "linkage.LinkageWrenchMixin", "linkage.LinkageMenuButtonMixin");
+                case LINKAGE_JADE -> List.of("linkage.ConversionStateAccessor");
                 case LINEAR_BOOTSTRAP -> client ? List.of() : List.of("linear.LinearBootstrapMixin");
                 case LINEAR_CARRIAGE -> List.of("linear.DockingBrakeAccessor", "linear.LinearMovingMixin", "linear.LinearCasingMixin", "linear.LinearAssemblyMixin", "linear.LinearCasingBlockMixin");
                 case LINEAR_TRANSMISSION -> List.of("linear.TransmissionMixin", "linear.MagneticPortMixin");

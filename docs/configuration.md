@@ -34,6 +34,8 @@ inactive selections.
 | `delivery.chunk_loading` | Retained chunk requests and cleanup | Active preset, ADQ 1.1.1 |
 | `delivery.village_landing` | Bounded village surface retry | Active preset, ADQ 1.1.1, Sky Villages 1.0.6, Architectury 13.x |
 | `analog_audio.movement_registration` | Radio handler registration | Analog Audio 0.1.5-hotfix.1, Create 6.0.10 |
+| `transmission_linkage.interactions` | Authorized endpoint/settings changes and deliberate rod removal | Transmission & Linkage 0.2.9, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
+| `transmission_linkage.jade` | Server-backed link/actuator inspection | Active interaction adapter, Jade 15.10.6+neoforge |
 | `linear_bearing.bootstrap` | Dedicated startup and missing bubble-gum drop; defers to Linear Bearings Fix 1.0.3 when present | Linear Bearing 1.3.5; terrain is not required |
 | `linear_bearing.carriage` | Checked assembly, relative carriage brake and guarded recovery | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |
 | `linear_bearing.transmission` | Native kinetic edges for paired springs and aligned magnetic ports | Linear Bearing 1.3.5, Create 6.0.10, Sable 2.0.6, Simulated 1.3.2 |

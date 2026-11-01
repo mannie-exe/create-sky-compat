@@ -25,11 +25,23 @@ final class ClientGuidanceProbe {
                     })));
             event.getDispatcher().register(Commands.literal("compatprobe_guidance_check").executes(context -> {
                 var rows = new JsonArray();
+                var items = new java.util.LinkedHashMap<String,Integer>();
+                if (net.neoforged.fml.ModList.get().isLoaded("aeronautics_utility_objects")) {
+                    items.put("aeronautics_utility_objects:hydraulic_rod",2);
+                    items.put("aeronautics_utility_objects:hydraulic_regulator",1);
+                    items.put("aeronautics_utility_objects:hydraulic_hinge_head",1);
+                    items.put("aeronautics_utility_objects:damping_stress_bearing",1);
+                    items.put("aeronautics_utility_objects:brass_universal_joint",1);
+                }
                 for (String item : new String[]{"linearbearing:linear_bearing", "linearbearing:magnetic_port",
                         "linearbearing:torsional_anchor", "linearbearing:gyroscopic_gearbox",
                         "absolute_kinematics:hinge", "absolute_kinematics:ball_joint"}) {
-                    var scenes = PonderIndex.getSceneAccess().compile(ResourceLocation.parse(item));
                     int expected = item.endsWith(":linear_bearing") || item.startsWith("absolute_kinematics:") ? 3 : 1;
+                    items.put(item,expected);
+                }
+                for (var entry : items.entrySet()) {
+                    var item=entry.getKey();var expected=entry.getValue();
+                    var scenes=PonderIndex.getSceneAccess().compile(ResourceLocation.parse(item));
                     if (scenes.size() != expected) throw new IllegalStateException(item + " compiled " + scenes.size() + " scenes, expected " + expected);
                     for (var scene : scenes) {
                         scene.begin();

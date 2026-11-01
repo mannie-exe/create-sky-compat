@@ -11,6 +11,28 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void linkageRequiresItsCompletePairAndKeepsJadeIndependent() {
+        var settings = only(Feature.LINKAGE_INTERACTIONS, Feature.LINKAGE_JADE);
+        var versions = new HashMap<>(Map.of("aeronautics_utility_objects", "0.2.9", "create", "6.0.10",
+                "sable", "2.0.6", "simulated", "1.3.2", "jade", "15.10.6+neoforge"));
+        for (boolean client : new boolean[]{false, true}) {
+            var selection = FeatureSelection.select(settings, versions, client);
+            assertTrue(selection.enabled(Feature.LINKAGE_INTERACTIONS));
+            assertTrue(selection.enabled(Feature.LINKAGE_JADE));
+            assertEquals(client, selection.mixins(client).contains("client.LinkageRodInputMixin"));
+        }
+        versions.remove("jade");
+        assertFalse(FeatureSelection.select(settings, versions, false).enabled(Feature.LINKAGE_JADE));
+        assertTrue(FeatureSelection.select(settings, versions, false).enabled(Feature.LINKAGE_INTERACTIONS));
+        versions.remove("simulated");
+        assertTrue(FeatureSelection.select(settings, versions, false).active().isEmpty());
+        versions.put("simulated", "future");
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, false));
+        assertTrue(FeatureSelection.select(only(), versions, false).active().isEmpty());
+        versions.remove("aeronautics_utility_objects");
+        assertTrue(FeatureSelection.select(settings, versions, false).active().isEmpty());
+        assertTrue(FeatureSelection.select(settings, Map.of(), true).active().isEmpty());
+    }
     @Test void linearGuidanceRequiresItsApisAndAnActiveCarriageAdapter() {
         var versions = new HashMap<>(Map.of("linearbearing", "1.3.5", "create", "6.0.10",
                 "sable", "2.0.6", "simulated", "1.3.2", "ponder", "1.0.87+mc1.21.1", "jade", "15.10.6+neoforge"));

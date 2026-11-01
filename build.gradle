@@ -43,6 +43,8 @@ dependencies {
     compileOnly('maven.modrinth:jade:eYz2YBGT') { transitive = false }
     compileOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
     testRuntimeOnly('net.createmod.ponder:ponder-neoforge:1.0.87+mc1.21.1') { transitive = false }
+    compileOnly('maven.modrinth:create-aeronautics-transmission-linkage:WoUjC6d4') { transitive = false }
+    testRuntimeOnly('maven.modrinth:create-aeronautics-transmission-linkage:WoUjC6d4') { transitive = false }
     compileOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
     testRuntimeOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
     flywheelSource('maven.modrinth:create:UjX6dr61') { transitive = false }
@@ -115,6 +117,13 @@ tasks.register('verifyUpstream') {
                 != '276f1f65a20d04f536989c4f311949d770b52c440c23c2b904a08860f3c93810') {
             throw new GradleException('Unexpected Jade compile-only dependency')
         }
+
+        def linkage = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'create-aeronautics-transmission-linkage'
+        }?.file
+        if (linkage == null || java.security.MessageDigest.getInstance('SHA-256').digest(linkage.bytes).encodeHex().toString()
+                != '2b1015c61e66e6e9df0e74e819e2797882b9ca246afc431984858fce95752c41')
+            throw new GradleException('Unexpected Transmission & Linkage compile-only dependency')
 
         def linear = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
             it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'linear-bearing'

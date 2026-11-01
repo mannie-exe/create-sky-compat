@@ -12,9 +12,12 @@ import zipfile
 ROOT = Path(__file__).resolve().parents[1]
 LINEAR_HASH = '29563cdb52a82ac7d8b3aca823cd47a15c443e06314df06ca1a635ae9e91a253'
 FIX_HASH = '04afaaaf62951fc4cccfbb4468572fea2a876a6b5e872a6c60545d171fb21976'
-SCENES = {'bootstrap': 'BootstrapProbe', 'carriage': 'CarriageProbe',
-          'parent': 'ParentProbe', 'reopen': 'ParentProbe',
-          'disassembly': 'DisassemblyProbe', 'transmission': 'TransmissionProbe'}
+SCENES = {'bootstrap': 'linear/BootstrapProbe', 'carriage': 'linear/CarriageProbe',
+          'parent': 'linear/ParentProbe', 'reopen': 'linear/ParentProbe',
+          'disassembly': 'linear/DisassemblyProbe', 'transmission': 'linear/TransmissionProbe',
+          'linkage': 'linkage/LinkageProbe',
+          'linkage-physics': 'linkage/LinkagePhysicsProbe',
+          'linkage-lifecycle': 'linkage/LinkageLifecycleProbe'}
 
 
 def digest(path):
@@ -27,6 +30,8 @@ def main():
     parser.add_argument('--pack', type=Path, required=True, help='Read-only authored Create Sky directory')
     parser.add_argument('--java', type=Path, required=True, help='Java 21 executable; javac must be alongside it')
     parser.add_argument('--linear', type=Path, required=True, help='Unmodified Linear Bearing 1.3.5 JAR')
+    parser.add_argument('--linkage', type=Path, help='Unmodified Transmission & Linkage 0.2.9 JAR')
+    parser.add_argument('--linkage-baseline', action='store_true', help='Disable the Linkage adapters for a native failure control')
     parser.add_argument('--fix', type=Path, help='Optional unmodified Linear Bearings Fix 1.0.3 JAR')
     parser.add_argument('--mod', type=Path)
     parser.add_argument('--minimal', action='store_true', help='Only Create, Sable and bundled Simulated/Aeronautics targets')
@@ -46,18 +51,27 @@ def main():
                    if line.startswith('mod_version='))
     mod = args.mod or ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
     runtime = json.loads(subprocess.check_output(['node', str(args.pack / 'web/scripts/runtime-inputs.mjs'), str(args.pack)], text=True))
-    files = [Path(row['path']) for row in runtime['mods'] if row['key'] not in {'create-sky-compat', 'linear-bearing', 'linear-bearings-fix'}
+    excluded = {'create-sky-compat', 'linear-bearing', 'linear-bearings-fix'}
+    if args.linkage:
+        excluded.add('create-aeronautics-transmission-linkage')
+    files = [Path(row['path']) for row in runtime['mods'] if row['key'] not in excluded
              and (not args.minimal or row['key'] in {'create', 'ponder', 'sable', 'create-aeronautics'})]
     if not args.minimal:
         files.extend((args.pack / 'overrides/common/mods').glob('*.jar'))
     files.extend([mod, args.linear])
     if args.fix:
         files.append(args.fix)
+    if args.scenario.startswith('linkage'):
+        if not args.linkage or digest(args.linkage) != '2b1015c61e66e6e9df0e74e819e2797882b9ca246afc431984858fce95752c41':
+            parser.error('Linkage scene requires the reviewed 0.2.9 JAR')
+        files.append(args.linkage)
     if len({path.name for path in files}) != len(files):
         parser.error('Duplicate selected JAR basename')
     output = ROOT / 'build/verification/linear' / f'{args.scenario}-{args.orientation}-{"coexist" if args.fix else "absent"}'
     if args.minimal:
         output = output.with_name(output.name + '-minimal')
+    if args.linkage_baseline:
+        output = output.with_name(output.name + '-baseline')
     output.mkdir(parents=True, exist_ok=True)
     manifest = {'scenario': args.scenario, 'orientation': args.orientation,
                 'artifact': str(mod), 'sha256': digest(mod),
@@ -75,7 +89,7 @@ def main():
         classpath = ':'.join(map(str, [game, *sorted(libraries.rglob('*.jar')), *sorted((run / 'mods').glob('*.jar')), *dependencies]))
         classes = run / 'classes'
         classes.mkdir()
-        source = ROOT / 'tools/fixtures/linear' / f'{SCENES[args.scenario]}.java'
+        source = ROOT / 'tools/fixtures' / f'{SCENES[args.scenario]}.java'
         compile_command = [str(args.java.with_name('javac')), '-proc:none', '-cp', classpath, '-d', str(classes), str(source)]
         result = subprocess.run(compile_command, capture_output=True, text=True)
         (output / 'compile.log').write_text(result.stdout + result.stderr)
@@ -84,8 +98,14 @@ def main():
         with zipfile.ZipFile(run / 'mods/linear-review-probe.jar', 'w') as jar:
             for path in classes.rglob('*.class'):
                 jar.write(path, path.relative_to(classes))
-            jar.writestr('META-INF/neoforge.mods.toml', 'modLoader="javafml"\nloaderVersion="[4,)"\nlicense="MIT"\n[[mods]]\nmodId="linear_review_probe"\nversion="1.0.0"\ndisplayName="Isolated Linear Bearing checks"\n')
+            jar.writestr('META-INF/neoforge.mods.toml', 'modLoader="javafml"\nloaderVersion="[4,)"\nlicense="MIT"\n[[mods]]\nmodId="linear_review_probe"\nversion="1.0.0"\ndisplayName="Isolated machinery checks"\n')
         shutil.copytree(args.pack / 'overrides/common/config', run / 'config')
+        if args.linkage_baseline:
+            settings = run / 'config/create_sky_compat-features.properties'
+            import re
+            text = settings.read_text() if settings.exists() else ''
+            text = re.sub(r'(?m)^transmission_linkage\.[^\n]*\n?', '', text)
+            settings.write_text(text + '\ntransmission_linkage.interactions=false\ntransmission_linkage.jade=false\n')
         blue = run / 'config/bluemap'
         blue.mkdir(exist_ok=True)
         (blue / 'webserver.conf').write_text('enabled: false\n')
@@ -96,7 +116,7 @@ def main():
         manifest['sources'] = {str(source.relative_to(ROOT)): digest(source)}
         manifest['config'] = {str(path.relative_to(run)): digest(path) for path in sorted((run / 'config').rglob('*')) if path.is_file()}
         (output / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
-        phases = ['save', 'restore'] if args.scenario in {'reopen', 'transmission'} else ['run']
+        phases = ['save', 'restore'] if args.scenario in {'reopen', 'transmission', 'linkage-lifecycle'} else ['run']
         for phase in phases:
             report = output / f'{phase}.json'
             report.unlink(missing_ok=True)
@@ -104,6 +124,7 @@ def main():
             command = [str(args.java), '-Xmx4G', f'-Dlinear.review.case={args.orientation}',
                        f'-Dlinear.review.output={report}', f'-Dlinear.review.previous={output / "save.json"}',
                        f'-Dlinear.review.restore={str(phase == "restore").lower()}',
+                       f'-Dlinkage.review.baseline={str(args.linkage_baseline).lower()}',
                        f'-Dlinear.review.reopen={str(args.scenario == "reopen").lower()}',
                        '@' + str(libraries / 'net/neoforged/neoforge/21.1.264/unix_args.txt'), 'nogui']
             with (output / f'{phase}.log').open('w') as log:

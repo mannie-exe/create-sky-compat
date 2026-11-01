@@ -1,9 +1,16 @@
-# Create Sky Compat 0.10.2
+# Create Sky Compat 0.11.0
 
-Support Questlog 3.5.3 alongside 3.5.0 for the existing journal layout,
-notifications and reward validation. Compile against the checked 3.5.3 artifact;
-other Questlog versions still require review. No journal mechanics or terrain
-behavior changes.
+Add optional Transmission & Linkage 0.2.9 adaptations with Create 6.0.10,
+Sable 2.0.6 and Simulated 1.3.2:
 
-Includes the optional Linear Bearing Ponder and Jade guidance introduced in
-0.10.1. See [verification](docs/development/verification.md) for tested scope.
+- Sneak-use a Create wrench on a visible rod to detach it. Ordinary attacks and
+  bare-hand sneak-use no longer disconnect rods accidentally.
+- Validate player edits, settings packets, wrench removal and both binding
+  endpoints on the server. Preserve targeting checks and native link/save data.
+- Add optional Jade link, actuator and conversion-output inspection. Jade remains
+  optional; inspection reads server state and existing suppression results.
+
+Native actuation, power limits, recipes and terrain generation remain unchanged.
+Stock rod lengths avoid upstream's enlarged-range visual limit. See
+[Transmission & Linkage](docs/development/transmission-linkage.md) and
+[verification](docs/development/verification.md) for the tested scope and limits.

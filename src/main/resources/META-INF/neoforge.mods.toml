@@ -158,3 +158,9 @@ modId="jade"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
+
+[[dependencies.create_sky_compat]]
+modId="aeronautics_utility_objects"
+type="optional"
+versionRange="[0,)"
+side="BOTH"

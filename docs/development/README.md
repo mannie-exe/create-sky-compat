@@ -54,6 +54,9 @@ does not establish visible geometry, reading time or correct interaction cues.
 
 ## Implementation
 
+See [Transmission & Linkage](transmission-linkage.md) for optional interaction
+authorization, Jade inspection, upstream limits and native machinery fixtures.
+
 `FeatureSettings` reads immutable switches before Mixin target resolution.
 `FeatureSelection` uses loader metadata, the physical side, and explicit feature
 prerequisites. `OptionalMixinPlugin` selects only the active mixins. Disabled
