@@ -66,12 +66,9 @@ public final class JournalSettingsScreen extends Screen {
             Row(String key, String group, Runnable action) { this.key = key; this.group = group; this.action = action; }
         }
         SettingsContent() {
-            rows.add(new Row("images", "display", () -> JournalPreferences.ITEM_IMAGES.set(!JournalPreferences.ITEM_IMAGES.get())));
-            rows.add(new Row("symbols", null, () -> JournalPreferences.CONDITION_SYMBOLS.set(!JournalPreferences.CONDITION_SYMBOLS.get())));
-            rows.add(new Row("notifications", "notifications", () -> {
-                var values = JournalPreferences.Notifications.values();
-                JournalPreferences.NOTIFICATIONS.set(values[(JournalPreferences.NOTIFICATIONS.get().ordinal() + 1) % values.length]);
-            }));
+            rows.add(new Row("images", "display", JournalPreferences::toggleImages));
+            rows.add(new Row("symbols", null, JournalPreferences::toggleSymbols));
+            rows.add(new Row("notifications", "notifications", JournalPreferences::cycleNotifications));
         }
         @Override public void setScrollableComponent(ScrollableComponent owner) { this.owner = owner; }
         private Component value(int index) {
@@ -87,7 +84,14 @@ public final class JournalSettingsScreen extends Screen {
                 row.label = font.split(JournalRows.text(row.key), available);
                 row.description = font.split(JournalRows.text(row.key + "_description"), available);
                 row.button = new JournalButton(0, 0, available, value(i), skin, () -> {
-                    row.action.run(); JournalPreferences.SPEC.save(); available = -1; measure(); ensureVisible(index);
+                    try { row.action.run(); available = -1; measure(); ensureVisible(index); }
+                    catch (RuntimeException failure) {
+                        scroll = pane.getScrollAmount();
+                        minecraft.setScreen(new net.minecraft.client.gui.screens.AlertScreen(
+                                () -> minecraft.setScreen(JournalSettingsScreen.this),
+                                Component.translatable("create_sky_compat.settings.change_failed"),
+                                Component.literal(String.valueOf(failure.getMessage()))));
+                    }
                 });
                 int group = row.group == null ? 0 : font.lineHeight + 10;
                 row.buttonY = group + row.label.size() * font.lineHeight + 4;

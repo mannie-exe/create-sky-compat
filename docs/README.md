@@ -1,6 +1,7 @@
 # Documentation
 
 - [Configuration](configuration.md): placement controls and world behavior
+- [Configuration interface](development/configuration.md): editor ownership and native UI checks
 - [Development](development/README.md): implementation, checks and evidence
 - [Island generation](development/terrain.md): preset, geology and saved-world boundaries
 - [Questlog](development/questlog.md): journal UX, notification and reward contracts

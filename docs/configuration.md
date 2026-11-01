@@ -308,8 +308,8 @@ See [DH implementation](development/lod.md) for boundaries and update checks.
 
 `config/create_sky_compat-journal-client.toml` is registered when either client
 journal feature is active. The Settings bookmark opens grouped Display and
-Notifications preferences. Mods → Create Sky Compat → Config → Journal and village
-settings edits the same values. Changes save locally and apply without restart.
+Notifications preferences. Mods → Create Sky Compat → Config → Client → Questlog
+edits the same values. Changes save locally and apply without restart.
 The three startup switches remain independent.
 
 | Setting | Default | Behavior |
@@ -337,15 +337,27 @@ Questlog's own dependencies still apply; its 3.5.0 client needs Cloth Config eve
 though its NeoForge metadata does not declare that prerequisite.
 
 
-## Configuration overview
+## Configuration interface
 
-The Mods configuration entry also lists adaptation status and file-owned settings.
-Status describes this process, not a connected remote server. It distinguishes
-configured-on from active, shows missing dependencies/physical-side restrictions,
-and identifies omitted startup keys that use their defaults. Viewing status does
-not rewrite the properties file or change startup selection.
+Open **Mods → Create Sky Compat → Config**. The sidebar groups local settings by
+Client, Server / shared, and World generation, then by mod. Shared entries identify
+which sides need the fix; these categories do not change loader requirements.
 
-Registered journal and village specs use NeoForge's ordinary editors. Terrain and
-BlueMap remain in their owning files, with restart/reload instructions shown in
-the overview. Generation settings retain saved-world identity checks. A local
-common configuration never substitutes for a dedicated server's configuration.
+Journal preferences save immediately. Fix switches edit the next-start file and
+use **Save changes**. Current activation, saved values, and unsaved edits remain
+separate. A configured-on fix can remain unavailable because its targets or
+prerequisites are missing. Restart Minecraft or the server to apply startup changes.
+
+**Status & files** shows current reasons, dependencies, defaults, pending changes,
+and owning files. Details expose technical keys without placing them in every row.
+File buttons open existing local files; they do not generate missing configuration
+or administer a connected server. Terrain and BlueMap keep their owning loaders
+and reload/restart requirements.
+
+A changed file refuses stale saves; reload explicitly to discard the draft and
+read it again. Leaving with unsaved startup edits offers discard or continued
+editing. Generation edits require confirmation and retain saved-world identity
+checks. Disabling terrain does not convert a marked save.
+
+The [implementation reference](development/configuration.md) owns editor safety,
+optional loading, native UI fixtures, and dependency-update checks.

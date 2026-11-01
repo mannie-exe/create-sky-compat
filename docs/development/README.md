@@ -33,6 +33,9 @@ The [client probes](#client-probes) cover legacy-cache construction and known
 fluid/material inputs. Scalar measurements do not replace native-versus-LOD
 visual comparison.
 
+See the [configuration interface](configuration.md) for settings ownership, safe
+startup editing, native UI fixtures, and platform update checks.
+
 See [radio synchronization](audio.md) and [construct grave recovery](recovery.md)
 for their independent optional boundaries, native fixtures and update checks.
 

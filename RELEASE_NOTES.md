@@ -1,26 +1,24 @@
-# Create Sky Compat 0.12.1
+# Create Sky Compat 0.13.0
 
-Add two independently configurable adaptations:
+Configure adaptations through a category and mod sidebar. Client, Server / shared,
+World generation, and Status & files replace the separate configuration entrances.
+Individual fixes retain their existing keys, defaults, dependencies, and side rules.
 
-- Analog Audio 0.1.5-hotfix.1 + bundled AnalogLib 0.1.0: join the server media
-  timeline after loading, reconcile standby playback and guard obsolete async
-  work. Client-only; Create is not required. Native volume, attenuation,
-  filtering, positioning and media decoding remain in use.
-- Sable 2.0.6 + You're in Grave Danger 2.0.13: place graves in real construct
-  plots, retain recovery through removal/unloading, use bounded loss fallback
-  and project tracking into world coordinates. YiGD remains the only inventory
-  and experience authority. Create, Aeronautics and island generation are optional.
+Journal preferences apply immediately through either entrance. Startup fixes use
+Save changes; current activation, saved next-start values, and unsaved edits remain
+separate. Missing targets stay inactive. Details contain dependency versions,
+prerequisites, file locations, and defaults without repeating them in every row.
 
-Two-client playback and native minimum/full-pack recovery checks passed. A real
-client exercised natural deck support, death/respawn, ray targeting, owner claim,
-backpack contents/equipment and vanilla dropped XP. See [verification](docs/development/verification.md#audio-and-construct-recovery-0120)
-for artifact identifiers and limits, and [adapter maintenance](docs/development/adapters.md)
-for dependency-update requirements.
+The startup editor preserves unrelated properties and omitted defaults, refuses
+stale overwrites, and replaces valid files atomically. Failed writes retain drafts.
+Generation edits require confirmation and retain saved-world identity safeguards.
+The village editor also rejects inverted minimum/maximum distances before saving.
 
-Terrain generation and existing LOD identities are unchanged. Keep the recovery
-adapter enabled while using its saved construct graves. Initial internet loading
-can remain silent; this is not sample-perfect cross-client playback or universal
-claims-mod integration.
+Use wrapped rows, independent scrolling, native keyboard controls, and contextual
+narration. The journal bookmark keeps its existing skin and parent-screen state.
+No new UI dependency or configuration migration is required.
 
-The startup overview names the audio, recovery and Linkage adaptations in English. A coverage check
-requires a readable label for every feature switch.
+Minimum and full-pack clients and dedicated-server combinations were checked.
+See [verification](docs/development/verification.md) for exact artifacts and limits,
+and the [editor reference](docs/development/configuration.md) for update procedures.
+Generation, gameplay adaptations, and LOD identities retain their existing behavior.

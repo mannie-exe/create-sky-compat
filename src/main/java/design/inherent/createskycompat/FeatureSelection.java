@@ -8,34 +8,48 @@ import java.util.Map;
 import java.util.Set;
 
 /** Dependency decisions use metadata only; disabled features impose no version constraints. */
-public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactive) {
+public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactive, Map<Feature, Reason> reasons) {
+    public enum InactiveKind { DISABLED, WRONG_SIDE, PREREQUISITE, MISSING, EXTERNAL }
+    public record Reason(InactiveKind kind, List<String> details) {
+        public Reason { details = List.copyOf(details); }
+        String debugMessage() {
+            return switch (kind) {
+                case DISABLED -> "disabled in configuration";
+                case WRONG_SIDE -> "not applicable on this physical side";
+                case PREREQUISITE -> "requires active " + details.getFirst();
+                case MISSING -> "missing " + String.join(", ", details);
+                case EXTERNAL -> "provided by " + details.getFirst();
+            };
+        }
+    }
     public FeatureSelection {
         active = Set.copyOf(active);
         inactive = Map.copyOf(inactive);
+        reasons = Map.copyOf(reasons);
     }
 
     public boolean enabled(Feature feature) { return active.contains(feature); }
 
     public static FeatureSelection select(FeatureSettings settings, Map<String, String> mods, boolean client) {
         var active = EnumSet.noneOf(Feature.class);
-        var inactive = new LinkedHashMap<Feature, String>();
+        var reasons = new LinkedHashMap<Feature, Reason>();
         for (var feature : Feature.values()) {
-            if (!settings.enabled(feature)) { inactive.put(feature, "disabled in configuration"); continue; }
+            if (!settings.enabled(feature)) { reasons.put(feature, new Reason(InactiveKind.DISABLED, List.of())); continue; }
             if (clientOnly(feature) && !client || feature == Feature.BLUEMAP && client) {
-                inactive.put(feature, "not applicable on this physical side"); continue;
+                reasons.put(feature, new Reason(InactiveKind.WRONG_SIDE, List.of())); continue;
             }
             Feature prerequisite = prerequisite(feature);
             if (prerequisite != null && !active.contains(prerequisite)) {
-                inactive.put(feature, "requires active " + prerequisite.key); continue;
+                reasons.put(feature, new Reason(InactiveKind.PREREQUISITE, List.of(prerequisite.key))); continue;
             }
             var required = dependencies(feature);
             var missing = required.keySet().stream().filter(id -> !mods.containsKey(id)).sorted().toList();
-            if (!missing.isEmpty()) { inactive.put(feature, "missing " + String.join(", ", missing)); continue; }
+            if (!missing.isEmpty()) { reasons.put(feature, new Reason(InactiveKind.MISSING, missing)); continue; }
             if (feature == Feature.LINEAR_BOOTSTRAP && mods.containsKey("linearbearingsfix")) {
                 if (!mods.get("linearbearingsfix").equals("1.0.3"))
                     throw new IllegalStateException("Review the installed Linear Bearings Fix before enabling "
                             + feature.key + "; supported companion version is 1.0.3. Disable this adaptation in " + FeatureSettings.FILE + ".");
-                inactive.put(feature, "provided by Linear Bearings Fix 1.0.3");
+                reasons.put(feature, new Reason(InactiveKind.EXTERNAL, List.of("Linear Bearings Fix 1.0.3")));
                 continue;
             }
             for (var entry : required.entrySet()) {
@@ -54,7 +68,9 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 throw new IllegalStateException("Remove Sky Village Neighbors or disable Compat's village adaptations in " + FeatureSettings.FILE);
             active.add(feature);
         }
-        return new FeatureSelection(active, inactive);
+        var inactive = new LinkedHashMap<Feature, String>();
+        reasons.forEach((feature, reason) -> inactive.put(feature, reason.debugMessage()));
+        return new FeatureSelection(active, inactive, reasons);
     }
 
     public static Feature prerequisite(Feature feature) {

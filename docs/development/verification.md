@@ -1,5 +1,39 @@
 # Verification
 
+## Configuration sidebar, 0.13.0
+
+Verified on 2026-11-01 with Java 21.0.13, NeoForge 21.1.264 and macOS ARM64.
+The native client candidate is
+`a9d575964ae2eacc695119537aa26410d84632308171681875ea4bb8e100d92e`.
+`./gradlew --no-daemon check build clientProbeJar` passed 102 Java tests,
+six release-tool tests, exact dependency pins and generated-resource checks.
+The shipping JAR contains no client probe or bundled upstream classes.
+
+Separate minimum and full-pack Prism fixtures exercised the real configuration
+screen. The minimum client loaded without any optional mods and reported missing
+targets without creating their tuning files. Native keyboard checks covered Tab,
+up/down navigation and moving into content controls. Separate pane scrolling,
+window resizing and GUI scale 3 at a 427×280 logical viewport remained usable.
+These checks do not establish every keyboard path or operating-system UI.
+
+Startup checks covered disk save, unchanged running selection, cold restart,
+discard/continue dialogs, stale external edits and explicit reload. A read-only
+file refused saving without losing the draft or changing bytes. Inverted village
+minimum/maximum values refused closing; a corrected range saved. Cancelling a
+generation-change confirmation left the file unchanged.
+
+Both journal entrances used the same live preferences. Native pointer input and
+before/after captures confirmed return to the selected Conditions view with a
+nonzero scroll position retained. The journal skin was preserved. The final
+candidate passed minimum and full-client smoke checks after metadata, narration
+and wording refinements. Dedicated standalone, all-disabled and full-pack startup
+fixtures passed earlier candidates; those server adapter classes were unchanged
+by the final UI refinements. Personal worlds and installations were not used.
+
+The opt-in configuration probe and concise observations/captures are retained
+under ignored `build/verification/config-ux/` during development. Production
+verification uses the public artifact separately before the pack pin is updated.
+
 ## Transmission & Linkage 0.11.1
 
 2026-11-01, Java 21.0.13 / NeoForge 21.1.264, Create 6.0.10, Sable 2.0.6,

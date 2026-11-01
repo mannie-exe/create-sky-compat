@@ -160,9 +160,12 @@ predictions do not include later structures or player-built blocks.
 
 ## Configuration
 
-Feature switches live in `config/create_sky_compat-features.properties`.
-Edit active village tuning in `config/create_sky_compat-common.toml`, or use
-**Mods → Create Sky Compat → Config** in a client. Island geometry lives in
+Open **Mods → Create Sky Compat → Config** for categories, mod-specific settings,
+and fix status. Journal preferences apply immediately; fix changes save for the
+next startup. The menu edits local files, not a connected server.
+
+Feature switches remain in `config/create_sky_compat-features.properties`.
+Village tuning uses `config/create_sky_compat-common.toml`. Island geometry lives in
 `config/create_sky_compat-generation.json`; cavity and native-carver controls live in
 `config/create_sky_compat-interiors.json`, and local basins use
 `config/create_sky_compat-water.json`. Restart the game/server after changes;

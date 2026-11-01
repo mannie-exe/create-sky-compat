@@ -33,7 +33,7 @@ invalidate on content, width, language, image/symbol preferences and resource re
 Only visible rows paint, although the small row list is scanned for changed data.
 
 The Settings bookmark is available on the main journal and entry details. It opens
-`JournalSettingsScreen` using the same presentation spec as the native config screen.
+`JournalSettingsScreen` using the same presentation spec and save helpers as the main configuration screen.
 The originating screen, section and scroll state survive the visit. Questlog resets
 a completed repeatable quest in `QuestDetails.removed`; the adapter suppresses only
 that reset while visiting settings, retaining cursor cleanup and ordinary close/reset
