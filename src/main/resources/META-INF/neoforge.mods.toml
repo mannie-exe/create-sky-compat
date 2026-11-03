@@ -194,3 +194,9 @@ modId="rechiseled"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
+
+[[dependencies.create_sky_compat]]
+modId="fusion"
+type="optional"
+versionRange="[0,)"
+side="CLIENT"

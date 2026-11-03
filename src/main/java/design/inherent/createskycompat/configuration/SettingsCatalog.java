@@ -13,7 +13,7 @@ public final class SettingsCatalog {
         DH_CLIENT(Category.CLIENT, "distant_horizons"), SABLE_CLIENT(Category.CLIENT, "sable"),
         VEIL(Category.CLIENT, "veil"), AERONAUTICS(Category.CLIENT, "aeronautics"),
         COLORWHEEL(Category.CLIENT, "colorwheel"), LIGHTS(Category.CLIENT, "lighting"),
-        CREATE_CLIENT(Category.CLIENT, "create"),
+        CREATE_CLIENT(Category.CLIENT, "create"), FUSION(Category.CLIENT, "fusion"),
         RECHISELED(Category.CLIENT, "rechiseled"),
         GUI_CLIENT(Category.CLIENT, "redstone_link_gui"),
         LINEAR_CLIENT(Category.CLIENT, "linear_bearing"), REDSTONE_CLIENT(Category.CLIENT, "redstone_additions"),
@@ -50,7 +50,8 @@ public final class SettingsCatalog {
     }
     public static Group group(Feature feature) {
         return switch (feature) {
-            case CREATE_WINDOWS -> Group.CREATE_CLIENT;
+            case CREATE_WINDOWS, CREATE_BACKFACES -> Group.CREATE_CLIENT;
+            case FUSION_BACKFACES -> Group.FUSION;
             case RECHISELED_GLASS -> Group.RECHISELED;
             case QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> Group.JOURNAL;
             case AUDIO_TIMELINE -> Group.AUDIO_CLIENT;

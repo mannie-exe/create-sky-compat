@@ -100,3 +100,7 @@ focus traversal, narration, registered section saving/restart behavior, and raw
 `ConfigValue` access. Recheck atomic replacement on supported CI platforms and
 minimum client loading without optional APIs. For preference or Questlog updates,
 check both entrances and the parent-screen return contract.
+
+For a dedicated-side exclusion check, the existing startup fixture accepts
+`--enable create.glass_backfaces --enable fusion.glass_backfaces`. Explicit client
+switches must still select no client hooks on a dedicated server.

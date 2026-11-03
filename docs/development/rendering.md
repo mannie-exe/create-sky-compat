@@ -4,6 +4,42 @@ These optional physical-client adapters do not require Sky Archipelago or the
 Create Sky modpack. [Configuration](../configuration.md#adaptation-switches) owns
 activation and versions. No renderer classes load on dedicated-server paths.
 
+## Glass backfaces
+
+`create.glass_backfaces` and `fusion.glass_backfaces` are separate opt-in client
+adaptations. They append reverse-facing copies of final processed quads while
+retaining native neighbor-cull groups. Existing window-material and glass-axis
+visibility switches remain independent: they decide whether a boundary is exposed;
+backfaces decide whether its surface can also be viewed from behind.
+
+The Create hook runs after `CTModel.getQuads` has selected CT tiles. It qualifies
+Create's connected glass, window and glass-pane implementations, including their
+subclasses. The Fusion hook runs after `BaseBakedModel` processors and qualifies
+vanilla glass/panes and Rechiseled's glass pillar implementation.
+The selected pack registers 146 Rechiseled glass pillars; other Rechiseled glass
+shape classes are not registered and are excluded. It resolves no Rechiseled class
+and excludes Create models from this path. Native
+Fusion modifier wrappers and renderer dispatch remain intact.
+
+`ReverseVertices` reverses winding and packed normals without separating positions
+from UVs, color or light attributes. `GlassBackfaces` retains sprite, tint, shade
+and AO flags. It never modifies source lists or vertices; existing coplanar reverse
+geometry and its own output are not duplicated. There is no global model wrapper,
+render-state change or persistent quad cache.
+
+Sodium 0.8.13 uses the source cull group for neighbor rejection, then computes
+normal-based mesh batches from emitted geometry. Both boundaries matter when
+updating: changing the source group exposes hidden interfaces, while incorrect
+reverse winding/normal can make mesh batching discard the new face. Review native
+lighting and translucent sorting alongside model/UV evidence.
+
+Before updating Create or Fusion, inspect the exact output methods, CT-data
+ownership, modifier dispatch, render-type handling and vertex format. Update pins,
+selection gates, metadata, package checks and native evidence together. Retire a
+hook only after a released upstream implementation covers the same cases. These
+adapters do not claim arbitrary transparent blocks, fluids, block-entity renderers,
+Copycat materials or DH geometry. Native verification scope is recorded separately.
+
 ## Window faces
 
 `create.window_culling` selects `CreateWindowCullingMixin` for Create's

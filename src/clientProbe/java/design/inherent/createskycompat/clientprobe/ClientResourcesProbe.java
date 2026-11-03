@@ -34,6 +34,12 @@ final class ClientResourcesProbe {
     private com.google.gson.JsonObject modelReport;
     ClientResourcesProbe() {
         if (!Files.isRegularFile(root.resolve("resource-review-fixture.json"))) throw new IllegalStateException("Resource probe requires its disposable marker");
+        // A reopened fixture must acknowledge, rather than replay, its last command.
+        var previous = root.resolve("resource-review-control.json");
+        if (Files.isRegularFile(previous)) {
+            try { sequence = JsonParser.parseString(Files.readString(previous)).getAsJsonObject().get("sequence").getAsInt(); }
+            catch (Exception invalid) { throw new IllegalStateException("Unreadable resource probe control", invalid); }
+        }
         baseline = new ArrayList<>(Minecraft.getInstance().options.resourcePacks);
         baseline.removeIf(id -> id.startsWith("file/review-"));
         NeoForge.EVENT_BUS.addListener(this::tick);
@@ -106,6 +112,17 @@ final class ClientResourcesProbe {
                             mc.stop();
                         }
                         case "snapshot" -> {}
+                        case "glass_targets" -> {
+                            modelReport = new com.google.gson.JsonObject();
+                            for (var block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
+                                var id = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block);
+                                if (id.getNamespace().equals("minecraft")
+                                        || !design.inherent.createskycompat.client.GlassBackfaces.fusionTarget(block.defaultBlockState())) continue;
+                                String type = block.getClass().getName();
+                                if (!modelReport.has(type)) modelReport.add(type, new com.google.gson.JsonArray());
+                                modelReport.getAsJsonArray(type).add(id.toString());
+                            }
+                        }
                         case "inspect" -> {
                             if (mc.level == null) throw new IllegalStateException("Expected isolated world");
                             var pos = new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt());
@@ -152,6 +169,20 @@ final class ClientResourcesProbe {
                                     }
                                 }
                                 surfaces.add(label, samples);
+                            }
+                            if (command.has("benchmark")) {
+                                int iterations = Math.clamp(command.get("benchmark").getAsInt(), 1, 2000);
+                                long started = System.nanoTime();
+                                int emitted = 0;
+                                var random = net.minecraft.util.RandomSource.create(42);
+                                for (int iteration = 0; iteration < iterations; iteration++)
+                                    for (var direction : Direction.values()) {
+                                        random.setSeed(42);
+                                        emitted += model.getQuads(state, direction, random, data, null).size();
+                                    }
+                                modelReport.addProperty("benchmarkIterations", iterations);
+                                modelReport.addProperty("benchmarkQuads", emitted);
+                                modelReport.addProperty("benchmarkMillis", (System.nanoTime() - started) / 1_000_000.0);
                             }
                             modelReport.add("quads", counts); modelReport.add("skipNeighborFace", culling);
                             modelReport.add("renderFace", visible); modelReport.add("surfaces", surfaces);

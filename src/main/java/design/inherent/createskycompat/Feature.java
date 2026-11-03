@@ -46,6 +46,8 @@ public enum Feature {
     COLORWHEEL_MATERIALS("rendering.colorwheel_materials"),
     MODEL_DATA("rendering.single_block_model_data"),
     SINGLE_BLOCK_PASSES("rendering.single_block_passes"),
+    CREATE_BACKFACES("create.glass_backfaces", false),
+    FUSION_BACKFACES("fusion.glass_backfaces", false),
     CREATE_WINDOWS("create.window_culling"),
     RECHISELED_GLASS("rechiseled.glass_culling"),
     LIGHTING_LIFECYCLE("lighting.lifecycle"),

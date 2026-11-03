@@ -21,6 +21,7 @@ def main():
     parser.add_argument('--scenario', choices=['standalone', 'all-disabled', 'terrain-disabled', 'terrain', 'full',
                                              'unsupported-disabled', 'unsupported-enabled', 'questlog', 'questlog-disabled', 'jade'], required=True)
     parser.add_argument('--mod', type=Path)
+    parser.add_argument('--enable', action='append', default=[], help='Explicit startup feature key to enable in this disposable fixture')
     args = parser.parse_args()
     server = args.server.expanduser().resolve()
     version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines()
@@ -45,7 +46,7 @@ def main():
             # Disabled adapters must neither reject their versions nor resolve their APIs.
             metadata = 'modLoader="lowcodefml"\nloaderVersion="[1,)"\nlicense="MIT"\n'
             for target in ['sky_archipelago', 'skyvillages', 'architectury', 'sable', 'aeronautics_delivery_quests',
-                           'distanthorizons', 'bluemap', 'analogaudio', 'analoglib', 'yigd', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog', 'sabledynlights', 'lambdynlights', 'colorwheel', 'flywheel', 'linearbearing', 'linearbearingsfix', 'simulated', 'aeronautics_utility_objects']:
+                           'distanthorizons', 'bluemap', 'analogaudio', 'analoglib', 'yigd', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog', 'sabledynlights', 'lambdynlights', 'colorwheel', 'flywheel', 'linearbearing', 'linearbearingsfix', 'simulated', 'aeronautics_utility_objects', 'fusion', 'rechiseled']:
                 metadata += f'[[mods]]\nmodId="{target}"\nversion="999.0.0"\ndisplayName="Fixture {target}"\n'
             with zipfile.ZipFile(run / 'mods/future-targets-fixture.jar', 'w') as fixture:
                 fixture.writestr('META-INF/neoforge.mods.toml', metadata)
@@ -69,6 +70,15 @@ def main():
             import re
             keys = re.findall(r'\("([a-z_]+\.[a-z_]+)"', (ROOT / 'src/main/java/design/inherent/createskycompat/Feature.java').read_text())
             (run / 'config/create_sky_compat-features.properties').write_text(''.join(f'{key}=false\n' for key in keys))
+        if args.enable:
+            import re
+            keys = set(re.findall(r'\("([a-z_]+\.[a-z_]+)"', (ROOT / 'src/main/java/design/inherent/createskycompat/Feature.java').read_text()))
+            if not set(args.enable) <= keys:
+                parser.error('Unknown fixture feature key')
+            feature_file = run / 'config/create_sky_compat-features.properties'
+            lines = feature_file.read_text().splitlines() if feature_file.exists() else []
+            lines = [line for line in lines if line.partition('=')[0] not in args.enable]
+            feature_file.write_text('\n'.join(lines + [key + '=true' for key in args.enable]) + '\n')
         # The existing terrain fixture exercises the custom generator. Startup boundaries use vanilla flat.
         (run / 'server.properties').write_text(
             'server-ip=127.0.0.1\nserver-port=0\nonline-mode=false\nlevel-name=probe-world\n'

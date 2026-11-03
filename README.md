@@ -21,6 +21,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | --- | --- | --- |
 | Sky Archipelago | 1.3.6 | Expanded island preset and separately selectable placement/climate adaptations |
 | Create | 6.0.10 | Client window-face culling correction; preserves native connected textures |
+| Glass backfaces | Create 6.0.10 or Fusion 1.3.16 | Independent opt-in two-sided glass retaining native connected textures |
 | Rechiseled | 1.2.6 | Client rotated-glass culling correction, including Rechiseled Create windows |
 | Sky Villages + Architectury | 1.0.6 + 13.x (tested 13.0.11) | Village clearance and placement; needs Sky Archipelago |
 | Sable | 2.0.6 | Island pressure; client single-block model-data correction |

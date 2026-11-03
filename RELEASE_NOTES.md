@@ -1,20 +1,20 @@
-# Create Sky Compat 0.15.0
+# Create Sky Compat 0.16.0
 
-Add two independent client adaptations for glass face culling:
+Add independent, opt-in client adaptations for two-sided glass:
 
-- `create.window_culling` keeps faces visible between different Create window
-  materials and restores their native connected-texture context. Matching windows
-  retain hidden interfaces. Requires Create 6.0.10.
-- `rechiseled.glass_culling` preserves faces between differently oriented instances
-  of the same Rechiseled glass pillar, including Rechiseled Create windows. Matching
-  orientations and native slab/stair rules remain unchanged. Requires Rechiseled 1.2.6.
+- `create.glass_backfaces` shows exposed Create glass/window/pane surfaces from
+  behind after native connected-texture selection. Create Deco windows using
+  those implementations are included. Requires Create 6.0.10.
+- `fusion.glass_backfaces` shows exposed Fusion-backed vanilla and Rechiseled
+  glass surfaces from behind after texture processing. Requires Fusion 1.3.16;
+  Rechiseled remains optional.
 
-Both default on when their supported target is installed. They have separate
-Client configuration groups and select no hooks on dedicated servers. Neither
-requires Fusion APIs, Iris or island generation; the content mods' own dependencies
-still apply. Native models, textures and Fusion connection predicates remain intact.
+Both default off. The existing material-boundary and orientation-boundary switches
+remain separate. Matching interfaces and opaque-neighbor occlusion retain native
+rules; no global render-state or connected-texture atlas changes are made.
 
-The isolated resource probe now records world-aware CT quads and face visibility
-and can run without Iris. It remains excluded from the distributed mod.
+The configuration screen distinguishes the visibility controls. The disposable
+resource probe also supports bounded model-query timings and acknowledges old
+commands on reopening, preventing an earlier quit command from closing a new run.
 
-See the maintained verification guide for artifact hashes, native cases and limits.
+See the verification guide for tested renderer combinations, cases and limitations.

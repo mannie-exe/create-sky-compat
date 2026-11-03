@@ -11,6 +11,27 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void glassBackfacesAreIndependentOptInClientAdapters() {
+        for (var feature : java.util.List.of(Feature.CREATE_BACKFACES, Feature.FUSION_BACKFACES)) {
+            assertFalse(feature.defaultEnabled);
+            var supported = FeatureSelection.dependencies(feature);
+            assertTrue(FeatureSelection.select(only(feature), supported, true).enabled(feature));
+            assertTrue(FeatureSelection.select(only(feature), supported, false).active().isEmpty());
+            assertTrue(FeatureSelection.select(only(feature), Map.of(), true).active().isEmpty());
+            var future = new HashMap<>(supported);
+            future.replaceAll((key, value) -> "future");
+            assertTrue(FeatureSelection.select(only(), future, true).active().isEmpty());
+            assertThrows(IllegalStateException.class, () -> FeatureSelection.select(only(feature), future, true));
+        }
+    }
+
+    @Test void prerequisitesPrecedeTheirDependents() {
+        for (var feature : Feature.values()) {
+            var prerequisite = FeatureSelection.prerequisite(feature);
+            if (prerequisite != null) assertTrue(prerequisite.ordinal() < feature.ordinal(), feature.key);
+        }
+    }
+
     @Test void rotatedGlassNeedsOnlyRechiseledAndOnlyOnClients() {
         var settings = only(Feature.RECHISELED_GLASS);
         var selected = FeatureSelection.select(settings, Map.of("rechiseled", "1.2.6"), true);

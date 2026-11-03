@@ -1,5 +1,58 @@
 # Verification
 
+## Glass backfaces, 0.16.0
+
+The candidate targets Minecraft 1.21.1 / NeoForge 21.1.264, Create 6.0.10,
+Fusion 1.3.16 and Sodium 0.8.13. Native macOS ARM64 checks use Java 21 and the
+selected Complementary/Euphoria shader stack, with separate renderer checks
+without Sodium or Iris. Shipping SHA-256:
+`fc41e9b118521f5ce578740c473312f2f8b229a8fa93ac128ac2928c621da672`.
+
+Inside/outside views cover vanilla glass, light-blue stained glass, Create framed
+glass and Rechiseled Create birch connecting glass. In each 3×3 two-layer wall,
+all nine reverse surfaces preserve the final outward CT UVs while the opposite
+neighbor direction stays hidden. Fusion can emit multiple processed subquads;
+comparisons retain every source vertex/UV association rather than assuming one
+quad per face. The resource-only prototype failed this same Create case.
+
+Sixteen boundary controls retain native matching/opaque occlusion and covered
+CT references, including panes, Create Deco windows and rotated Rechiseled axes.
+The registry contains 146 Rechiseled glass pillars; other upstream glass shape
+classes are not registered in this pack and are excluded. Create pane geometry
+is retained, not replaced by cube geometry. There is no moving-construct, Copycat,
+fluid, arbitrary resource-pack or DH backface coverage claim.
+
+The final artifact repeats all four nine-cell thick-wall comparisons and shader
+captures. Eight representative models retain identical output after resource reload
+and cold reopening. The same artifact with both switches disabled restores all
+four isolated one-sided controls. Stills cover selected viewpoints; no exhaustive
+camera-motion or shader/flicker matrix is claimed.
+
+Separate Create-only and Fusion-only clients pass the thick-wall CT comparison
+without Sodium/Iris or the other CT mod. The minimum integrated client loads with
+no optional adapters active. Dedicated standalone, full integration with both
+client switches explicitly enabled, and unsupported-but-disabled metadata fixtures
+start and exit normally. Neither new client hook is selected on a dedicated server.
+
+The existing native probe bounds model-query repetitions to 2,000. Samples on a
+20×20 two-layer Create wall took about 1–6 ms per 2,000 six-direction queries after
+warm-up on this host. This measures model queries, not chunk-mesh throughput, GPU
+frame time or allocation pressure. Exposed quad counts double; native matching
+interfaces remain culled. No cache or performance bypass was introduced.
+
+`./gradlew --no-daemon check build clientProbeJar` passes 114 Java tests, six
+Python tooling tests, exact upstream pins and package/resource checks. The new
+probe records the registered targets and bounded query timings and acknowledges
+old commands on opening; a retained quit command must not close the next run.
+Probes and upstream binaries are absent from the shipping JAR.
+
+The Resource Review harness retains captures, native records and executed protocol
+under `images/2026-11-03-glass-backface-compat`. Initial captures used a candidate
+whose only later resource change was generated English ordering. The final scope
+excludes unregistered Rechiseled shape classes; final artifact checks and native
+controls are recorded with their own hashes. Renderer hooks and quad reversal
+remain the owners described in [rendering](rendering.md#glass-backfaces).
+
 ## Glass culling, 0.15.0
 
 Minecraft 1.21.1 / NeoForge 21.1.264; Java 21; Create 6.0.10, Rechiseled 1.2.6,
