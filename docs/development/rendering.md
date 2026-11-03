@@ -4,6 +4,53 @@ These optional physical-client adapters do not require Sky Archipelago or the
 Create Sky modpack. [Configuration](../configuration.md#adaptation-switches) owns
 activation and versions. No renderer classes load on dedicated-server paths.
 
+## Window faces
+
+`create.window_culling` selects `CreateWindowCullingMixin` for Create's
+`ConnectedGlassBlock` and `WindowBlock`. Native `skipRendering` decisions remain
+unchanged for matching blocks. A different window material no longer suppresses
+the boundary face through these overrides. Minecraft still performs ordinary
+shape occlusion, including opaque neighbors; native models keep their `cullface`
+declarations.
+
+Create's `CTModel.createCTData` normally skips hidden directions. Exposing the
+boundary through the native visibility decision also lets Create calculate its
+existing CT context. Removing model culling declarations alone cannot ensure
+that context exists. The adapter does not replace CT textures, force calculations
+for every hidden face, change render layers or process other namespaces' models.
+
+Fusion and Rechiseled use independent rendering paths. Rechiseled's connecting
+models use Fusion predicates, including state/axis conditions, rather than Create's
+CT model. Different-material boundaries already work in the tested variants.
+
+`rechiseled.glass_culling` independently selects `RechiseledGlassCullingMixin`.
+The vertical `RechiseledGlassPillarBlock` path hides matching shapes even when the
+neighbor has another axis; the horizontal path already preserves that boundary.
+The adapter retains a face when the same block has a different axis, making the
+two directions consistent. Matching-axis decisions and native slab/stair shape
+handling remain unchanged. It uses Minecraft's AXIS property, which is the
+property used by the pinned Rechiseled implementation.
+
+This second correction requires Rechiseled, without linking Create or Fusion
+APIs. Rechiseled's own required dependencies still apply. No Fusion model or
+texture processor is replaced. Its pane-culling option addresses pane geometry,
+not these full-window boundaries. When updating Rechiseled, inspect both axis
+paths and property identity. Retire this hook when upstream respects differently
+oriented glass on both sides while retaining its native shape rules.
+
+When updating Create, inspect both block overrides and `CTModel` against the
+released artifact. Retire this adapter when upstream preserves visible mixed
+boundaries and their CT context. Recheck horizontal/vertical matching windows,
+mixed corners, opaque neighbors, native axis variants, shader rendering and
+resource reload. Do not replace a material-specific rule with a blanket policy
+for all transparent blocks.
+
+Upstream context: [Create 6.0.10 CT model](https://github.com/Creators-of-Create/Create/blob/mc1.21.1-6.0.10/src/main/java/com/simibubi/create/foundation/block/connected/CTModel.java)
+and [Fusion issue 148](https://github.com/SuperMartijn642/Fusion/issues/148).
+The latter explains the separation between texture connections and block culling;
+it is not an exact upstream report of this Create defect. Native results and
+remaining limits belong in [verification](verification.md).
+
 ## Framebuffer state
 
 `ShaderWrapperMixin` incorporates Veil Iris Fix 0.1.0. It wraps the complete Veil

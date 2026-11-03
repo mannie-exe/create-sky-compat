@@ -1,23 +1,20 @@
-# Create Sky Compat 0.14.0
+# Create Sky Compat 0.15.0
 
-Add optional adaptations for Redstone Link GUI 1.21.1-1.9.2 and Redstone Additions
-1.0.5, each with independent startup switches and configuration catalogue entries.
-Neither mod becomes required; upstream JARs remain unchanged.
+Add two independent client adaptations for glass face culling:
 
-Link editing now checks player permissions, current menu/channel, original target
-identity, valid indices and range on the server. Sable access uses projected world
-positions. Relocation is limited to ordinary Redstone Links without factory-panel
-connections, within one world or construct frame; unsupported moves are rejected.
+- `create.window_culling` keeps faces visible between different Create window
+  materials and restores their native connected-texture context. Matching windows
+  retain hidden interfaces. Requires Create 6.0.10.
+- `rechiseled.glass_culling` preserves faces between differently oriented instances
+  of the same Rechiseled glass pillar, including Rechiseled Create windows. Matching
+  orientations and native slab/stair rules remain unchanged. Requires Rechiseled 1.2.6.
 
-Additions repairs cover Conjunctor placement and settled ticks, Crossroad feedback
-and coherent state updates, support loss, unpowered Disjunctor defaults, Create
-wrench interactions, successful-only verdigris scraping, and the lit inverter's
-cutout render layer. Crossroad strong output through solid blocks loses one level;
-wire behavior retains its upstream contract. Missing loot and language resources
-remain the installing pack's responsibility.
+Both default on when their supported target is installed. They have separate
+Client configuration groups and select no hooks on dedicated servers. Neither
+requires Fusion APIs, Iris or island generation; the content mods' own dependencies
+still apply. Native models, textures and Fusion connection predicates remain intact.
 
-Verification covers disabled-adapter controls, independent target absence,
-minimum/full dedicated servers, native packet and block interactions, Sable
-coordinate frames, client menus and Ponder scenes. See the redstone development
-reference for limits, resource ownership and dependency-update considerations.
-Terrain, saved generation identity and LOD cache policy are unchanged.
+The isolated resource probe now records world-aware CT quads and face visibility
+and can run without Iris. It remains excluded from the distributed mod.
+
+See the maintained verification guide for artifact hashes, native cases and limits.

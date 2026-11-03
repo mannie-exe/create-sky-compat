@@ -1,0 +1,187 @@
+package design.inherent.createskycompat.clientprobe;
+
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.TitleScreen;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.Difficulty;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.LevelSettings;
+import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.common.NeoForge;
+
+/** Finite resource comparisons in a marked disposable integrated-server fixture. */
+final class ClientResourcesProbe {
+    private final Path root = FMLPaths.GAMEDIR.get();
+    private final ArrayList<String> baseline;
+    private int ticks, sequence = -1;
+    private String error;
+    private boolean opened;
+    private com.google.gson.JsonObject modelReport;
+    ClientResourcesProbe() {
+        if (!Files.isRegularFile(root.resolve("resource-review-fixture.json"))) throw new IllegalStateException("Resource probe requires its disposable marker");
+        baseline = new ArrayList<>(Minecraft.getInstance().options.resourcePacks);
+        baseline.removeIf(id -> id.startsWith("file/review-"));
+        NeoForge.EVENT_BUS.addListener(this::tick);
+    }
+    private void tick(ClientTickEvent.Post event) {
+        var mc = Minecraft.getInstance();
+        if (++ticks % 10 != 0 || mc.getOverlay() != null) return;
+        // An explicit property creates/opens only this marked disposable fixture.
+        String world = System.getProperty("create_sky_compat.probe.resources.world");
+        if (!opened && world != null && mc.screen instanceof TitleScreen) {
+            if (!world.matches("resource-review-[a-z0-9-]{1,48}")
+                    || !Files.isRegularFile(root.resolve("saves").resolve(world).resolve(".resource-review-world")))
+                throw new IllegalStateException("Resource world needs its explicit fixture marker");
+            opened = true;
+            if (Files.isRegularFile(root.resolve("saves").resolve(world).resolve("level.dat")))
+                mc.createWorldOpenFlows().openWorld(world, () -> mc.setScreen(new TitleScreen()));
+            else mc.createWorldOpenFlows().createFreshLevel(world,
+                    new LevelSettings("Resource repair review", GameType.CREATIVE, false, Difficulty.PEACEFUL,
+                            true, new GameRules(), WorldDataConfiguration.DEFAULT), new WorldOptions(42, false, false),
+                    registries -> registries.registryOrThrow(Registries.WORLD_PRESET)
+                            .get(ResourceLocation.withDefaultNamespace("flat")).createWorldDimensions(), mc.screen);
+        }
+        try {
+            var path = root.resolve("resource-review-control.json");
+            if (Files.isRegularFile(path) && Files.size(path) < 4096) {
+                var command = JsonParser.parseString(Files.readString(path)).getAsJsonObject();
+                if (command.get("sequence").getAsInt() != sequence) {
+                    sequence = command.get("sequence").getAsInt(); error = null;
+                    switch (command.get("operation").getAsString()) {
+                        case "packs" -> {
+                            var selected = new ArrayList<>(baseline);
+                            String treatment = command.get("treatment").getAsString();
+                            if (!treatment.equals("baseline")) {
+                                if (!treatment.matches("review-[a-z0-9-]+\\.zip") || !Files.isRegularFile(root.resolve("resourcepacks").resolve(treatment))) throw new IllegalArgumentException("Unknown review treatment");
+                                selected.add("file/" + treatment);
+                            }
+                            mc.getResourcePackRepository().reload();
+                            var actual = new ArrayList<String>(mc.getResourcePackRepository().getSelectedIds());
+                            actual.removeIf(id -> id.startsWith("file/review-"));
+                            for (String id : selected) if (!actual.contains(id)) actual.add(id);
+                            mc.getResourcePackRepository().setSelected(actual);
+                            mc.options.resourcePacks.clear(); mc.options.resourcePacks.addAll(selected);
+                            mc.reloadResourcePacks();
+                        }
+                        case "command" -> {
+                            if (mc.getSingleplayerServer() == null || mc.player == null) throw new IllegalStateException("Expected isolated integrated world");
+                            var server = mc.getSingleplayerServer();
+                            var playerId = mc.player.getUUID();
+                            String text = command.get("command").getAsString();
+                            server.execute(() -> {
+                                var player = server.getPlayerList().getPlayer(playerId);
+                                server.getCommands().performPrefixedCommand(player.createCommandSourceStack().withPermission(4), text);
+                            });
+                        }
+                        case "interact" -> {
+                            var pos = new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt());
+                            mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
+                        }
+                        case "close" -> mc.player.closeContainer();
+                        case "hide" -> { mc.options.hideGui = command.get("value").getAsBoolean(); mc.options.pauseOnLostFocus = false; }
+                        case "shaders" -> {
+                            if (!net.neoforged.fml.ModList.get().isLoaded("iris"))
+                                throw new IllegalStateException("Shader switching requires Iris in the review fixture");
+                            net.irisshaders.iris.Iris.getIrisConfig().setShadersEnabled(command.get("value").getAsBoolean());
+                            net.irisshaders.iris.Iris.getIrisConfig().save(); net.irisshaders.iris.Iris.reload();
+                        }
+                        case "quit" -> {
+                            var server = mc.getSingleplayerServer();
+                            if (server != null) server.halt(false);
+                            mc.stop();
+                        }
+                        case "snapshot" -> {}
+                        case "inspect" -> {
+                            if (mc.level == null) throw new IllegalStateException("Expected isolated world");
+                            var pos = new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt());
+                            var state = mc.level.getBlockState(pos);
+                            var model = mc.getBlockRenderer().getBlockModel(state);
+                            modelReport = new com.google.gson.JsonObject();
+                            modelReport.addProperty("state", state.toString());
+                            modelReport.addProperty("modelClass", model.getClass().getName());
+                            var data = model.getModelData(mc.level, pos, state,
+                                    net.neoforged.neoforge.client.model.data.ModelData.EMPTY);
+                            var bounds = new double[]{Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY,
+                                    Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
+                            var counts = new com.google.gson.JsonObject();
+                            var culling = new com.google.gson.JsonObject();
+                            var visible = new com.google.gson.JsonObject();
+                            var surfaces = new com.google.gson.JsonObject();
+                            for (int side = -1; side < 6; side++) {
+                                var direction = side == -1 ? null : Direction.values()[side];
+                                var quads = model.getQuads(state, direction, net.minecraft.util.RandomSource.create(42), data, null);
+                                String label = direction == null ? "unculled" : direction.getName();
+                                counts.addProperty(label, quads.size());
+                                if (direction != null) {
+                                    culling.addProperty(label, state.skipRendering(mc.level.getBlockState(pos.relative(direction)), direction));
+                                    visible.addProperty(label, net.minecraft.world.level.block.Block.shouldRenderFace(state, mc.level, pos, direction, pos.relative(direction)));
+                                }
+                                var samples = new com.google.gson.JsonArray();
+                                for (var quad : quads) {
+                                    var vertices = quad.getVertices();
+                                    var sample = new com.google.gson.JsonObject();
+                                    var sprite = quad.getSprite();
+                                    sample.addProperty("sprite", sprite.contents().name().toString());
+                                    sample.addProperty("face", quad.getDirection().getName());
+                                    var uv = new com.google.gson.JsonArray();
+                                    for (int vertex = 0; vertex < 4; vertex++) {
+                                        int offset = vertex * (vertices.length / 4);
+                                        uv.add(16 * (Float.intBitsToFloat(vertices[offset + 4]) - sprite.getU0()) / (sprite.getU1() - sprite.getU0()));
+                                        uv.add(16 * (Float.intBitsToFloat(vertices[offset + 5]) - sprite.getV0()) / (sprite.getV1() - sprite.getV0()));
+                                    }
+                                    sample.add("uv", uv); samples.add(sample);
+                                    for (int vertex = 0; vertex < 4; vertex++) for (int axis = 0; axis < 3; axis++) {
+                                        double value = Float.intBitsToFloat(vertices[vertex * (vertices.length / 4) + axis]);
+                                        bounds[axis] = Math.min(bounds[axis], value);
+                                        bounds[axis + 3] = Math.max(bounds[axis + 3], value);
+                                    }
+                                }
+                                surfaces.add(label, samples);
+                            }
+                            modelReport.add("quads", counts); modelReport.add("skipNeighborFace", culling);
+                            modelReport.add("renderFace", visible); modelReport.add("surfaces", surfaces);
+                            if (Double.isFinite(bounds[0])) modelReport.add("bounds", new com.google.gson.Gson().toJsonTree(bounds));
+                            try {
+                                var config = Class.forName("ca.fxco.moreculling.MoreCulling").getField("CONFIG").get(null);
+                                modelReport.addProperty("moreCullingBlockStates", config.getClass().getField("useBlockStateCulling").getBoolean(config));
+                            } catch (ReflectiveOperationException absent) { modelReport.addProperty("moreCullingBlockStates", "unavailable"); }
+                        }
+                        default -> throw new IllegalArgumentException("Unknown resource action");
+                    }
+                }
+            }
+        } catch (Exception failure) { error = failure.toString(); }
+        try {
+            var report = new com.google.gson.JsonObject();
+            report.addProperty("pid", ProcessHandle.current().pid()); report.addProperty("sequence", sequence); report.addProperty("ticks", ticks);
+            report.addProperty("screen", mc.screen == null ? "none" : mc.screen.getClass().getName());
+            report.addProperty("world", mc.level != null);
+            report.addProperty("shaders", net.neoforged.fml.ModList.get().isLoaded("iris") && net.irisshaders.iris.Iris.isPackInUseQuick());
+            report.addProperty("width",mc.getWindow().getWidth()); report.addProperty("height",mc.getWindow().getHeight());
+            report.add("packs", new com.google.gson.Gson().toJsonTree(mc.getResourcePackRepository().getSelectedIds()));
+            if (modelReport != null) report.add("model", modelReport);
+            if (mc.player != null) {
+                report.addProperty("x",mc.player.getX());report.addProperty("y",mc.player.getY());report.addProperty("z",mc.player.getZ());
+                report.addProperty("yaw",mc.player.getYRot());report.addProperty("pitch",mc.player.getXRot());
+                report.addProperty("menu",mc.player.containerMenu.getClass().getName());report.addProperty("slots",mc.player.containerMenu.slots.size());
+            }
+            if (error != null) report.addProperty("error",error);
+            Files.writeString(root.resolve("resource-review-state.json"),new GsonBuilder().setPrettyPrinting().create().toJson(report));
+        } catch (java.io.IOException failure) { throw new IllegalStateException(failure); }
+    }
+}

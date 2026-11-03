@@ -11,6 +11,29 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void rotatedGlassNeedsOnlyRechiseledAndOnlyOnClients() {
+        var settings = only(Feature.RECHISELED_GLASS);
+        var selected = FeatureSelection.select(settings, Map.of("rechiseled", "1.2.6"), true);
+        assertEquals(java.util.List.of("client.RechiseledGlassCullingMixin"), selected.mixins(true));
+        assertTrue(FeatureSelection.select(settings, Map.of("create", "6.0.10", "fusion", "1.3.16"), true).active().isEmpty());
+        assertTrue(FeatureSelection.select(settings, Map.of("rechiseled", "future"), false).mixins(false).isEmpty());
+        assertTrue(FeatureSelection.select(only(), Map.of("rechiseled", "future"), true).mixins(true).isEmpty());
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, Map.of("rechiseled", "future"), true));
+    }
+    @Test void windowCullingIsCreateOnlyAndPhysicalClientOnly() {
+        var settings = only(Feature.CREATE_WINDOWS);
+        var selected = FeatureSelection.select(settings, Map.of("create", "6.0.10"), true);
+        assertTrue(selected.enabled(Feature.CREATE_WINDOWS));
+        assertEquals(java.util.List.of("client.CreateWindowCullingMixin"), selected.mixins(true));
+        assertTrue(FeatureSelection.select(settings, Map.of("create", "6.0.10", "fusion", "future",
+                "rechiseled", "future", "rechiseledcreate", "future"), true).enabled(Feature.CREATE_WINDOWS));
+        for (var absent : java.util.List.of(Map.<String, String>of(),
+                Map.of("fusion", "1.3.16", "rechiseled", "1.2.6", "rechiseledcreate", "1.1.1")))
+            assertTrue(FeatureSelection.select(settings, absent, true).active().isEmpty());
+        assertTrue(FeatureSelection.select(settings, Map.of("create", "future"), false).mixins(false).isEmpty());
+        assertTrue(FeatureSelection.select(only(), Map.of("create", "future"), true).mixins(true).isEmpty());
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, Map.of("create", "future"), true));
+    }
     @Test void overviewNamesEveryConfigurableFeature() throws Exception {
         try (var stream = getClass().getResourceAsStream("/assets/create_sky_compat/lang/en_us.json")) {
             assertNotNull(stream);

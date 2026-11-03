@@ -1,5 +1,65 @@
 # Verification
 
+## Glass culling, 0.15.0
+
+Minecraft 1.21.1 / NeoForge 21.1.264; Java 21; Create 6.0.10, Rechiseled 1.2.6,
+Rechiseled Create 1.1.1, Fusion 1.3.16 and Create Deco 2.1.3. The isolated native
+fixture uses restored upstream window models; the rejected all-face override and
+Fusion appended-face prototype are absent from its selected stack.
+
+The final candidate SHA-256 is
+`057777a29e61d58a8500c52cf19d29b51e6bbcaa99cc6a753eb50d5deb51107d`.
+Both disabled and enabled runs use those same JAR bytes. Native inspection reads
+world-aware model data, directional quads/UVs and `Block.shouldRenderFace` rather
+than treating raw item-model quads as connected-texture evidence.
+
+| Boundary | Disabled control | Adapted behavior |
+| --- | --- | --- |
+| Different Create framed/wood/iron windows | Covered face hidden, missing CT context | Visible, CT equals the uncovered reference |
+| Same Create window | Internal face hidden | Unchanged |
+| Create Deco window against framed glass | Shares Create's affected block implementation | Visible, CT equals the uncovered reference |
+| Rechiseled glass, Y against X axis | Face hidden; reverse direction visible | Both directions visible with native Fusion CT |
+| Matching Rechiseled axis | Internal face hidden | Unchanged |
+| Different Rechiseled materials and cross-mod glass | Visible with native CT | Unchanged |
+| Nonconnecting variants, vanilla glass, panes, opaque neighbors | Native behavior | Unchanged |
+
+The first full-pack pass confirmed byte-identical inspected controls across ten
+unaffected cases. The final 16-case native pass verifies visibility and compares
+visible full-window CT with the same fixture after removing only its cover.
+Pane geometry is a separate control, not subjected to a full-cube UV-equivalence
+assertion. The Create-only client independently passes without Fusion, Rechiseled,
+Iris or optimization mods. Minimum and full dedicated startup checks select no
+client glass hooks.
+
+Focused reproduction: build a two-by-two framed-glass wall, then cover half its
+front with vertical framed glass. View the wall from inside the covering block.
+With `create.window_culling=false`, the covered wall face is missing; enable the
+switch and fully restart to compare. For the separate Rechiseled issue, use
+`rechiseledcreate:birch_window_panes_connecting[axis=y]` behind the same block
+with `axis=x`, then reverse their axes. Native suppression is asymmetric; the
+Rechiseled switch corrects that boundary without changing Fusion predicates.
+These are upstream-report candidates; no issue was submitted.
+
+`./gradlew --no-daemon check build clientProbeJar` passes 108 Java cases, six
+release-tool cases, artifact pin checks and package/resource validation. The final
+minimum integrated client has only NeoForge, Compat and the separate probe; its
+active adaptation set is empty. The exact final binary also passes minimum and
+full dedicated-server startup with no glass target transforms.
+
+The selected Complementary Unbound 5.9.3 / Euphoria 1.10.5 configuration passes
+five focused native cases, including both Rechiseled axis directions. Eight
+representative cases pass after resource reload and again after a cold fixture
+reopen. A moving-view
+recording accompanies the saved fixture evidence; no frame-time benchmark or
+exhaustive flicker/shader matrix is claimed.
+
+The reusable `glass_culling_review.py` fixture in the Resource Review harness
+owns the finite cases, matched cameras and `--verify` native reference checks.
+Captures and sidecars remain there. This is not an exhaustive shader, third-party
+window, Copycat or moving-construct compatibility claim. No terrain, save identity,
+personal instances, worlds or LODs were changed.
+
+
 ## Configuration sidebar, 0.13.0
 
 Verified on 2026-11-01 with Java 21.0.13, NeoForge 21.1.264 and macOS ARM64.

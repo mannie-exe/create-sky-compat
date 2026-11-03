@@ -23,6 +23,8 @@ implementation tests to the exact released artifacts.
 | Moving lights | `SodiumLightingMixin` and independent Create-owner cleanup, physical client; no terrain prerequisite | See [lighting](lighting.md). Retire each hook when SDL supports the selected Sodium cache API or clears its Create holders on world unload. |
 | Colorwheel sampler allocation | Independent client repair when upstream disables OIT | Review slot ownership, OIT guards and Iris external-sampler contract; supported OIT remains unchanged. |
 | Colorwheel materials | Dependent client writer for construct material scopes | Review direct Sable tessellation and Colorwheel terrain/emission encoding together; see [rendering](rendering.md#colorwheel). |
+| Create windows | Client-only material-boundary correction in both native glass/window overrides | Review face suppression and CT-data collection together; preserve matching interfaces and shape occlusion. See [window faces](rendering.md#window-faces). |
+| Rechiseled glass | Independent client-only axis-boundary correction in `RechiseledGlassPillarBlock` | Review both vertical and horizontal paths, the vanilla AXIS property, and native slab/stair shape handling. See [window faces](rendering.md#window-faces). |
 | Framebuffer, balloon, material IDs, model data, render passes | Five independent client selections | See [rendering](rendering.md). These do not depend on island generation or each other. |
 
 For a dependency update, inspect the exact release and any nested JARs before

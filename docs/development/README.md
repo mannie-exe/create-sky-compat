@@ -249,6 +249,22 @@ This diagnoses endpoint loading; it does not transport or complete cargo.
 Install it only in a disposable client, with desktop authorization before launch.
 It is excluded from production artifacts and the server probe.
 
+For resource comparisons in a full rendering client with Iris, use
+`-Dcreate_sky_compat.probe.resources=true`. This mode requires
+`resource-review-fixture.json` in the disposable game directory and returns before
+the flight telemetry modes. The owning fixture supplies its world and resources;
+the probe neither creates a survival world nor installs candidate packs.
+
+`resource-review-control.json` accepts sequenced resource selection, integrated-world
+commands, native block interaction, container closing, shader switching and shutdown.
+`resource-review-state.json` records the selected packs, camera, screen, container
+slots and advancing ticks. Native inspection also records face visibility and
+world-aware CT quad UVs; raw three-argument model quads are insufficient for this.
+Iris is optional for resource checks; shader switching requires it. Select one `review-*.zip` treatment above the captured
+baseline; returning to baseline removes review treatments. Remove stale control
+files before another launch. Shutdown explicitly halts the integrated server.
+These controls are test instrumentation, not a production authoring interface.
+
 With DH 3.3.3 installed, JVM flags select these checks:
 
 | Flag | Behavior and output |
@@ -270,7 +286,7 @@ client to an isolated production server containing owo-lib, match its handshake
 mode with `-Dowo.handshake.enabled=true` on that test server. Do not alter a
 playing server for a harness-only mismatch.
 
-Without either DH flag, the probe logs the dimension envelope, Sable pressure,
+Without an opt-in fixture mode or either DH flag, the probe logs the dimension envelope, Sable pressure,
 altitude and tracked sub-level bounds every five seconds. That mode writes no
 world state. Telemetry does not replace checking aircraft construction and controls.
 Close the selected client process normally after recording results.
