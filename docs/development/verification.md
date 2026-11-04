@@ -1,5 +1,14 @@
 # Verification
 
+## Hanging bridge lanterns, 2026-11-03
+
+The optional Macaw’s Bridges 3.1.2 adaptation preserves empty collision and moves only stair-lantern outlines. A shape-only native control missed a direct outline intersection outside the owning cell. The corrected implementation passes 28 native ray cases across all four facings: outside-cell and ordinary selection, above/below approaches, collision queries, segment endpoints, solid obstruction, nearest lantern and removal. The native bridge remains the nearer obstruction for the low control ray.
+
+Native item placement, breaking and replacement preserve the stair state; resource reload retains selection. The configuration entry renders under Server / shared → Macaw’s Bridges. A cold reopen of the 0.17.0 build retains outside-cell selection. Shader-off captures show the approved upright hanging appearance; flat resource geometry is unchanged. The isolated harness retains the protocol and captures under `images/2026-11-03-macaw-shapes` and `macaw_lantern_review.py`. These checks do not establish arbitrary moving-construct interactions or other Macaw versions.
+
+`./gradlew --no-daemon check build` passes. Dedicated startup passes with no optional mods, Macaw alone enabled/disabled, future targets disabled and the complete pack. The 0.17.0 build's shipping classes match the ray-tested candidate byte for byte. Feature-selection tests cover missing, unsupported and disabled targets on both physical sides. The package check excludes Macaw classes and probes.
+
+
 ## Glass backfaces, 0.16.0
 
 The candidate targets Minecraft 1.21.1 / NeoForge 21.1.264, Create 6.0.10,

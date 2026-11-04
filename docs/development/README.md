@@ -60,6 +60,8 @@ does not establish visible geometry, reading time or correct interaction cues.
 
 ## Implementation
 
+See [bridge lanterns](macaw.md) for the optional Macaw shape correction and its required resource model.
+
 See [Transmission & Linkage](transmission-linkage.md) for optional interaction
 authorization, Jade inspection, upstream limits and native machinery fixtures.
 

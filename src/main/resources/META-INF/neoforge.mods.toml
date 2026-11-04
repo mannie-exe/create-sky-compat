@@ -200,3 +200,9 @@ modId="fusion"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
+
+[[dependencies.create_sky_compat]]
+modId="mcwbridges"
+type="optional"
+versionRange="[0,)"
+side="BOTH"

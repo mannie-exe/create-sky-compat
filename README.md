@@ -36,6 +36,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Sable + You're in Grave Danger | 2.0.6 + 2.0.13 | Construct-relative graves, bounded loss fallback and moving location tracking |
 | Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
 | Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
+| Macaw’s Bridges | 3.1.2 | Opt-in selection for the matching hanging stair-lantern resource model; enable on both sides |
 | Questlog | 3.5.0, 3.5.3 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
 | BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
 | Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |

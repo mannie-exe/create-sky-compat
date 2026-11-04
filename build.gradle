@@ -41,6 +41,7 @@ configurations {
 sourceSets.test.compileClasspath += sourceSets.main.compileClasspath
 sourceSets.test.runtimeClasspath += sourceSets.main.runtimeClasspath
 dependencies {
+    compileOnly('maven.modrinth:macaws-bridges:aQ7rY7ng') { transitive = false }
     analogSource('maven.modrinth:analog-audio:BshMjyFt') { transitive = false }
     compileOnly('maven.modrinth:analog-audio:BshMjyFt') { transitive = false }
     compileOnly('maven.modrinth:cloth-config:izKINKFg') { transitive = false }
@@ -121,7 +122,8 @@ tasks.register('verifyUpstream') {
             if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
         }
 
-        ['fusion-connected-textures': '29920a6838f4f942947d208349480d7f5737f9fac6411c6eac5f3e824a438048',
+        ['macaws-bridges': '070b817d3282760d9789b22ce13779613c8b558e02012fd5884d343175d88fd9',
+         'fusion-connected-textures': '29920a6838f4f942947d208349480d7f5737f9fac6411c6eac5f3e824a438048',
          'rechiseled': 'cd638bb122d7e1afce4f38b1c7da3af99be7b9f523869cfbc15e5347db5f8d9a',
          'yigd': 'dd2142a3c6a9d5b990ab36220be482f7aa9f528755f93b8fef8996f509ddcda2',
          'analog-audio': 'effc623ad0b3e332bb29252f5c41f767cb194a47ce5ae195d186f442124807a3'].each { name, expected ->

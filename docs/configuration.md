@@ -68,6 +68,7 @@ inactive selections.
 | `rendering.colorwheel_materials` | Colorwheel terrain/emission metadata on direct construct draws | Client, active `rendering.construct_material_ids`, Colorwheel 1.3.0+mc1.21.1 |
 | `rendering.single_block_model_data` | Match model data used for layer selection and tessellation | Client, Sable 2.0.6 |
 | `rendering.single_block_passes` | Draw single-block geometry in its current Iris terrain pass | Client, Sable 2.0.6, Iris 1.8.14-beta.1+mc1.21.1, Sodium 0.8.13+mc1.21.1 |
+| `macaw.bridge_lantern_shape` | Hanging stair-lantern outline and selection; matching resource model required, default off | Shared, Macaw’s Bridges 3.1.2 |
 | `create.glass_backfaces` | Show exposed Create glass from behind, retaining final connected textures | Client, Create 6.0.10; opt-in, independent of terrain and renderers |
 | `fusion.glass_backfaces` | Show exposed vanilla/Rechiseled glass from behind after Fusion processing | Client, Fusion 1.3.16; opt-in, no required Rechiseled installation |
 | `create.window_culling` | Keep window faces visible across different window materials | Client, Create 6.0.10; independent of Fusion, Rechiseled and shaders |

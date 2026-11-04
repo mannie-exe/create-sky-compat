@@ -1,20 +1,11 @@
-# Create Sky Compat 0.16.0
+# Create Sky Compat 0.17.0
 
-Add independent, opt-in client adaptations for two-sided glass:
+Add an opt-in Macaw’s Bridges 3.1.2 adaptation for the matching short-chain hanging stair-lantern resource model.
 
-- `create.glass_backfaces` shows exposed Create glass/window/pane surfaces from
-  behind after native connected-texture selection. Create Deco windows using
-  those implementations are included. Requires Create 6.0.10.
-- `fusion.glass_backfaces` shows exposed Fusion-backed vanilla and Rechiseled
-  glass surfaces from behind after texture processing. Requires Fusion 1.3.16;
-  Rechiseled remains optional.
+- Match the selection outline to the hanging model in all four directions.
+- Select the portion extending outside its owning cell without extending reach or bypassing native obstructions.
+- Preserve flat lanterns, empty physical collision and native placement/removal behavior.
 
-Both default off. The existing material-boundary and orientation-boundary switches
-remain separate. Matching interfaces and opaque-neighbor occlusion retain native
-rules; no global render-state or connected-texture atlas changes are made.
+Enable `macaw.bridge_lantern_shape` on client and server only with the matching resource model. The standalone default is off. The configuration screen groups it under Server / shared → Macaw’s Bridges.
 
-The configuration screen distinguishes the visibility controls. The disposable
-resource probe also supports bounded model-query timings and acknowledges old
-commands on reopening, preventing an earlier quit command from closing a new run.
-
-See the verification guide for tested renderer combinations, cases and limitations.
+No model or texture assets are bundled in Compat. Create Sky supplies the resource model separately. Existing terrain, rendering and gameplay adaptations are unchanged.

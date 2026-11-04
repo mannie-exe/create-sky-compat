@@ -25,6 +25,19 @@ class FeatureSelectionTest {
         }
     }
 
+    @Test void hangingLanternIsOptInAndNeedsOnlyMacawOnEitherSide() {
+        assertFalse(Feature.MACAW_LANTERN.defaultEnabled);
+        for (boolean client : new boolean[]{false, true}) {
+            var selected = FeatureSelection.select(only(Feature.MACAW_LANTERN), Map.of("mcwbridges", "3.1.2"), client);
+            assertTrue(selected.enabled(Feature.MACAW_LANTERN));
+            assertEquals(java.util.List.of("macaw.BridgeLanternShapeMixin", "macaw.ClipModeAccessor", "macaw.LanternRayMixin"), selected.mixins(client));
+            assertTrue(FeatureSelection.select(only(Feature.MACAW_LANTERN), Map.of(), client).mixins(client).isEmpty());
+            assertTrue(FeatureSelection.select(only(), Map.of("mcwbridges", "future"), client).active().isEmpty());
+            assertThrows(IllegalStateException.class, () -> FeatureSelection.select(only(Feature.MACAW_LANTERN),
+                    Map.of("mcwbridges", "future"), client));
+        }
+    }
+
     @Test void prerequisitesPrecedeTheirDependents() {
         for (var feature : Feature.values()) {
             var prerequisite = FeatureSelection.prerequisite(feature);

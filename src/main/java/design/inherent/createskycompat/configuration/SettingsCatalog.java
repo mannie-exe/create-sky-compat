@@ -19,6 +19,7 @@ public final class SettingsCatalog {
         LINEAR_CLIENT(Category.CLIENT, "linear_bearing"), REDSTONE_CLIENT(Category.CLIENT, "redstone_additions"),
         LINK_GUI(Category.SERVER, "redstone_link_gui"), REDSTONE(Category.SERVER, "redstone_additions"),
         LINKAGE(Category.SERVER, "transmission_linkage"), LINEAR(Category.SERVER, "linear_bearing"),
+        MACAW(Category.SERVER, "mcwbridges"),
         GRAVES(Category.SERVER, "yigd"), AUDIO(Category.SERVER, "analog_audio"),
         DELIVERY(Category.SERVER, "delivery"), QUESTLOG_SERVER(Category.SERVER, "questlog"),
         DH(Category.SERVER, "distant_horizons"), BLUEMAP(Category.SERVER, "bluemap"),
@@ -50,6 +51,7 @@ public final class SettingsCatalog {
     }
     public static Group group(Feature feature) {
         return switch (feature) {
+            case MACAW_LANTERN -> Group.MACAW;
             case CREATE_WINDOWS, CREATE_BACKFACES -> Group.CREATE_CLIENT;
             case FUSION_BACKFACES -> Group.FUSION;
             case RECHISELED_GLASS -> Group.RECHISELED;

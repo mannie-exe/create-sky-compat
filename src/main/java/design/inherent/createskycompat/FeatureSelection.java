@@ -96,6 +96,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
 
     public static Map<String, String> dependencies(Feature feature) {
         return switch (feature) {
+            case MACAW_LANTERN -> Map.of("mcwbridges", "3.1.2");
             case CREATE_BACKFACES -> Map.of("create", "6.0.10");
             case FUSION_BACKFACES -> Map.of("fusion", "1.3.16");
             case CREATE_WINDOWS -> Map.of("create", "6.0.10");
@@ -192,6 +193,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case SODIUM_LIGHTING -> List.of("client.SodiumLightingMixin");
                 case MODEL_DATA -> List.of("client.SingleBlockModelDataMixin");
                 case SINGLE_BLOCK_PASSES -> List.of("client.SingleBlockPassMixin");
+                case MACAW_LANTERN -> List.of("macaw.BridgeLanternShapeMixin", "macaw.ClipModeAccessor", "macaw.LanternRayMixin");
                 case CREATE_BACKFACES -> List.of("client.CreateGlassBackfaceMixin");
                 case FUSION_BACKFACES -> List.of("client.FusionGlassBackfaceMixin");
                 case CREATE_WINDOWS -> List.of("client.CreateWindowCullingMixin");

@@ -98,6 +98,9 @@ final class ClientResourcesProbe {
                             var pos = new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt());
                             mc.gameMode.useItemOn(mc.player, InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(pos), Direction.UP, pos, false));
                         }
+                        case "break" -> mc.gameMode.startDestroyBlock(new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt()), Direction.UP);
+                        case "settings" -> mc.setScreen(new design.inherent.createskycompat.client.ConfigurationOverview(
+                                net.neoforged.fml.ModList.get().getModContainerById("create_sky_compat").orElseThrow(), mc.screen));
                         case "close" -> mc.player.closeContainer();
                         case "hide" -> { mc.options.hideGui = command.get("value").getAsBoolean(); mc.options.pauseOnLostFocus = false; }
                         case "shaders" -> {
@@ -112,6 +115,28 @@ final class ClientResourcesProbe {
                             mc.stop();
                         }
                         case "snapshot" -> {}
+                        case "ray" -> {
+                            var pos = new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt());
+                            var a = command.getAsJsonArray("from"); var b = command.getAsJsonArray("to");
+                            var from = new Vec3(a.get(0).getAsDouble(), a.get(1).getAsDouble(), a.get(2).getAsDouble());
+                            var to = new Vec3(b.get(0).getAsDouble(), b.get(1).getAsDouble(), b.get(2).getAsDouble());
+                            var kind = command.has("collider") && command.get("collider").getAsBoolean()
+                                    ? net.minecraft.world.level.ClipContext.Block.COLLIDER : net.minecraft.world.level.ClipContext.Block.OUTLINE;
+                            var state = mc.level.getBlockState(pos);
+                            var shape = state.getShape(mc.level, pos);
+                            var hit = mc.level.clip(new net.minecraft.world.level.ClipContext(from, to, kind,
+                                    net.minecraft.world.level.ClipContext.Fluid.NONE, mc.player));
+                            var direct = shape.clip(from, to, pos);
+                            modelReport = new com.google.gson.JsonObject();
+                            modelReport.addProperty("state", state.toString());
+                            modelReport.addProperty("hit", hit.getType().name());
+                            modelReport.addProperty("block", hit.getBlockPos().toShortString());
+                            modelReport.addProperty("point", hit.getLocation().toString());
+                            modelReport.addProperty("distance", from.distanceTo(hit.getLocation()));
+                            modelReport.addProperty("directHit", direct != null);
+                            modelReport.addProperty("emptyCollision", state.getCollisionShape(mc.level, pos).isEmpty());
+                            modelReport.add("outline", new com.google.gson.Gson().toJsonTree(shape.toAabbs()));
+                        }
                         case "glass_targets" -> {
                             modelReport = new com.google.gson.JsonObject();
                             for (var block : net.minecraft.core.registries.BuiltInRegistries.BLOCK) {
