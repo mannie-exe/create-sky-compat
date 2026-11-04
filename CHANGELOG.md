@@ -1,0 +1,201 @@
+# Changelog
+
+Generated from Git history. Player-facing release summaries are in [release notes](RELEASE_NOTES.md).
+
+## v0.20.0 · 2026-11-04
+
+### Features
+
+- Migrate the independent mod to Skyweave Compat ([7228931](https://github.com/mannie-exe/skyweave-compat/commit/7228931d57c5035b3cd647f862c37b82e718b6b4))
+
+## v0.19.0 · 2026-11-04
+
+### Features
+
+- **rendering:** Keep world text readable with Iris ([2f6b2b3](https://github.com/mannie-exe/skyweave-compat/commit/2f6b2b3f5c573bae7102de2cf2ca9b6f1c903af1))
+
+## v0.18.0 · 2026-11-04
+
+### Features
+
+- **config:** Unify navigation and Iris shadow controls ([2495504](https://github.com/mannie-exe/skyweave-compat/commit/24955048459996f445650d7de30af292a5d44b88))
+
+## v0.17.0 · 2026-11-04
+
+### Features
+
+- **macaw:** Support hanging stair lantern selection ([09fedc1](https://github.com/mannie-exe/skyweave-compat/commit/09fedc1d41168efcc38e2aa56935037f7d78b43e))
+
+## v0.16.0 · 2026-11-03
+
+### Features
+
+- **rendering:** Add connected glass backfaces ([13889da](https://github.com/mannie-exe/skyweave-compat/commit/13889da20e80f9a2756eddccac3f8893ac9041db))
+
+## v0.15.0 · 2026-11-03
+
+### Fixes
+
+- **rendering:** Preserve connected glass boundaries ([1a63cab](https://github.com/mannie-exe/skyweave-compat/commit/1a63cab3e0b393ad1afd2eb4f6435b55c1ad1a3e))
+
+## v0.14.0 · 2026-11-01
+
+### Features
+
+- **redstone:** Guard links and repair gates ([4fd5910](https://github.com/mannie-exe/skyweave-compat/commit/4fd5910230f05c33aa77cdf7a0988837341fa60e))
+
+### Documentation
+
+- Record public configuration artifact verification ([4fd6825](https://github.com/mannie-exe/skyweave-compat/commit/4fd6825ab8d6738dd7b8d723865984edee531bf9))
+
+- Clarify Linkage Ponder behavior and text ownership ([6ea5302](https://github.com/mannie-exe/skyweave-compat/commit/6ea5302e62283cb0b0e55d09b3ff8ece1d155097))
+
+## v0.13.0 · 2026-11-01
+
+### Features
+
+- **config:** Organize adaptation settings by category ([59d94b2](https://github.com/mannie-exe/skyweave-compat/commit/59d94b2ff464fe3ad42cc683c6d2fcf030e5f86f))
+
+### Documentation
+
+- Record published recovery verification ([fdc24db](https://github.com/mannie-exe/skyweave-compat/commit/fdc24dbbf98ccc8ea6aea07f7fd081f1a7e55377))
+
+## v0.12.1 · 2026-11-01
+
+### Fixes
+
+- Name audio and recovery adaptations ([3c5c56c](https://github.com/mannie-exe/skyweave-compat/commit/3c5c56c05dc207083b281252f8f868cc7f80e4e0))
+
+- Label linkage startup switches ([4748d72](https://github.com/mannie-exe/skyweave-compat/commit/4748d729e400615cdcca180024240dd3cfd00875))
+
+## v0.12.0 · 2026-11-01
+
+### Features
+
+- Add radio timing and ship recovery ([d902baf](https://github.com/mannie-exe/skyweave-compat/commit/d902baffd4cf953ed730d3d6d55b07491a872ccd))
+
+## v0.11.1 · 2026-11-01
+
+### Fixes
+
+- Read generated language sources as UTF-8 ([bf777b3](https://github.com/mannie-exe/skyweave-compat/commit/bf777b388680ef4b3757b5db1ba77fcbc4169784))
+
+## v0.11.0 · 2026-11-01
+
+### Features
+
+- Add optional Transmission and Linkage adapters ([34bf4cd](https://github.com/mannie-exe/skyweave-compat/commit/34bf4cd0385c0c8fc6f5f68cba65e0d187489182))
+
+## v0.10.2 · 2026-11-01
+
+### Fixes
+
+- Support the reviewed Questlog update ([f8a8b4d](https://github.com/mannie-exe/skyweave-compat/commit/f8a8b4d2571dacf23ab197049b7df3ae1867f06d))
+
+## v0.10.1 · 2026-11-01
+
+### Fixes
+
+- Verify ponder content across Python versions ([2671c9e](https://github.com/mannie-exe/skyweave-compat/commit/2671c9e8bc87a399e23014cc3f269e001f28e402))
+
+## v0.10.0 · 2026-11-01
+
+### Features
+
+- Add optional linear machinery guidance ([377204f](https://github.com/mannie-exe/skyweave-compat/commit/377204ffdd1cc61832c10dd94e549863e5022aff))
+
+### Documentation
+
+- Record published 0.9.0 verification ([3cc6929](https://github.com/mannie-exe/skyweave-compat/commit/3cc6929a01aedf01cc1c9e1f7108ef8271497b07))
+
+## v0.9.0 · 2026-11-01
+
+### Features
+
+- Repair Linear Bearing machinery and document adapters ([2ef9c1b](https://github.com/mannie-exe/skyweave-compat/commit/2ef9c1bd9a3c12069033430c790bba23c9e88934))
+
+### Documentation
+
+- Record published renderer verification ([0793dde](https://github.com/mannie-exe/skyweave-compat/commit/0793ddefb4f4048e924e9f7677ba77c3f0f55718))
+
+## v0.8.0 · 2026-10-31
+
+### Features
+
+- **rendering:** Integrate Colorwheel and moving lights ([e96180a](https://github.com/mannie-exe/skyweave-compat/commit/e96180a1700de625d1ec96ac0d507da96462db40))
+
+## v0.7.0 · 2026-10-31
+
+### Features
+
+- Add optional Questlog interface and settings ([53defa8](https://github.com/mannie-exe/skyweave-compat/commit/53defa8b3fc96c4083d8043c87b2aca4014c31e3))
+
+## v0.6.1 · 2026-10-29
+
+### Fixes
+
+- Render single-block constructs in their shader pass ([c46db2a](https://github.com/mannie-exe/skyweave-compat/commit/c46db2a9a00e95ea3efc8a600ffd323f3762dac7))
+
+## v0.6.0 · 2026-10-29
+
+### Features
+
+- Make adaptations optional and incorporate rendering fixes ([9c4e572](https://github.com/mannie-exe/skyweave-compat/commit/9c4e572ba7028aa138d83ae89baee5d1baffbd40))
+
+## v0.5.2 · 2026-10-29
+
+### Fixes
+
+- Restore Analog Audio movement registration ([a5e0885](https://github.com/mannie-exe/skyweave-compat/commit/a5e08855635994f6d7a0a47e7ab8d54409884eb7))
+
+### Documentation
+
+- Correct terrain material sample count ([9e674ff](https://github.com/mannie-exe/skyweave-compat/commit/9e674ffa911b4d1ef5a70ea0289ed0b76860ed50))
+
+## v0.5.1 · 2026-10-28
+
+### Fixes
+
+- Isolate optional DH lifecycle handling ([277509f](https://github.com/mannie-exe/skyweave-compat/commit/277509fa6f24fbfd85130fe16fe5efb3d29ad500))
+
+### Documentation
+
+- Normalize generated layout illustration ([337a81d](https://github.com/mannie-exe/skyweave-compat/commit/337a81d021b6cc2a7856febf5a04765b2b32f5ff))
+
+- Record LOD integration boundaries and release checks ([5efa9c5](https://github.com/mannie-exe/skyweave-compat/commit/5efa9c5cc75d84fc549edd9fd9d367951ea2e72e))
+
+- Scope island LODs and SeedGen reconstruction fix ([226a1db](https://github.com/mannie-exe/skyweave-compat/commit/226a1dbec47fa64e2866f3cfa3b33fccf5d8187e))
+
+## v0.5.0 · 2026-10-27
+
+### Features
+
+- Expand island terrain and optional map support ([4e3596f](https://github.com/mannie-exe/skyweave-compat/commit/4e3596f5f77ebf571ec09996cc65cfa235893f23))
+
+### Documentation
+
+- Clarify standalone terrain and integration support ([d3769c1](https://github.com/mannie-exe/skyweave-compat/commit/d3769c1508c6b1eb27a69ac9d7179a0e661d7559))
+
+## v0.4.0 · 2026-10-25
+
+### Features
+
+- Vary island thickness and taper undersides ([f7ac591](https://github.com/mannie-exe/skyweave-compat/commit/f7ac59135a20aa901dbc1369929383eee40a0c08))
+
+## v0.3.0 · 2026-10-25
+
+### Features
+
+- Vary island altitude and restore surface geology ([fae87c2](https://github.com/mannie-exe/skyweave-compat/commit/fae87c24d130fc3400d9a100ce40fd1042e6aa6e))
+
+## v0.2.0 · 2026-10-25
+
+### Features
+
+- Add optional island terrain integrations ([5cd17cc](https://github.com/mannie-exe/skyweave-compat/commit/5cd17cc7d3af056f8b87a8deb30bdaa2496e5a80))
+
+## v0.1.0 · 2026-10-23
+
+### Features
+
+- Add Sky Village Neighbors ([2c980c8](https://github.com/mannie-exe/skyweave-compat/commit/2c980c88d66cd575b0b547452fc71b71536e1cf0))
