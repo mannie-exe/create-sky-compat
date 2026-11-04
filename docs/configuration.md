@@ -9,8 +9,8 @@ Missing keys use their documented defaults. Restart the entire game/server after
 changing switches; applied mixins cannot be unloaded during play.
 
 All switches default to `true` except `distant_horizons.world_cache`,
-`macaw.bridge_lantern_shape`, `create.glass_backfaces`, `fusion.glass_backfaces`,
-`rendering.text_display_shadow_pass` and `rendering.nametag_shadow_pass`, which default to `false`. A true setting is eligibility, not proof of activation.
+`macaw.bridge_lantern_shape`, `create.glass_backfaces` and `fusion.glass_backfaces`,
+which default to `false`. A true setting is eligibility, not proof of activation.
 Missing targets,
 physical-side restrictions, or disabled prerequisites leave an adapter inactive.
 An active combination validates the versions below. Disabling its switch avoids
@@ -64,8 +64,10 @@ inactive selections.
 | `bluemap.viewer` | Viewer adapter registration | Dedicated server, BlueMap 5.7, Sky Archipelago 1.3.6; map opt-in below |
 | `rendering.veil_framebuffer` | Framebuffer preservation and active Iris target | Client, Veil 4.3.2, Iris 1.8.14-beta.1+mc1.21.1 |
 | `rendering.balloon_shadow_pass` | Exclude screen-space balloon effect from shadow pass | Client, Aeronautics 1.3.2, Iris version above |
-| `rendering.text_display_shadow_pass` | Exclude text displays and their backgrounds from shader shadows; default off | Client, Iris version above |
-| `rendering.nametag_shadow_pass` | Exclude base-renderer entity names from shader shadows; default off | Client, Iris version above |
+| `rendering.text_display_shadow_pass` | Exclude text displays and their backgrounds from shader shadows; default on | Client, Iris version above |
+| `rendering.nametag_shadow_pass` | Exclude base-renderer entity names from shader shadows; default on | Client, Iris version above |
+| `rendering.text_display_lighting` | Neutral text-display lighting; later shader color processing remains | Client, Iris version above; default on |
+| `rendering.nametag_lighting` | Neutral base-renderer nametag lighting; later shader color processing remains | Client, Iris version above; default on |
 | `rendering.construct_material_ids` | Annotate construct shader materials | Client, Sable 2.0.6, Iris version above, Sodium 0.8.13+mc1.21.1 |
 | `rendering.colorwheel_samplers` | Release unused OIT sampler slots when Colorwheel disables OIT | Client, Colorwheel 1.3.0+mc1.21.1, Iris version above, Flywheel 1.0.6; independent of Sable |
 | `rendering.colorwheel_materials` | Colorwheel terrain/emission metadata on direct construct draws | Client, active `rendering.construct_material_ids`, Colorwheel 1.3.0+mc1.21.1 |

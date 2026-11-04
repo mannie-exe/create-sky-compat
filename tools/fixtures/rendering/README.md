@@ -45,3 +45,30 @@ Keep ordinary GUI visibility on when inspecting names. Check native text and
 entity bodies as well as projected shadows; include shaders-off and shader-on
 controls. Shader packs can already omit particular text shadows independently.
 Release temporary force-loads with `forceload remove -16 -16 16 16` when finished.
+
+Keep the HUD visible when checking nametags; F1 hides them. Use a clear sky and
+a floor without overhead fixtures when comparing cast shadows. Full-bright text
+can still receive shader lighting, fog and color processing; cast-shadow exclusion
+does not preserve its displayed color.
+
+## World-text lighting
+
+`compat_render_review:text_lighting` owns x/z=-16..16 at y=280..296 in a marked
+flat review world. It sets spectator mode, fixed daylight/weather, four tagged
+billboard displays, a named cow and ordinary sign/block/item controls. The displays
+cover colored glyphs, black/white/translucent backgrounds, full-bright and native
+brightness, glyph shadows and explicit see-through visibility. Equal-distance
+cameras on either side compare sun direction; retain the HUD for the name.
+
+Restart for each combination of `rendering.text_display_lighting` and
+`rendering.nametag_lighting`. Check opaque-wall occlusion separately from the
+explicit see-through display. Keep cast-shadow switches independent. Shader reload,
+resource reload, shaders off/on and leaving/reopening the fixture exercise pipeline
+ownership. The resource probe's extra lifecycle observations require a disposable
+`world-text-review.json` marker and Iris; they are absent from the published mod.
+
+A temporary font pack with a licensed local TTF provider can exercise the
+`TEXT_INTENSITY` route: assign its font ID to a fixture component, verify the
+provider loaded, then remove the temporary pack. The Unicode option alone does not
+establish which native shader key a glyph uses. Never distribute a system font
+with the fixture or infer all-font coverage from one resource reload.

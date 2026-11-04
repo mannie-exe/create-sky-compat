@@ -32,7 +32,7 @@ for filename in [
 ]:
     builds = [
         root / "build/ci" / f"build-{runner}" / "libs" / filename
-        for runner in ["ubuntu-24.04", "windows-2025", "macos-15"]
+        for runner in ["ubuntu-24.04", "windows-2025", "macos-15-intel"]
     ]
     hashes = {hashlib.sha256(path.read_bytes()).hexdigest() for path in builds}
     if len(hashes) != 1:

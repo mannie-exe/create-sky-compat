@@ -327,6 +327,11 @@ public final class ConfigurationOverview extends Screen {
         graphics.drawWordWrap(font, text("local"), 12, 24, Math.max(100, width - 24), 0xc0c0c0);
         if (!notice.getString().isEmpty()) graphics.drawWordWrap(font, notice, 12, noticeY + 2, noticeWidth, 0xffffff);
         int available = Math.max(0, width - save.getWidth() - 112);
-        if (available > 90) graphics.drawWordWrap(font, text(draft != null && draft.dirty() ? "modified" : "restart"), 100, height - 25, available, 0xc0c0c0);
+        if (available > 90) {
+            Component hint = text(draft != null && draft.dirty() ? "modified" : "restart");
+            int textHeight = font.split(hint, available).size() * font.lineHeight;
+            int textY = save.getY() + (save.getHeight() - textHeight) / 2 + 1;
+            graphics.drawWordWrap(font, hint, 100, textY, available, 0xc0c0c0);
+        }
     }
 }

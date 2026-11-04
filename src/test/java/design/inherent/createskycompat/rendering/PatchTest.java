@@ -54,6 +54,8 @@ public final class PatchTest {
         assertEquals(1, display.methods.stream().filter(m -> m.name.equals("renderInner"))
                 .mapToLong(m -> calls(m, "createSky$skipTextDisplayShadow")).sum(), "inject the concrete overload once, not its bridge");
         ShadowPassProbe.verify(display, "createSky$skipTextDisplayShadow");
+        assertEquals(1, display.methods.stream().filter(m -> m.name.equals("renderInner"))
+                .mapToLong(m -> calls(m, "createSky$textDisplayLighting")).sum());
         var entity = transformed(service, transformer, "net.minecraft.client.renderer.entity.EntityRenderer");
         assertEquals(1, calls(method(entity, "renderNameTag"), "createSky$skipNametagShadow"));
         assertEquals(0, calls(method(entity, "render"), "createSky$skipNametagShadow"));
@@ -67,6 +69,13 @@ public final class PatchTest {
         }
         assertTrue(guard >= 0 && material > guard, "cancel before Iris installs nametag material state");
         ShadowPassProbe.verify(entity, "createSky$skipNametagShadow");
+        assertEquals(1, calls(method(entity, "renderNameTag"), "createSky$nametagLighting"));
+        assertEquals(0, calls(method(entity, "render"), "createSky$nametagLighting"));
+        var textMap = transformed(service, transformer, "net.irisshaders.iris.pipeline.programs.ShaderMap");
+        assertEquals(1, calls(method(textMap, "getShader"), "createSky$textShader"));
+        var textPipeline = transformed(service, transformer, "net.irisshaders.iris.pipeline.IrisRenderingPipeline");
+        assertEquals(1, calls(method(textPipeline, "destroy"), "createSky$releaseTextReferences"));
+        assertTrue(textPipeline.interfaces.contains("design/inherent/createskycompat/client/WorldTextLighting$Pipeline"));
         for (String type : java.util.List.of("BlockDisplayRenderer", "ItemDisplayRenderer")) {
             var control = transformed(service, transformer, "net.minecraft.client.renderer.entity.DisplayRenderer$" + type);
             assertTrue(control.methods.stream().noneMatch(m -> m.name.contains("skipTextDisplayShadow")));

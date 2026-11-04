@@ -105,7 +105,7 @@ Iris pass handling. Review both shipped Veil injections and Iris `bindDefault`,
 ## World-text shadows
 
 `rendering.text_display_shadow_pass` and `rendering.nametag_shadow_pass` are
-independent, default-off physical-client policies requiring only the pinned Iris
+independent, default-on physical-client policies requiring only the pinned Iris
 API. They do not depend on terrain, Veil, Sable or Colorwheel. Metadata selection
 omits their mixins entirely when unavailable, disabled or on a dedicated server.
 
@@ -132,6 +132,50 @@ API. Recheck transformed injection count/order, normal/shadow behavior and both
 physical sides. Retire or revise a hook only after confirming equivalent behavior
 in the selected upstream version. The optional native scene is owned by
 `tools/fixtures/rendering`; dated results belong in [verification](verification.md).
+
+## World-text lighting
+
+`rendering.text_display_lighting` and `rendering.nametag_lighting` independently
+route selected glyphs and backgrounds through Iris's native fallback programs.
+Both default on and require only the pinned Iris client. They are separate from
+cast-shadow exclusions. Ordinary brightness, depth, alpha, billboarding, text
+contents and native visibility remain with Minecraft.
+
+Full-bright display data only overrides packed light. The selected
+Complementary/Euphoria entity program additionally applies directional lighting
+and fog and caps block-light input. Nametags retain subsequent shader processing
+even in their special material branch. The fallback route avoids that entity
+program; later exposure, grading and compositing can still affect displayed color.
+It does not promise exact RGB output or identical results with every shader.
+
+The concrete text-display renderer and base `EntityRenderer.renderNameTag` receive
+a buffer-source adapter before emitting vertices. `WorldTextRenderType` keeps
+those batches distinct from ordinary font rendering, forwards native render
+states and Iris transparency metadata, and marks setup/draw rather than just the
+vertex-emission call. This matters because Iris defers and groups entity buffers.
+It deliberately does not subclass Iris's `OuterWrappedRenderType`, which
+`wrapExactlyOnce` would unwrap and thereby erase the classification.
+
+`WorldTextScope` restores nested state through exceptions. `WorldTextShaderMixin`
+selects a fallback only for the current pipeline's `TEXT`, `TEXT_INTENSITY` and
+`TEXT_BG` lookup during that scope. Shared shader-map slots are never replaced.
+Signs/block-entity font programs, hand text, shadow programs, entity bodies,
+item/block displays and ordinary world/HUD text retain their owners. Custom
+nametag renderers bypassing the base method are outside coverage.
+
+Fallbacks are created on the render thread through Iris's own factory, which
+registers them with `loadedShaders` and owns their destruction. Each pipeline
+caches at most three programs and 256 recent font-type wrappers. Destruction clears
+Compat's references without double-closing Iris resources. Shaders off and
+non-Iris pipelines return the original buffer source.
+
+Before updating Minecraft or Iris, recheck concrete/bridge descriptors, font
+render types, base-renderer overrides, deferred batch setup/draw and merge mode,
+transparency/depth state, shader keys, fallback output attachments and
+`loadedShaders` cleanup. Test reload, shader switches and world transitions;
+never infer lifecycle safety from a successful first frame. Shader updates also
+need native glyph/background and unaffected-geometry comparisons. Dated results
+and remaining limits belong in [verification](verification.md).
 
 ## Balloon overlay
 

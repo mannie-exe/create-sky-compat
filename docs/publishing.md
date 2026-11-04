@@ -1,6 +1,9 @@
 # Publishing
 
-The GitHub workflow checks/builds on Linux, Windows and macOS. A `v<mod_version>`
+The GitHub workflow checks/builds on Linux, Windows and Intel macOS. Native
+Apple Silicon checks are recorded separately. The explicit `macos-15-intel`
+[runner label](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+keeps the release matrix independent of the ARM runner pool. A `v<mod_version>`
 tag publishes an initial prerelease only after all jobs succeed and their binary
 and source JARs match byte for byte. It includes a complete source ZIP and SHA-256/
 SHA-512 manifests. A draft becomes public after asset uploads succeed.

@@ -24,7 +24,7 @@ class ReleaseTest(unittest.TestCase):
         self.git('-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture')
         self.git('tag', 'v0.1.0')
         self.filename = f'{PROJECT}-0.1.0-mc1.21.1-neoforge.jar'
-        for runner in ['ubuntu-24.04', 'windows-2025', 'macos-15']:
+        for runner in ['ubuntu-24.04', 'windows-2025', 'macos-15-intel']:
             target = self.root / 'build/ci' / f'build-{runner}/libs'
             target.mkdir(parents=True)
             (target / self.filename).write_bytes(b'fixture binary')
@@ -46,7 +46,7 @@ class ReleaseTest(unittest.TestCase):
         self.assertIn(hashlib.sha512(b'fixture binary').hexdigest(), manifest)
 
     def test_rejects_cross_platform_mismatch(self):
-        (self.root / 'build/ci/build-macos-15/libs' / self.filename).write_bytes(b'different')
+        (self.root / 'build/ci/build-macos-15-intel/libs' / self.filename).write_bytes(b'different')
         result = self.stage()
         self.assertNotEqual(0, result.returncode)
         self.assertIn('Cross-platform build mismatch', result.stderr)

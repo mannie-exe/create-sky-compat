@@ -60,7 +60,7 @@ public final class SettingsCatalog {
             case DH_HANDOFF -> Group.DH_CLIENT;
             case MODEL_DATA, MATERIAL_IDS, SINGLE_BLOCK_PASSES -> Group.SABLE_CLIENT;
             case FRAMEBUFFER -> Group.VEIL;
-            case TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW -> Group.IRIS;
+            case TEXT_DISPLAY_LIGHTING, NAMETAG_LIGHTING, TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW -> Group.IRIS;
             case BALLOON -> Group.AERONAUTICS;
             case COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS -> Group.COLORWHEEL;
             case LIGHTING_LIFECYCLE, SODIUM_LIGHTING -> Group.LIGHTS;

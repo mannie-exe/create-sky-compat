@@ -32,6 +32,7 @@ final class ClientResourcesProbe {
     private String error;
     private boolean opened;
     private com.google.gson.JsonObject modelReport;
+    private final ClientWorldTextProbe worldText;
     ClientResourcesProbe() {
         if (!Files.isRegularFile(root.resolve("resource-review-fixture.json"))) throw new IllegalStateException("Resource probe requires its disposable marker");
         // A reopened fixture must acknowledge, rather than replay, its last command.
@@ -42,6 +43,8 @@ final class ClientResourcesProbe {
         }
         baseline = new ArrayList<>(Minecraft.getInstance().options.resourcePacks);
         baseline.removeIf(id -> id.startsWith("file/review-"));
+        worldText = Files.isRegularFile(root.resolve("world-text-review.json")) && net.neoforged.fml.ModList.get().isLoaded("iris")
+                ? new ClientWorldTextProbe() : null;
         NeoForge.EVENT_BUS.addListener(this::tick);
     }
     private void tick(ClientTickEvent.Post event) {
@@ -106,13 +109,30 @@ final class ClientResourcesProbe {
                         case "shaders" -> {
                             if (!net.neoforged.fml.ModList.get().isLoaded("iris"))
                                 throw new IllegalStateException("Shader switching requires Iris in the review fixture");
+                            if (command.has("pack")) net.irisshaders.iris.Iris.getIrisConfig().setShaderPackName(command.get("pack").getAsString());
                             net.irisshaders.iris.Iris.getIrisConfig().setShadersEnabled(command.get("value").getAsBoolean());
                             net.irisshaders.iris.Iris.getIrisConfig().save(); net.irisshaders.iris.Iris.reload();
+                        }
+                        case "rejoin" -> {
+                            if (worldText == null) throw new IllegalStateException("Expected world-text review fixture");
+                            var server = mc.getSingleplayerServer();
+                            if (server != null) server.halt(false);
+                            mc.disconnect(new TitleScreen());
+                            opened = false;
                         }
                         case "quit" -> {
                             var server = mc.getSingleplayerServer();
                             if (server != null) server.halt(false);
                             mc.stop();
+                        }
+                        case "world_text_controls" -> {
+                            if (worldText == null) throw new IllegalStateException("Expected world-text fixture marker and Iris");
+                            worldText.control(command.get("value").getAsBoolean());
+                        }
+                        case "unicode" -> mc.options.forceUnicodeFont().set(command.get("value").getAsBoolean());
+                        case "world_text_snapshot" -> {
+                            if (worldText == null) throw new IllegalStateException("Expected world-text fixture marker and Iris");
+                            modelReport = worldText.snapshot(command.has("remember") && command.get("remember").getAsBoolean());
                         }
                         case "snapshot" -> {}
                         case "ray" -> {
