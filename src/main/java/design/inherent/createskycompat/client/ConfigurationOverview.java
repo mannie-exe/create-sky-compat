@@ -5,6 +5,7 @@ import design.inherent.createskycompat.configuration.SettingsCatalog;
 import design.inherent.createskycompat.configuration.SettingsCatalog.Category;
 import design.inherent.createskycompat.configuration.SettingsCatalog.Group;
 import design.inherent.createskycompat.configuration.StartupEdits;
+import design.inherent.createskycompat.configuration.SectionNavigation;
 import design.inherent.createskycompat.questlog.client.JournalPreferences;
 import java.nio.file.Files;
 import java.util.HashMap;
@@ -30,13 +31,18 @@ public final class ConfigurationOverview extends Screen {
     private final Screen parent;
     private StartupEdits draft;
     private Component feedback = Component.empty();
-    private Group selected = Group.JOURNAL;
-    private boolean statusView;
+    private Component notice = Component.empty();
+    private int noticeY, noticeWidth;
     private Feature detail;
     private SettingsPanel navigation, content;
     private Button save;
+    private net.minecraft.locale.Language language;
+    private long resourceRevision;
     private float navigationScroll;
     private final Map<String, Float> scroll = new HashMap<>();
+    private final Map<String, SettingsPanel.NavigationButton> links = new java.util.LinkedHashMap<>();
+    private SectionNavigation.Bookmark documentPosition;
+    private String contentFocus, documentFocus, navigationFocus;
 
     public ConfigurationOverview(ModContainer container, Screen parent) {
         super(Component.translatable("create_sky_compat.configuration.title")); this.container = container; this.parent = parent;
@@ -51,13 +57,26 @@ public final class ConfigurationOverview extends Screen {
         try { if (draft == null) draft = StartupEdits.open(FMLPaths.CONFIGDIR.get()); else draft.reload(); feedback = Component.empty(); }
         catch (Exception failure) { feedback = text("load_failed").append(" ").append(Component.literal(String.valueOf(failure.getMessage()))); }
     }
-    private String route() { return detail != null ? "detail/" + detail.key : statusView ? "status" : selected.name(); }
+    private static String section(Group group) { return "group/" + group.name(); }
+    private String route() { return detail == null ? "document" : "detail/" + detail.key; }
     private void remember() {
-        if (navigation != null) navigationScroll = navigation.scroll();
-        if (content != null) scroll.put(route(), content.scroll());
+        if (navigation != null) { navigationScroll = navigation.scroll(); navigationFocus = navigation.focusKey(); }
+        if (content != null) {
+            scroll.put(route(), content.scroll()); contentFocus = content.focusKey();
+            if (detail == null) { documentPosition = content.bookmark(); documentFocus = contentFocus; }
+        }
     }
-    private void navigate(Group group, boolean status, Feature feature) {
-        remember(); selected = group; statusView = status; detail = feature; rebuildWidgets();
+    private void navigate(String anchor) {
+        if (detail != null) { remember(); detail = null; contentFocus = null; rebuildWidgets(); }
+        content.jump(anchor); contentFocus = null;
+        updateSelection();
+    }
+    private void inspect(Feature feature) {
+        remember(); detail = feature; contentFocus = null; rebuildWidgets();
+    }
+    private void updateSelection() {
+        String anchor = detail == null ? content.activeSection() : section(SettingsCatalog.group(detail));
+        links.forEach((id, link) -> link.selected(id.equals(anchor)));
     }
     private Button button(Component label, int width, Runnable action) {
         var button = Button.builder(label, b -> action.run()).bounds(0, 0, width, 20).build(); return button;
@@ -66,42 +85,66 @@ public final class ConfigurationOverview extends Screen {
         return Button.builder(label, b -> action.run()).createNarration(supplier -> subject.copy().append(": ").append(supplier.get())).bounds(0, 0, width, 20).build();
     }
     @Override protected void init() {
+        language = net.minecraft.locale.Language.getInstance(); resourceRevision = ClientResourceRevision.revision();
         int top = 34 + font.split(text("local"), Math.max(100, width - 24)).size() * font.lineHeight;
+        notice = !feedback.getString().isEmpty() ? feedback : draft == null ? text("load_failed") : Component.empty();
+        if (!notice.getString().isEmpty()) {
+            noticeY = top; noticeWidth = Math.max(80, width - 128);
+            int noticeHeight = Math.max(20, font.split(notice, noticeWidth).size() * font.lineHeight);
+            var reload = button(text("reload"), 90, this::reload);
+            reload.setPosition(width - 102, noticeY); addRenderableWidget(reload);
+            top += noticeHeight + 8;
+        }
         int paneHeight = Math.max(30, height - top - 38);
         int sidebar = Math.clamp(width / 4, 102, 170);
         navigation = new SettingsPanel(minecraft, 10, top, sidebar, paneHeight, true);
         content = new SettingsPanel(minecraft, sidebar + 18, top, Math.max(80, width - sidebar - 28), paneHeight, false);
+        links.clear();
         for (Category category : Category.values()) {
-            var header = SettingsPanel.navigationButton(category(category), sidebar - 20, true, false, () -> navigate(SettingsCatalog.groups(category).getFirst(), false, null));
-            navigation.row(category(category), Component.empty(), header);
-            if (!statusView && selected.category == category) for (Group group : SettingsCatalog.groups(category)) {
-                var entry = SettingsPanel.navigationButton(modName(group), sidebar - 20, false, group == selected, () -> navigate(group, false, null));
-                navigation.row(entry.getMessage(), Component.empty(), entry);
+            String categoryId = "category/" + category.name();
+            var header = SettingsPanel.navigationButton(category(category), sidebar - 20, true, false, () -> navigate(categoryId));
+            navigation.row(categoryId, category(category), Component.empty(), header);
+            links.put(categoryId, header);
+            for (Group group : SettingsCatalog.groups(category)) {
+                String id = section(group);
+                var entry = SettingsPanel.navigationButton(modName(group), sidebar - 20, false, false, () -> navigate(id));
+                navigation.row(id, entry.getMessage(), Component.empty(), entry); links.put(id, entry);
             }
         }
-        var status = SettingsPanel.navigationButton(text("status_files"), sidebar - 20, false, statusView, () -> navigate(selected, true, null));
-        navigation.row(text("status_files"), Component.empty(), status);
+        var status = SettingsPanel.navigationButton(text("status_files"), sidebar - 20, false, false, () -> navigate("files"));
+        navigation.row("files", text("status_files"), Component.empty(), status); links.put("files", status);
         navigation.finish(navigationScroll); addRenderableWidget(navigation);
-        if (!feedback.getString().isEmpty()) content.row(feedback, Component.empty(), button(text("reload"), 90, this::reload));
-        else if (draft == null) content.row(text("load_failed"), Component.empty(), button(text("reload"), 90, this::reload));
         if (detail != null) buildDetails(detail);
-        else if (statusView) buildStatus();
-        else buildGroup();
-        content.finish(scroll.getOrDefault(route(), 0f)); addRenderableWidget(content);
+        else buildDocument();
+        content.finish(scroll.getOrDefault(route(), 0f));
+        if (detail == null) content.restore(documentPosition);
+        addRenderableWidget(content);
+        navigation.restoreFocus(navigationFocus);
+        content.restoreFocus(contentFocus);
+        if (contentFocus != null && content.focusKey() != null) setFocused(content);
+        else if (navigationFocus != null && navigation.focusKey() != null) setFocused(navigation);
+        updateSelection();
         var back = button(Component.translatable("gui.back"), 80, this::onClose); back.setPosition(10, height - 28); addRenderableWidget(back);
         save = button(text("save"), Math.min(110, Math.max(80, width / 4)), this::saveDraft);
         save.setPosition(width - save.getWidth() - 10, height - 28); save.active = draft != null && draft.dirty(); addRenderableWidget(save);
     }
-    private void buildGroup() {
-        content.heading(text("section_title", category(selected.category), modName(selected)));
-        if (selected == Group.JOURNAL) {
+    private void buildDocument() {
+        for (Category category : Category.values()) {
+            content.section("category/" + category.name(), category(category));
+            for (Group group : SettingsCatalog.groups(category)) buildGroup(group);
+        }
+        buildStatus();
+    }
+    private void buildGroup(Group group) {
+        content.section(section(group), modName(group));
+        if (group == Group.JOURNAL) {
             if (OptionalIntegrations.enabled(Feature.QUESTLOG_INTERFACE) || OptionalIntegrations.enabled(Feature.QUESTLOG_NOTIFICATIONS)) buildPreferences();
             else content.row(text("preferences"), text("unavailable"));
         }
-        var features = SettingsCatalog.features(selected);
+        var features = SettingsCatalog.features(group);
         if (!features.isEmpty()) content.heading(text("fixes"));
-        for (Feature feature : features) addFeature(feature, false);
-        var files = SettingsCatalog.FILES.stream().filter(file -> file.group() == selected && selected != Group.JOURNAL).toList();
+        for (Feature feature : features) addFeature(feature);
+        var files = SettingsCatalog.FILES.stream().filter(file -> file.group() == group).toList();
         if (!files.isEmpty()) content.heading(text("tuning"));
         for (var file : files) addFile(file);
         if (files.stream().anyMatch(file -> !Files.isRegularFile(FMLPaths.CONFIGDIR.get().resolve(file.filename())))) folder();
@@ -119,25 +162,22 @@ public final class ConfigurationOverview extends Screen {
             try { action.run(); feedback = Component.empty(); } catch (RuntimeException failure) { feedback = text("change_failed"); }
             rebuildWidgets();
         });
-        content.row(Component.translatable("create_sky_compat.journal." + key),
+        content.row("preference/" + key, Component.translatable("create_sky_compat.journal." + key),
                 Component.translatable("create_sky_compat.journal." + key + "_description"), control);
     }
     private int navigationWidth() { return Math.clamp(width / 4, 102, 170); }
-    private void addFeature(Feature feature, boolean inspectOnly) {
-        var inspect = valueButton(text("details"), featureName(feature), 52, () -> navigate(SettingsCatalog.group(feature), statusView, feature));
+    private void addFeature(Feature feature) {
+        var inspect = valueButton(text("details"), featureName(feature), 52, () -> inspect(feature));
         Component summary = Component.translatable(SettingsCatalog.entry(feature).summaryKey());
-        if (inspectOnly || !OptionalIntegrations.enabled(feature)) summary = summary.copy().append("\n").append(text("running", state(feature)));
+        if (!OptionalIntegrations.enabled(feature)) summary = summary.copy().append("\n").append(text("running", state(feature)));
         if (draft != null && draft.saved().enabled(feature) != OptionalIntegrations.configured(feature)) summary = summary.copy().append("\n").append(text("saved_next")).append(": ").append(on(draft.saved().enabled(feature)));
         if (draft != null && draft.edited(feature)) summary = summary.copy().append("\n").append(text("modified"));
-        if (inspectOnly) content.row(featureName(feature), summary, inspect);
-        else {
-            var toggle = valueButton(draft == null ? Component.literal("?") : on(draft.value(feature)), featureName(feature), 45, () -> {
-                draft.set(feature, !draft.value(feature)); remember(); rebuildWidgets();
-            });
-            toggle.active = draft != null;
-            toggle.setTooltip(Tooltip.create(featureName(feature).copy().append(". ").append(text("restart"))));
-            content.row(featureName(feature), summary, toggle, inspect);
-        }
+        var toggle = valueButton(draft == null ? Component.literal("?") : on(draft.value(feature)), featureName(feature), 45, () -> {
+            draft.set(feature, !draft.value(feature)); remember(); rebuildWidgets();
+        });
+        toggle.active = draft != null;
+        toggle.setTooltip(Tooltip.create(featureName(feature).copy().append(". ").append(text("restart"))));
+        content.row("feature/" + feature.key, featureName(feature), summary, toggle, inspect);
     }
     private Component state(Feature feature) {
         var selection = OptionalIntegrations.selection();
@@ -186,20 +226,23 @@ public final class ConfigurationOverview extends Screen {
         addFile(SettingsCatalog.FILES.getFirst());
     }
     private void buildStatus() {
-        content.heading(text("status_files")); content.row(text("status_intro"), Component.empty());
-        for (Category category : Category.values()) for (Group group : SettingsCatalog.groups(category)) {
-            content.heading(text("status_group", category(category), modName(group)));
-            for (Feature feature : SettingsCatalog.features(group)) addFeature(feature, true);
+        content.section("files", text("status_files"));
+        content.row(text("status_intro"), Component.empty());
+        folder();
+        for (var file : SettingsCatalog.FILES) {
+            if (file.group() == null) addFile(file);
+            else content.row("file-link/" + file.filename(), Component.literal(file.filename()),
+                    text("section_title", category(file.group().category), modName(file.group())),
+                    valueButton(text("view_section"), Component.literal(file.filename()), 95, () -> navigate(section(file.group()))));
         }
-        content.heading(text("files")); folder(); for (var file : SettingsCatalog.FILES) addFile(file);
     }
     private void addFile(SettingsCatalog.FileEntry file) {
         var path = FMLPaths.CONFIGDIR.get().resolve(file.filename()); boolean exists = Files.isRegularFile(path);
         var open = valueButton(text("open_file"), Component.literal(file.filename()), 78, () -> Util.getPlatform().openFile(path.toFile())); open.active = exists;
         Component help = Component.translatable(file.summaryKey());
         if (!exists) help = help.copy().append("\n").append(text("not_created"));
-        Component label = statusView || detail != null ? Component.literal(file.filename()) : Component.translatable(file.labelKey());
-        content.row(label, help, open);
+        Component label = file.group() == null || detail != null ? Component.literal(file.filename()) : Component.translatable(file.labelKey());
+        content.row("file/" + file.filename(), label, help, open);
         if (file.filename().equals("create_sky_compat-common.toml") && exists) {
             ModConfig config = ModConfigs.getConfigSet(ModConfig.Type.COMMON).stream().filter(c -> c.getModId().equals(container.getModId()) && c.getFileName().equals(file.filename())).findFirst().orElse(null);
             if (config != null) content.row(text("mod.sky_villages"), Component.empty(), valueButton(text("edit"), modName(Group.VILLAGES), 95, () -> {
@@ -234,24 +277,55 @@ public final class ConfigurationOverview extends Screen {
             draft.save(); feedback = text("saved");
         } catch (StartupEdits.ChangedOnDisk stale) { feedback = text("stale"); }
         catch (Exception failure) { feedback = text("save_failed").append(" ").append(Component.literal(String.valueOf(failure.getMessage()))); }
-        scroll.put(route(), 0f); rebuildWidgets();
+        rebuildWidgets();
     }
     private void reload() {
         remember(); Runnable reload = () -> { load(); rebuildWidgets(); };
         if (draft != null && draft.dirty()) minecraft.setScreen(new ConfirmScreen(answer -> { minecraft.setScreen(this); if (answer) reload.run(); }, text("reload_title"), text("reload_message"), text("reload"), text("keep_editing")));
         else reload.run();
     }
+    @Override public void tick() {
+        if (language != net.minecraft.locale.Language.getInstance() || resourceRevision != ClientResourceRevision.revision()) {
+            remember(); rebuildWidgets();
+        }
+    }
     @Override public void resize(Minecraft client, int width, int height) { remember(); super.resize(client, width, height); }
+    @Override public boolean mouseClicked(double x, double y, int button) {
+        boolean handled = super.mouseClicked(x, y, button);
+        // Native dispatch assigns focus after the callback, which may have replaced its widgets.
+        var focused = getFocused();
+        if (minecraft.screen == this && focused != null && !children().contains(focused)) {
+            if (focused instanceof SettingsPanel previous) {
+                String key = previous.focusKey();
+                if (detail != null && !previous.isNavigation() && previous.activeSection() != null) documentFocus = key;
+                var replacement = previous.isNavigation() ? navigation : content;
+                setFocused(replacement); replacement.restoreFocus(key);
+            } else if (focused instanceof net.minecraft.client.gui.components.AbstractWidget previous) {
+                var replacement = children().stream().filter(child -> child instanceof net.minecraft.client.gui.components.AbstractWidget widget
+                        && widget.getMessage().equals(previous.getMessage())).findFirst();
+                if (replacement.isPresent()) setFocused(replacement.get());
+                else {
+                    setFocused(content); content.restoreFocus(contentFocus);
+                    if (content.getFocused() == null) content.focusVisibleControl();
+                }
+            }
+        }
+        return handled;
+    }
     @Override public void onClose() {
-        if (detail != null) { navigate(selected, statusView, null); return; }
+        if (detail != null) {
+            remember(); detail = null; contentFocus = documentFocus; rebuildWidgets(); return;
+        }
         remember();
         if (draft != null && draft.dirty()) minecraft.setScreen(new ConfirmScreen(answer -> { if (answer) { draft.discard(); minecraft.setScreen(parent); } else minecraft.setScreen(this); }, text("discard_title"), text("discard_message"), text("discard"), text("keep_editing")));
         else minecraft.setScreen(parent);
     }
     @Override public void render(GuiGraphics graphics, int mx, int my, float tick) {
+        updateSelection();
         renderBackground(graphics, mx, my, tick); save.active = draft != null && draft.dirty(); super.render(graphics, mx, my, tick);
         graphics.drawString(font, title, 12, 10, 0xffffff);
         graphics.drawWordWrap(font, text("local"), 12, 24, Math.max(100, width - 24), 0xc0c0c0);
+        if (!notice.getString().isEmpty()) graphics.drawWordWrap(font, notice, 12, noticeY + 2, noticeWidth, 0xffffff);
         int available = Math.max(0, width - save.getWidth() - 112);
         if (available > 90) graphics.drawWordWrap(font, text(draft != null && draft.dirty() ? "modified" : "restart"), 100, height - 25, available, 0xc0c0c0);
     }

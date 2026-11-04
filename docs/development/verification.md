@@ -1,5 +1,58 @@
 # Verification
 
+## Configuration navigation and world-text shadows, 2026-11-04
+
+Unreleased source based on `09fedc1`, Minecraft 1.21.1, NeoForge 21.1.264 and Iris
+1.8.14-beta.1+mc1.21.1. The final candidate SHA-256 is
+`c4c763a05aa49072aa1e8884430a7408fb71e664bf448622b681d37017b45ce1`.
+No release or personal-instance sync was performed.
+
+`./gradlew --no-daemon check build clientProbeJar` passes 119 Java tests, six
+Python tooling tests, upstream pins, generated Ponder resources and package
+checks. Targeted tests cover clamped section selection, bookmarks across reflow,
+missing anchors and independent Iris/side/disable selection. The real Mixin
+transformer applies both shadow guards to the pinned Minecraft targets. Extracted
+handlers cancel only the shadow pass. The nametag test includes Iris's actual
+material mixin and proves cancellation precedes its setup; item/block display
+renderers and entity-body rendering retain their boundaries.
+
+Native configuration checks cover section links, first/end navigation, wheel
+scrolling, scrollbar dragging, details and registered-editor return, narrow
+layout, resize with a draft, language/resource reload and keyboard focus. Saving
+retains position. An external file edit refuses the stale save and retains its
+draft; explicit reload/discard succeeds. Feedback stays visible above the panels.
+Running, saved and draft values remain distinct. A pointer-triggered rebuild
+initially left the screen focused on a detached panel; the final artifact keeps
+the input owner attached after toggles and saves, including pointer-to-keyboard
+navigation in the minimum client.
+
+The final minimum client loads with only Compat and the test probe. Both new
+switches are configured on, yet no optional hooks activate without Iris. Final
+dedicated standalone and future-target metadata fixtures also start and exit
+normally with both client switches on, zero active adaptations and no transformed
+target references to Compat. These checks use isolated runtimes and loopback
+servers, not the personal server.
+
+A disposable flat scene compares a full-bright text display, named cow, static
+pillar, item/block displays and a sign. All four startup-switch combinations load
+and render with Complementary Unbound r5.9.3 plus Euphoria 1.10.5. The shader
+candidate also renders with the complete BSL 10.1.8 + Clrwl 1.0.5 archive generated
+by the shader lab, and with shaders off. Text and the cow name remain visible;
+the unwanted text-display shadow disappears while body, block and item shadow
+controls remain. Nametag exclusion also has independent selection and
+transformed-handler evidence; the stills do not resolve every small glyph shadow.
+The authored scene remains in `tools/fixtures/rendering` for repeat checks.
+
+Commands, native state, before/after focus evidence and unedited captures are in
+ignored `build/verification/configuration-iris/`, indexed by `checks.json`.
+Shader captures record their tested candidate hashes. Archive comparison proves
+that the final JAR differs from the BSL-tested candidate only in the two
+configuration UI classes; rendering classes and other payloads are unchanged.
+Final minimum/focus and dedicated checks use the final JAR.
+Saved next-start switches and active runtime selection are separate in the
+records. Spoken narration, arbitrary modded nametag renderers and unsupported
+Apple/Photon rendering were not evaluated. No performance claim is made.
+
 ## Hanging bridge lanterns, 2026-11-03
 
 The optional Macaw’s Bridges 3.1.2 adaptation preserves empty collision and moves only stair-lantern outlines. A shape-only native control missed a direct outline intersection outside the owning cell. The corrected implementation passes 28 native ray cases across all four facings: outside-cell and ordinary selection, above/below approaches, collision queries, segment endpoints, solid obstruction, nearest lantern and removal. The native bridge remains the nearer obstruction for the low control ray.

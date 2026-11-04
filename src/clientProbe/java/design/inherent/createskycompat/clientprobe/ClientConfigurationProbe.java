@@ -39,7 +39,7 @@ final class ClientConfigurationProbe {
         var mc = Minecraft.getInstance();
         if (++ticks % 10 != 0 || mc.getOverlay() != null) return;
         try {
-            if (!opened && !Boolean.getBoolean("create_sky_compat.probe.redstone") && !Boolean.getBoolean("create_sky_compat.probe.configuration.journal") && mc.screen instanceof TitleScreen) { opened = true; open(); }
+            if (!opened && !Boolean.getBoolean("create_sky_compat.probe.resources") && !Boolean.getBoolean("create_sky_compat.probe.redstone") && !Boolean.getBoolean("create_sky_compat.probe.configuration.journal") && mc.screen instanceof TitleScreen) { opened = true; open(); }
             Path control = root.resolve("config-review-control.json");
             if (Files.isRegularFile(control) && Files.size(control) < 16384) {
                 var command = JsonParser.parseString(Files.readString(control)).getAsJsonObject();
@@ -61,6 +61,16 @@ final class ClientConfigurationProbe {
                         }
                         case "key" -> mc.screen.keyPressed(command.get("key").getAsInt(), 0, command.has("modifiers") ? command.get("modifiers").getAsInt() : 0);
                         case "scroll" -> mc.screen.mouseScrolled(command.get("x").getAsDouble(), command.get("y").getAsDouble(), 0, command.get("amount").getAsDouble());
+                        case "drag" -> {
+                            double x = command.get("x").getAsDouble(), y = command.get("y").getAsDouble();
+                            double end = command.get("endY").getAsDouble();
+                            if (!mc.screen.mouseClicked(x, y, 0)) throw new IllegalStateException("Native drag press refused");
+                            mc.screen.mouseDragged(x, end, 0, 0, end - y); mc.screen.mouseReleased(x, end, 0);
+                        }
+                        case "language" -> {
+                            String language = command.get("value").getAsString();
+                            mc.options.languageCode = language; mc.getLanguageManager().setSelected(language); mc.reloadResourcePacks();
+                        }
                         case "scale" -> { mc.options.guiScale().set(command.get("value").getAsInt()); mc.resizeDisplay(); }
                         case "resize" -> org.lwjgl.glfw.GLFW.glfwSetWindowSize(mc.getWindow().getWindow(), command.get("width").getAsInt(), command.get("height").getAsInt());
                         case "snapshot" -> {}
@@ -84,12 +94,22 @@ final class ClientConfigurationProbe {
             report.addProperty("pid", ProcessHandle.current().pid()); report.addProperty("sequence", sequence); report.addProperty("screen", mc.screen == null ? "none" : mc.screen.getClass().getName());
             report.addProperty("width", mc.getWindow().getGuiScaledWidth()); report.addProperty("height", mc.getWindow().getGuiScaledHeight()); report.addProperty("scale", mc.options.guiScale().get());
             if (error != null) report.addProperty("error", error);
+            if (mc.screen != null) report.addProperty("screenFocusAttached", mc.screen.getFocused() == null || mc.screen.children().contains(mc.screen.getFocused()));
             var rows = new JsonArray();
             if (mc.screen != null) for (var widget : widgets(mc.screen)) {
                 var row = new JsonObject();row.addProperty("label", widget.getMessage().getString());row.addProperty("x",widget.getX());row.addProperty("y",widget.getY());row.addProperty("width",widget.getWidth());row.addProperty("height",widget.getHeight());row.addProperty("active",widget.active);row.addProperty("focused",widget.isFocused());if(widget instanceof net.minecraft.client.gui.components.EditBox input)row.addProperty("value",input.getValue());rows.add(row);
             }
             report.add("widgets", rows);
             if (mc.screen instanceof ConfigurationOverview overview) {
+                for (String name : java.util.List.of("content", "navigation")) {
+                    var panelField = ConfigurationOverview.class.getDeclaredField(name); panelField.setAccessible(true);
+                    Object panel = panelField.get(overview);
+                    for (String property : java.util.List.of("scroll", "activeSection", "maximumScroll", "focusKey")) {
+                        var method = panel.getClass().getDeclaredMethod(property); method.setAccessible(true);
+                        Object value = method.invoke(panel);
+                        report.addProperty(name + "." + property, value == null ? null : value.toString());
+                    }
+                }
                 var field = ConfigurationOverview.class.getDeclaredField("draft"); field.setAccessible(true);
                 var draft = (design.inherent.createskycompat.configuration.StartupEdits) field.get(overview);
                 if (draft != null) {

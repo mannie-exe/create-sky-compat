@@ -88,7 +88,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
 
     public static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case CREATE_BACKFACES, FUSION_BACKFACES, CREATE_WINDOWS, RECHISELED_GLASS, REDSTONE_RENDERING, AUDIO_TIMELINE, LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
+            case TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW, CREATE_BACKFACES, FUSION_BACKFACES, CREATE_WINDOWS, RECHISELED_GLASS, REDSTONE_RENDERING, AUDIO_TIMELINE, LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
                     QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> true;
             default -> false;
         };
@@ -126,6 +126,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case BLUEMAP -> Map.of("bluemap", "5.7", "sky_archipelago", "1.3.6");
             case FRAMEBUFFER -> Map.of("veil", "4.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
             case BALLOON -> Map.of("aeronautics", "1.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
+            case TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW -> Map.of("iris", "1.8.14-beta.1+mc1.21.1");
             case MATERIAL_IDS, SINGLE_BLOCK_PASSES -> Map.of("sable", "2.0.6", "iris", "1.8.14-beta.1+mc1.21.1", "sodium", "0.8.13+mc1.21.1");
             case COLORWHEEL_SAMPLERS -> Map.of("colorwheel", "1.3.0+mc1.21.1", "iris", "1.8.14-beta.1+mc1.21.1", "flywheel", "1.0.6");
             case COLORWHEEL_MATERIALS -> Map.of("colorwheel", "1.3.0+mc1.21.1");
@@ -184,6 +185,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case BLUEMAP, LINEAR_PONDER, LINEAR_JADE -> List.of();
                 case FRAMEBUFFER -> List.of("client.ShaderWrapperMixin");
                 case BALLOON -> List.of("client.BalloonShadowMixin");
+                case TEXT_DISPLAY_SHADOW -> List.of("client.TextDisplayShadowMixin");
+                case NAMETAG_SHADOW -> List.of("client.NametagShadowMixin");
                 case MATERIAL_IDS -> List.of("client.ConstructMaterialMixin");
                 case COLORWHEEL_SAMPLERS -> List.of("client.ColorwheelSamplerMixin");
                 case COLORWHEEL_MATERIALS -> List.of("client.ColorwheelMaterialMixin");

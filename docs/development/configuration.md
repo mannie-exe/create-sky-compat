@@ -16,11 +16,30 @@ authority. Structured inactive reasons are recorded where it decides selection;
 the configuration interface translates them without repeating that decision tree.
 The existing inactive debug strings are retained for diagnostics.
 
-`ConfigurationOverview` owns local navigation and startup drafts. `SettingsPanel`
-measures rows once per rebuild and shares their bounds across rendering, widget
-placement, clipping, and focus scrolling. Native widgets own their keyboard actions
-and narration. The two panes retain separate scroll positions; content routes retain
-selection and scroll across details, registered editors, dialogs, and resizing.
+`ConfigurationOverview` owns one category/mod document, auxiliary feature details
+and startup drafts. `SettingsPanel` measures rows once per rebuild and shares
+their bounds across rendering, widget placement, clipping, focus and section
+anchors. Native widgets retain their keyboard actions and narration.
+
+`SectionNavigation` stores only measured anchor positions and scroll policy. It
+retains an explicitly selected clamped destination until scrolling moves, then
+tracks the section at the viewport's top; manually reaching the bottom selects
+the final section. Bookmarks preserve section-relative offsets across reflow.
+Stable row/control keys restore focus. The sidebar keeps its own scroll; changing
+the document section does not rebuild either panel.
+
+Native pointer dispatch assigns focus after invoking a button callback. A callback
+that rebuilds the screen can therefore leave focus on a detached panel or footer
+button. The overview repairs that focus after dispatch through the stable control
+key or corresponding footer action. If an action disappears, focus returns to a
+visible content control so Tab does not jump to the document's beginning. Preserve this boundary when changing rebuilds;
+a widget's focused flag alone does not establish that the screen routes keys to it.
+
+Details and registered editors retain the document bookmark and useful focus.
+Save feedback remains outside the scrolling panels. The file index links to
+owning groups; only the ungrouped startup file is edited from the index.
+`ClientResourceRevision` is shared with journal screens/toasts and invalidates
+measurements after resource/font reloads without changing gameplay state.
 
 The journal bookmark keeps its native skin and parent screen. Both entrances use
 `JournalPreferences` and the same localized labels. Its save helpers restore the
@@ -87,6 +106,15 @@ screen, widget, draft/saved, and active-selection observations; failures remain
 visible until the next command. Control files are bounded and contain no executable
 scripts. Clear control and state files before relaunching a fixture to avoid
 replaying an old command. Neither probe nor fixture files are distributed with the mod.
+
+The same probe accepts native scrollbar `drag` coordinates and a `language` code
+to exercise resource reload. Its state includes panel scroll, maximum scroll,
+active section and stable focus keys. These are observations of the real screen,
+not a substitute layout implementation.
+`screenFocusAttached` checks the root input owner after pointer-driven rebuilds.
+The resource fixture can enable this same probe alongside
+`create_sky_compat.probe.resources`; it then opens settings only on command rather
+than competing with automatic world loading.
 
 For journal return checks, also enable
 `create_sky_compat.probe.configuration.journal=true` and stage the existing

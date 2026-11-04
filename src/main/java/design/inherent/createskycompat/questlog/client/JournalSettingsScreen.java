@@ -1,5 +1,6 @@
 package design.inherent.createskycompat.questlog.client;
 
+import design.inherent.createskycompat.client.ClientResourceRevision;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.Minecraft;
@@ -28,7 +29,7 @@ public final class JournalSettingsScreen extends Screen {
         super(JournalRows.text("settings")); this.parent = parent; this.source = source;
     }
     @Override protected void init() {
-        language = net.minecraft.locale.Language.getInstance(); resources = JournalReloads.revision();
+        language = net.minecraft.locale.Language.getInstance(); resources = ClientResourceRevision.revision();
         panelWidth = Math.max(160, Math.min(370, width - 24));
         panelHeight = Math.max(70, Math.min(330, height - 72));
         x = (width - panelWidth) / 2; y = Math.max(22, (height - panelHeight) / 2);
@@ -42,7 +43,7 @@ public final class JournalSettingsScreen extends Screen {
     }
     @Override public void resize(Minecraft client, int width, int height) { if (pane != null) scroll = pane.getScrollAmount(); super.resize(client, width, height); }
     @Override public void tick() {
-        if (language != net.minecraft.locale.Language.getInstance() || resources != JournalReloads.revision()) {
+        if (language != net.minecraft.locale.Language.getInstance() || resources != ClientResourceRevision.revision()) {
             scroll = pane.getScrollAmount(); rebuildWidgets();
         }
     }

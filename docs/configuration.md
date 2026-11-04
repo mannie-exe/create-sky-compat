@@ -9,7 +9,8 @@ Missing keys use their documented defaults. Restart the entire game/server after
 changing switches; applied mixins cannot be unloaded during play.
 
 All switches default to `true` except `distant_horizons.world_cache`,
-`create.glass_backfaces` and `fusion.glass_backfaces`, which default to `false`. A true setting is eligibility, not proof of activation.
+`macaw.bridge_lantern_shape`, `create.glass_backfaces`, `fusion.glass_backfaces`,
+`rendering.text_display_shadow_pass` and `rendering.nametag_shadow_pass`, which default to `false`. A true setting is eligibility, not proof of activation.
 Missing targets,
 physical-side restrictions, or disabled prerequisites leave an adapter inactive.
 An active combination validates the versions below. Disabling its switch avoids
@@ -63,6 +64,8 @@ inactive selections.
 | `bluemap.viewer` | Viewer adapter registration | Dedicated server, BlueMap 5.7, Sky Archipelago 1.3.6; map opt-in below |
 | `rendering.veil_framebuffer` | Framebuffer preservation and active Iris target | Client, Veil 4.3.2, Iris 1.8.14-beta.1+mc1.21.1 |
 | `rendering.balloon_shadow_pass` | Exclude screen-space balloon effect from shadow pass | Client, Aeronautics 1.3.2, Iris version above |
+| `rendering.text_display_shadow_pass` | Exclude text displays and their backgrounds from shader shadows; default off | Client, Iris version above |
+| `rendering.nametag_shadow_pass` | Exclude base-renderer entity names from shader shadows; default off | Client, Iris version above |
 | `rendering.construct_material_ids` | Annotate construct shader materials | Client, Sable 2.0.6, Iris version above, Sodium 0.8.13+mc1.21.1 |
 | `rendering.colorwheel_samplers` | Release unused OIT sampler slots when Colorwheel disables OIT | Client, Colorwheel 1.3.0+mc1.21.1, Iris version above, Flywheel 1.0.6; independent of Sable |
 | `rendering.colorwheel_materials` | Colorwheel terrain/emission metadata on direct construct draws | Client, active `rendering.construct_material_ids`, Colorwheel 1.3.0+mc1.21.1 |
@@ -356,24 +359,48 @@ Open **Mods → Create Sky Compat → Config**. The sidebar groups local setting
 Client, Server / shared, and World generation, then by mod. Shared entries identify
 which sides need the fix; these categories do not change loader requirements.
 
+All groups share one scrollable page. Sidebar links jump to headings; ordinary
+scrolling remains free. Details and registered editors return to the previous
+position. The final section can remain below the top when the page has reached
+its end. Sidebar selection follows scrolling and retains an explicitly chosen
+destination when that jump is clamped.
+
 Journal preferences save immediately. Fix switches edit the next-start file and
 use **Save changes**. Current activation, saved values, and unsaved edits remain
 separate. A configured-on fix can remain unavailable because its targets or
 prerequisites are missing. Restart Minecraft or the server to apply startup changes.
 
-**Status & files** shows current reasons, dependencies, defaults, pending changes,
-and owning files. Details expose technical keys without placing them in every row.
+Rows show inactive reasons and pending changes; **Details** shows dependencies,
+defaults and technical keys. **Status & files** indexes owning files and links
+back to their settings instead of repeating all controls.
 File buttons open existing local files; they do not generate missing configuration
 or administer a connected server. Terrain and BlueMap keep their owning loaders
 and reload/restart requirements.
 
 A changed file refuses stale saves; reload explicitly to discard the draft and
-read it again. Leaving with unsaved startup edits offers discard or continued
+read it again. Save feedback and Reload stay outside the scrolling page. Leaving with unsaved startup edits offers discard or continued
 editing. Generation edits require confirmation and retain saved-world identity
 checks. Disabling terrain does not convert a marked save.
 
 The [implementation reference](development/configuration.md) owns editor safety,
 optional loading, native UI fixtures, and dependency-update checks.
+
+## Iris world text
+
+Under **Client → Iris**, the two shadow-exclusion switches independently omit
+text displays (including backgrounds) and ordinary entity nametags from Iris's
+shadow map. Both are off by default because casting shadows is a presentation
+choice. Restart Minecraft to change either policy. Neither requires the island
+preset, Sable, Veil or Colorwheel.
+
+Ordinary text rendering and entity-body shadows are retained. Item/block
+displays, signs and custom world interfaces are outside these switches. A modded
+nametag renderer that bypasses the base entity renderer is not covered.
+
+A text display's native brightness override controls its lightmap. Its `shadow`
+flag controls the glyph drop shadow, and its shadow radius controls Minecraft's
+entity blob shadow. These are separate from Iris shadow-map rendering. Enabling
+full-bright text does not itself stop a display casting a shader shadow.
 
 ## Redstone Link GUI
 

@@ -1,5 +1,6 @@
 package design.inherent.createskycompat.questlog.client;
 
+import design.inherent.createskycompat.client.ClientResourceRevision;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.toasts.Toast;
@@ -27,8 +28,8 @@ public final class JournalToast implements Toast {
                 || !completed && JournalPreferences.NOTIFICATIONS.get() != JournalPreferences.Notifications.PROGRESS_AND_COMPLETION) return Visibility.HIDE;
         if (renewed) { shownAt = elapsed; renewed = false; }
         var font = owner.getMinecraft().font;
-        if (language != net.minecraft.locale.Language.getInstance() || resources != JournalReloads.revision()) {
-            language = net.minecraft.locale.Language.getInstance(); resources = JournalReloads.revision();
+        if (language != net.minecraft.locale.Language.getInstance() || resources != ClientResourceRevision.revision()) {
+            language = net.minecraft.locale.Language.getInstance(); resources = ClientResourceRevision.revision();
             Component title = JournalRows.text(completed ? quest.isRewarded() || quest.rewards.isEmpty() ? "completed" : "reward_ready" : "started");
             titleLines = font.split(title, 122); nameLines = font.split(quest.getDisplay().getTitle(), 122);
             if (titleLines.isEmpty()) titleLines = List.of(FormattedCharSequence.EMPTY);

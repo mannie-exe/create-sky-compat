@@ -11,7 +11,7 @@ public final class SettingsCatalog {
     public enum Group {
         JOURNAL(Category.CLIENT, "questlog"), AUDIO_CLIENT(Category.CLIENT, "analog_audio"),
         DH_CLIENT(Category.CLIENT, "distant_horizons"), SABLE_CLIENT(Category.CLIENT, "sable"),
-        VEIL(Category.CLIENT, "veil"), AERONAUTICS(Category.CLIENT, "aeronautics"),
+        VEIL(Category.CLIENT, "veil"), IRIS(Category.CLIENT, "iris"), AERONAUTICS(Category.CLIENT, "aeronautics"),
         COLORWHEEL(Category.CLIENT, "colorwheel"), LIGHTS(Category.CLIENT, "lighting"),
         CREATE_CLIENT(Category.CLIENT, "create"), FUSION(Category.CLIENT, "fusion"),
         RECHISELED(Category.CLIENT, "rechiseled"),
@@ -60,6 +60,7 @@ public final class SettingsCatalog {
             case DH_HANDOFF -> Group.DH_CLIENT;
             case MODEL_DATA, MATERIAL_IDS, SINGLE_BLOCK_PASSES -> Group.SABLE_CLIENT;
             case FRAMEBUFFER -> Group.VEIL;
+            case TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW -> Group.IRIS;
             case BALLOON -> Group.AERONAUTICS;
             case COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS -> Group.COLORWHEEL;
             case LIGHTING_LIFECYCLE, SODIUM_LIGHTING -> Group.LIGHTS;

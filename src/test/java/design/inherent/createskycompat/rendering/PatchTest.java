@@ -27,6 +27,7 @@ public final class PatchTest {
         Mixins.addConfiguration("veil-original-test.mixins.json");
         Mixins.addConfiguration("framebuffer-test.mixins.json");
         Mixins.addConfiguration("sdl-original-test.mixins.json");
+        Mixins.addConfiguration("iris-nametag-test.mixins.json");
         Mixins.addConfiguration("rendering-test.mixins.json");
         byte[] original;
         try (var in = service.getResourceAsStream(TARGET.replace('.', '/') + ".class")) {
@@ -49,6 +50,27 @@ public final class PatchTest {
         var balloonNode = transformed(service, transformer, balloon);
         assertEquals(1, calls(method(balloonNode, "onRenderLevelStage"), "createSky$skipShadowComposite"));
         ShadowPassProbe.verify(balloonNode);
+        var display = transformed(service, transformer, "net.minecraft.client.renderer.entity.DisplayRenderer$TextDisplayRenderer");
+        assertEquals(1, display.methods.stream().filter(m -> m.name.equals("renderInner"))
+                .mapToLong(m -> calls(m, "createSky$skipTextDisplayShadow")).sum(), "inject the concrete overload once, not its bridge");
+        ShadowPassProbe.verify(display, "createSky$skipTextDisplayShadow");
+        var entity = transformed(service, transformer, "net.minecraft.client.renderer.entity.EntityRenderer");
+        assertEquals(1, calls(method(entity, "renderNameTag"), "createSky$skipNametagShadow"));
+        assertEquals(0, calls(method(entity, "render"), "createSky$skipNametagShadow"));
+        var nameInstructions = Arrays.asList(method(entity, "renderNameTag").instructions.toArray());
+        int guard = -1, material = -1;
+        for (int i = 0; i < nameInstructions.size(); i++) {
+            if (nameInstructions.get(i) instanceof MethodInsnNode call) {
+                if (call.name.endsWith("createSky$skipNametagShadow")) guard = i;
+                if (call.name.endsWith("setNameTagId")) material = i;
+            }
+        }
+        assertTrue(guard >= 0 && material > guard, "cancel before Iris installs nametag material state");
+        ShadowPassProbe.verify(entity, "createSky$skipNametagShadow");
+        for (String type : java.util.List.of("BlockDisplayRenderer", "ItemDisplayRenderer")) {
+            var control = transformed(service, transformer, "net.minecraft.client.renderer.entity.DisplayRenderer$" + type);
+            assertTrue(control.methods.stream().noneMatch(m -> m.name.contains("skipTextDisplayShadow")));
+        }
         var emission = transformed(service, transformer, "net.minecraft.world.level.lighting.BlockLightEngine");
         assertEquals(1, calls(method(emission, "getEmission"), "createSky$clientEmission"));
         var dynamic = transformed(service, transformer, "net.minecraft.world.level.lighting.LightEngine");

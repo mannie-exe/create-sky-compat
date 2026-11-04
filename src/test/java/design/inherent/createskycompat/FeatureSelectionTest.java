@@ -11,6 +11,20 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
+    @Test void uiShadowPoliciesNeedOnlyIrisAndCanBeSelectedIndependently() {
+        for (Feature feature : java.util.List.of(Feature.TEXT_DISPLAY_SHADOW, Feature.NAMETAG_SHADOW)) {
+            assertFalse(feature.defaultEnabled);
+            var versions = FeatureSelection.dependencies(feature);
+            assertEquals(java.util.Set.of("iris"), versions.keySet());
+            var selected = FeatureSelection.select(only(feature), versions, true);
+            assertEquals(java.util.Set.of(feature), selected.active());
+            assertEquals(1, selected.mixins(true).size());
+            assertTrue(FeatureSelection.select(only(feature), Map.of(), true).mixins(true).isEmpty());
+            assertTrue(FeatureSelection.select(only(feature), Map.of("iris", "future"), false).mixins(false).isEmpty());
+            assertTrue(FeatureSelection.select(only(), Map.of("iris", "future"), true).mixins(true).isEmpty());
+            assertThrows(IllegalStateException.class, () -> FeatureSelection.select(only(feature), Map.of("iris", "future"), true));
+        }
+    }
     @Test void glassBackfacesAreIndependentOptInClientAdapters() {
         for (var feature : java.util.List.of(Feature.CREATE_BACKFACES, Feature.FUSION_BACKFACES)) {
             assertFalse(feature.defaultEnabled);

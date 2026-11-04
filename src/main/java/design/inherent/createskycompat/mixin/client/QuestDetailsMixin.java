@@ -73,7 +73,7 @@ public abstract class QuestDetailsMixin extends Screen {
         if (!createSky$detailsAllowed) { createSky$showInfo = false; createSky$view = 0; }
         QuestlogClientEvents.mostRecentNotificationQuest = null;
         createSky$language = net.minecraft.locale.Language.getInstance();
-        createSky$resources = design.inherent.createskycompat.questlog.client.JournalReloads.revision();
+        createSky$resources = design.inherent.createskycompat.client.ClientResourceRevision.revision();
         int available = Math.max(96, width - 16);
         int preferredLeft = Math.max(275, display.getLeftPanelWidth());
         int preferredRight = Math.max(220, display.getRightPanelWidth());
@@ -178,7 +178,7 @@ public abstract class QuestDetailsMixin extends Screen {
             createSky$saveScroll(); createSky$showInfo = true; rebuildWidgets();
         }
         if (createSky$language != net.minecraft.locale.Language.getInstance()
-                || createSky$resources != design.inherent.createskycompat.questlog.client.JournalReloads.revision()) {
+                || createSky$resources != design.inherent.createskycompat.client.ClientResourceRevision.revision()) {
             createSky$saveScroll(); rebuildWidgets();
         }
         createSky$actions(); ci.cancel();

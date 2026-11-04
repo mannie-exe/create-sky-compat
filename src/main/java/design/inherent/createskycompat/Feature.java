@@ -41,6 +41,8 @@ public enum Feature {
     BLUEMAP("bluemap.viewer"),
     FRAMEBUFFER("rendering.veil_framebuffer"),
     BALLOON("rendering.balloon_shadow_pass"),
+    TEXT_DISPLAY_SHADOW("rendering.text_display_shadow_pass", false),
+    NAMETAG_SHADOW("rendering.nametag_shadow_pass", false),
     MATERIAL_IDS("rendering.construct_material_ids"),
     COLORWHEEL_SAMPLERS("rendering.colorwheel_samplers"),
     COLORWHEEL_MATERIALS("rendering.colorwheel_materials"),

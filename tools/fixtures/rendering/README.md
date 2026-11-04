@@ -1,7 +1,7 @@
 # Native rendering fixture
 
-Copy this datapack only into a disposable clone of Resource Review. Never install
-it in a play world: setup replaces x=288..344, y=180..202, z=-12..20 and pauses
+Copy this datapack only into a marked disposable rendering world. Never install
+it in a play world: the ship setup replaces x=288..344, y=180..202, z=-12..20 and pauses
 Sable physics in that test world. It is not included in the mod JAR.
 
 Enable commands in the disposable copy. Teleport to `311 194 22` first and wait
@@ -30,3 +30,18 @@ Use `/compatprobe_stop` before closing the test client. It explicitly halts the
 integrated test server; offline quickplay sessions opened to LAN can otherwise
 wait indefinitely for owner-disconnect shutdown. This command exists only in the
 opt-in client probe and is never installed in play instances.
+
+## World-text shadows
+
+`compat_render_review:ui_shadows` is an independent vanilla scene. It replaces
+x/z=-16..16 at y=100, creates tagged text, a named cow, item/block displays and a
+sign, and sets a fixed afternoon camera. It does not pause physics or assemble
+ships. Run it only in a marked disposable flat world; wait for the nearby chunks
+first. Its text is full-bright so lightmap changes cannot explain shadow changes.
+
+Compare the same saved scene after restarting with each combination of
+`rendering.text_display_shadow_pass` and `rendering.nametag_shadow_pass`.
+Keep ordinary GUI visibility on when inspecting names. Check native text and
+entity bodies as well as projected shadows; include shaders-off and shader-on
+controls. Shader packs can already omit particular text shadows independently.
+Release temporary force-loads with `forceload remove -16 -16 16 16` when finished.

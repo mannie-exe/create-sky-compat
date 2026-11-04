@@ -102,6 +102,37 @@ Retire when the selected released Veil artifact contains complete framebuffer an
 Iris pass handling. Review both shipped Veil injections and Iris `bindDefault`,
 `shouldOverrideShaders`, and shadow-pass state before updating either dependency.
 
+## World-text shadows
+
+`rendering.text_display_shadow_pass` and `rendering.nametag_shadow_pass` are
+independent, default-off physical-client policies requiring only the pinned Iris
+API. They do not depend on terrain, Veil, Sable or Colorwheel. Metadata selection
+omits their mixins entirely when unavailable, disabled or on a dedicated server.
+
+`TextDisplayShadowMixin` cancels the concrete `TextDisplayRenderer.renderInner`
+overload during [`IrisApi.isRenderingShadowPass()`](https://github.com/IrisShaders/Iris/blob/1.21.1/common/src/api/java/net/irisshaders/iris/api/v0/IrisApi.java). It skips glyphs and background
+together without also injecting into its generic bridge. Item/block display
+renderers are untouched.
+
+`NametagShadowMixin` guards the base `EntityRenderer.renderNameTag` method. Its
+priority is 1100, before Iris's priority-1000 nametag material setup. Cancelling
+after that setup would skip Iris's RETURN restoration and leak material state.
+The transformed-mixin test includes the exact Iris mixin and checks this ordering.
+Ordinary nametag rendering retains Iris's setup/restoration, and entity-body
+rendering is not cancelled. Custom renderers bypassing the base method remain
+outside coverage.
+
+These policies affect shader shadow-map geometry, not native full-bright display
+lighting, glyph drop shadows, entity blob shadows or post-processing. They do not
+classify entities by server tags or introduce a synchronization protocol.
+
+When updating Minecraft or Iris, review concrete/bridge descriptors, base-renderer
+overrides, Iris material setup/reset hooks and priorities, and the public shadow
+API. Recheck transformed injection count/order, normal/shadow behavior and both
+physical sides. Retire or revise a hook only after confirming equivalent behavior
+in the selected upstream version. The optional native scene is owned by
+`tools/fixtures/rendering`; dated results belong in [verification](verification.md).
+
 ## Balloon overlay
 
 `BalloonShadowMixin` skips Aeronautics' hot-air effect callback when Iris reports

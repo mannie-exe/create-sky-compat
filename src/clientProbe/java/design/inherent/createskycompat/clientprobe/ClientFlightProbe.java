@@ -19,6 +19,7 @@ public final class ClientFlightProbe {
     public ClientFlightProbe() {
         if (Boolean.getBoolean("create_sky_compat.probe.resources")) {
             new ClientResourcesProbe();
+            if (Boolean.getBoolean("create_sky_compat.probe.configuration")) new ClientConfigurationProbe();
             return;
         }
         if (Boolean.getBoolean("create_sky_compat.probe.redstone")) {

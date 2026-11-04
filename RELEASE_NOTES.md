@@ -1,11 +1,9 @@
-# Create Sky Compat 0.17.0
+# Create Sky Compat 0.18.0
 
-Add an opt-in Macaw’s Bridges 3.1.2 adaptation for the matching short-chain hanging stair-lantern resource model.
+Configuration groups now share one scrollable document. Navigation jumps to measured section anchors and follows manual scrolling. Drafts, focus and position survive control changes, resize and resource reloads.
 
-- Match the selection outline to the hanging model in all four directions.
-- Select the portion extending outside its owning cell without extending reach or bypassing native obstructions.
-- Preserve flat lanterns, empty physical collision and native placement/removal behavior.
+Two independent, client-only Iris options can exclude text displays and entity nametags from shader shadow passes. Both default off. Enable them under Client → Iris; normal camera rendering and entity-body shadows remain unchanged. Custom renderers that bypass the vanilla text/nametag boundaries are outside this coverage.
 
-Enable `macaw.bridge_lantern_shape` on client and server only with the matching resource model. The standalone default is off. The configuration screen groups it under Server / shared → Macaw’s Bridges.
+Verified with Iris 1.8.14-beta.1+mc1.21.1, Complementary/Euphoria and patched BSL. Minimum client and dedicated-server loading remain supported without Iris. Existing generation and other optional adaptations are unchanged.
 
-No model or texture assets are bundled in Compat. Create Sky supplies the resource model separately. Existing terrain, rendering and gameplay adaptations are unchanged.
+See the configuration and rendering documentation for coverage and update checks.
