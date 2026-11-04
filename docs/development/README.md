@@ -53,7 +53,7 @@ ownership, finite native fixtures and dependency-update boundaries.
 Its optional client tutorials and Jade inspection use the same machinery contract.
 Run `python3 tools/generate_ponder.py` after editing scene prose or the bounded
 workbench; Gradle checks those resources. The disposable client probe accepts
-`-Dcreate_sky_compat.probe.guidance=true` alongside `probe.linear=true`. Use
+`-Dskyweave_compat.probe.guidance=true` alongside `probe.linear=true`. Use
 `compatprobe_guidance_check` to compile and seek the selected scenes, and
 `compatprobe_ponder <item-id>` to inspect real playback. A successful compile/seek
 does not establish visible geometry, reading time or correct interaction cues.
@@ -68,7 +68,7 @@ authorization, Jade inspection, upstream limits and native machinery fixtures.
 `FeatureSettings` reads immutable switches before Mixin target resolution.
 `FeatureSelection` uses loader metadata, the physical side, and explicit feature
 prerequisites. `OptionalMixinPlugin` selects only the active mixins. Disabled
-adapters do not validate versions. `CreateSkyCompat` registers callbacks and
+adapters do not validate versions. `SkyweaveCompat` registers callbacks and
 loads integration classes only for active selections. `IntegrationPacks` exposes
 terrain, relative-placement, and pressure data as separately gated built-in packs.
 No integration data is unconditionally exposed at the JAR's `data/` root.
@@ -208,10 +208,10 @@ python3 tools/probe.py --server /path/to/server/game --java /path/to/java
 python3 tools/probe.py --natural --seed 1 --server /path/to/server/game --java /path/to/java
 ```
 
-Use `--generation-config /path/to/create_sky_compat-generation.json` to stage an
+Use `--generation-config /path/to/skyweave_compat-generation.json` to stage an
 authored candidate profile instead of the installed one. Strict profile parsing
 rejects obsolete fields; do not accidentally test against an older installed JSON.
-`--interior-config /path/to/create_sky_compat-interiors.json` similarly stages
+`--interior-config /path/to/skyweave_compat-interiors.json` similarly stages
 an explicit cavity/carver comparison without changing the installed instance.
 
 The runner reads installed libraries, mods, config and existing EULA acceptance.
@@ -247,12 +247,12 @@ This diagnoses endpoint loading; it does not transport or complete cargo.
 
 ### Client probes
 
-`./gradlew clientProbeJar` builds `build/probe/create-sky-client-probe.jar`.
+`./gradlew clientProbeJar` builds `build/probe/skyweave-client-probe.jar`.
 Install it only in a disposable client, with desktop authorization before launch.
 It is excluded from production artifacts and the server probe.
 
 For resource comparisons in a full rendering client with Iris, use
-`-Dcreate_sky_compat.probe.resources=true`. This mode requires
+`-Dskyweave_compat.probe.resources=true`. This mode requires
 `resource-review-fixture.json` in the disposable game directory and returns before
 the flight telemetry modes. The owning fixture supplies its world and resources;
 the probe neither creates a survival world nor installs candidate packs.
@@ -271,8 +271,8 @@ With DH 3.3.3 installed, JVM flags select these checks:
 
 | Flag | Behavior and output |
 | --- | --- |
-| `-Dcreate_sky_compat.probe.dhCache=true` | Exercises the real DH client constructor against temporary legacy/current folders; writes `lod-cache-client-probe.json`. Does not open a world. |
-| `-Dcreate_sky_compat.probe.dhFluid=true` | Creates or reopens `dh-fluid-review`, places lava/water and stone/lichen fixtures, and writes `dh-fluid-colors.json` with exact material/color measurements and lichen-transfer controls. |
+| `-Dskyweave_compat.probe.dhCache=true` | Exercises the real DH client constructor against temporary legacy/current folders; writes `lod-cache-client-probe.json`. Does not open a world. |
+| `-Dskyweave_compat.probe.dhFluid=true` | Creates or reopens `dh-fluid-review`, places lava/water and stone/lichen fixtures, and writes `dh-fluid-colors.json` with exact material/color measurements and lichen-transfer controls. |
 
 Both flags may be used together. For the fluid scene, disable background DH
 generation in the disposable configuration, visit the columns at X=0..81, Z=0,
@@ -293,8 +293,8 @@ altitude and tracked sub-level bounds every five seconds. That mode writes no
 world state. Telemetry does not replace checking aircraft construction and controls.
 Close the selected client process normally after recording results.
 
-For the complete Create Sky development stack, the separate
-`-Dcreate_sky_compat.probe.compatibility=true` mode opens `compatibility-review`,
+For the complete Skyweave development stack, the separate
+`-Dskyweave_compat.probe.compatibility=true` mode opens `compatibility-review`,
 a disposable flat-world entity fixture. It exports live Sable block properties,
 checks seven assembled building-material fixtures, and samples natural terrain
 models through DH's real conversion path. It requires DH, Sable, Simulated and
@@ -328,7 +328,7 @@ JAR arguments remain available to the fixture compiler. `--redstone-baseline`
 disables only these adapters for the upstream control. The full run also checks
 projected Sable coordinates and the installing pack's block drops.
 
-The disposable client probe accepts `-Dcreate_sky_compat.probe.redstone=true`,
+The disposable client probe accepts `-Dskyweave_compat.probe.redstone=true`,
 requires `config-review-fixture.json`, and creates only its `redstone-review`
 fixture save. It exposes the existing finite configuration controls and Ponder
 commands. Never install probe JARs or fixture markers in personal instances.

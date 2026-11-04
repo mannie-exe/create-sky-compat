@@ -95,7 +95,7 @@ or screenshot-coordinate assertions.
 The existing client-probe JAR has an opt-in mode:
 
 ```text
--Dcreate_sky_compat.probe.configuration=true
+-Dskyweave_compat.probe.configuration=true
 ```
 
 Use only an isolated instance with `config-review-fixture.json` in its game directory.
@@ -113,11 +113,11 @@ active section and stable focus keys. These are observations of the real screen,
 not a substitute layout implementation.
 `screenFocusAttached` checks the root input owner after pointer-driven rebuilds.
 The resource fixture can enable this same probe alongside
-`create_sky_compat.probe.resources`; it then opens settings only on command rather
+`skyweave_compat.probe.resources`; it then opens settings only on command rather
 than competing with automatic world loading.
 
 For journal return checks, also enable
-`create_sky_compat.probe.configuration.journal=true` and stage the existing
+`skyweave_compat.probe.configuration.journal=true` and stage the existing
 `tools/fixtures/questlog` definitions/resources in the disposable client. It reuses
 the journal fixture. Verify the bookmark, shared values, selected view, and scroll
 before and after returning. Use the desktop harness for visual review and actual

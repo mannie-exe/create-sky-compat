@@ -1,4 +1,4 @@
-# Create Sky Compat
+# Skyweave Compat
 
 Maintain an independently installable mod of optional terrain and compatibility adaptations.
 Keep minimum dependencies and optional adapters explicit.

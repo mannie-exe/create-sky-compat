@@ -1,7 +1,7 @@
 # Rendering adapters
 
 These optional physical-client adapters do not require Sky Archipelago or the
-Create Sky modpack. [Configuration](../configuration.md#adaptation-switches) owns
+Skyweave modpack. [Configuration](../configuration.md#adaptation-switches) owns
 activation and versions. No renderer classes load on dedicated-server paths.
 
 ## Glass backfaces

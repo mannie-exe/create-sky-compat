@@ -38,7 +38,7 @@ def placement(value, path, top, stack=()):
         if modifier['type'] == 'minecraft:height_range':
             heights.append({
                 'top': top, 'path': path, 'modifier': modifier, 'nested': len(path) > 1,
-                'tagged': any(tag in {'create_sky_compat:relative_geology', 'create_sky_compat:relative_surface'}
+                'tagged': any(tag in {'skyweave_compat:relative_geology', 'skyweave_compat:relative_surface'}
                               for tag in placed_registry[top]['tags']),
             })
     configuration(value['feature'], path, top, stack)

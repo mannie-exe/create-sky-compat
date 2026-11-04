@@ -113,7 +113,7 @@ function renderDetail(delta, cutoff) {
 	}
 
 
-    const previous = window.createSkyBlueMap;
+    const previous = window.skyweaveBlueMap;
     previous?.dispose();
     const app = window.bluemap;
     const api = window.BlueMap;
@@ -127,7 +127,7 @@ function renderDetail(delta, cutoff) {
     let warning = false;
     const metrics = {active: false, tiles: 0, geometryBytes: 0, radius: 0, reason: "disabled"};
     const diagnostic = message => {
-        if (!warning) console.warn("Create Sky BlueMap: " + message);
+        if (!warning) console.warn("Skyweave BlueMap: " + message);
         warning = true;
     };
 
@@ -169,7 +169,7 @@ function renderDetail(delta, cutoff) {
     // Lowres stores color/occupancy above signed height metadata. Never use height as occupancy.
     // This removes triangles touching empty samples; it does not reconstruct missing 3D surfaces.
     function clipVoid(mesh) {
-        if (!mesh?.isMesh || mesh.userData.tileType !== "lowres" || mesh.userData.createSkyGeometry) return;
+        if (!mesh?.isMesh || mesh.userData.tileType !== "lowres" || mesh.userData.skyweaveGeometry) return;
         // Coarser grids can have no fully occupied triangle even for a whole island.
         // Retain upstream geometry there rather than silently erasing those islands.
         if (mesh.material.uniforms.lod.value !== 1) return;
@@ -198,7 +198,7 @@ function renderDetail(delta, cutoff) {
         if (kept.length === indices.length) return;
         mesh.geometry = original.clone();
         mesh.geometry.setIndex(kept);
-        mesh.userData.createSkyGeometry = true;
+        mesh.userData.skyweaveGeometry = true;
         const ownedGeometry = mesh.geometry;
         // Upstream shares coarse geometry and only disposes its material. This clone is ours.
         mesh.material.addEventListener("dispose", () => ownedGeometry.dispose());
@@ -251,8 +251,8 @@ function renderDetail(delta, cutoff) {
         function materials() {
             for (const lowres of map.lowresTileManager) lowres.scene.traverse(object => {
                 const material = object.material;
-                if (material?.fragmentShader?.includes(needle) && material.userData.createSkyShader === undefined) {
-                    material.userData.createSkyShader = material.fragmentShader;
+                if (material?.fragmentShader?.includes(needle) && material.userData.skyweaveShader === undefined) {
+                    material.userData.skyweaveShader = material.fragmentShader;
                     material.fragmentShader = rewrite(material.fragmentShader);
                     material.needsUpdate = true;
                 }
@@ -357,7 +357,7 @@ function renderDetail(delta, cutoff) {
     app.events.addEventListener("bluemapMapChanged", changed);
     app.events.addEventListener("bluemapCameraMoved", moved);
     const timer = setInterval(refresh, 30000);
-    window.createSkyBlueMap = {
+    window.skyweaveBlueMap = {
         metrics,
         refresh,
         dispose() {

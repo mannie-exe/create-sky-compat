@@ -22,7 +22,7 @@ def main():
     root = args.web.resolve()
     if not (root / 'settings.json').is_file() or args.min_y >= args.max_y:
         parser.error('Expected a BlueMap web root and a valid exclusive height range')
-    script = 'create-sky-compat/viewer.js'
+    script = 'skyweave-compat/viewer.js'
     config = dict(schema=2, maps=[args.map], bounds={args.map: dict(minY=args.min_y, maxY=args.max_y)},
                   bundle='assets/index-b72fc5a8.js', detailDistance=4000, tileRadius=31,
                   concurrentRequests=4, geometryMiB=256)
@@ -42,7 +42,7 @@ def main():
                 settings = json.loads((root / 'settings.json').read_text())
                 settings['scripts'] = list(dict.fromkeys([*settings.get('scripts', []), script]))
                 data = json.dumps(settings).encode()
-            elif path == '/create-sky-compat/settings.json':
+            elif path == '/skyweave-compat/settings.json':
                 data = json.dumps(config).encode()
             elif path == '/' + script:
                 data = (ROOT / 'src/main/resources/bluemap/viewer.js').read_bytes()

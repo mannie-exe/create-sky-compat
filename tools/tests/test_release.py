@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-PROJECT = 'create-sky-compat'
+PROJECT = 'skyweave-compat'
 
 
 class ReleaseTest(unittest.TestCase):

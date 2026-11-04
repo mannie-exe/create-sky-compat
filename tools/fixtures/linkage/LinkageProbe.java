@@ -4,7 +4,7 @@ import com.enxv.aerouniversaljoint.content.*;
 import com.enxv.aerouniversaljoint.network.*;
 import com.google.gson.*;
 import com.mojang.authlib.GameProfile;
-import design.inherent.createskycompat.linkage.LinkPermissions;
+import design.inherent.skyweavecompat.linkage.LinkPermissions;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;
 import net.minecraft.core.*;
@@ -110,7 +110,7 @@ public final class LinkageProbe {
         var rod = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.parse("aeronautics_utility_objects:hydraulic_rod")),2);
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, rod);
         PendingHydraulicSelections.write(player,new JointBindingData.Selection(level.dimension().location(),peer.getBlockPos(),peer.getContainingSubLevelId()));
-        java.util.function.Consumer<design.inherent.createskycompat.linkage.LinkageEditEvent> denyEdit = e -> {if(e.endpoint()==peer) e.setCanceled(true);};
+        java.util.function.Consumer<design.inherent.skyweavecompat.linkage.LinkageEditEvent> denyEdit = e -> {if(e.endpoint()==peer) e.setCanceled(true);};
         NeoForge.EVENT_BUS.addListener(denyEdit);
         head.handleHeldHydraulicRodItem(player,net.minecraft.world.InteractionHand.MAIN_HAND);
         require(!head.hasLink() && !peer.hasLink() && rod.getCount()==2,"protected selection linked or consumed rod");

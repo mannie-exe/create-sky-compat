@@ -3,7 +3,7 @@ package linearreview;
 import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import com.ggrgg.createredstonelinkgui.common.menu.RedstoneLinkMenu;
-import design.inherent.createskycompat.redstone.*;
+import design.inherent.skyweavecompat.redstone.*;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.companion.math.BoundingBox3i;

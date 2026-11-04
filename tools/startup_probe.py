@@ -26,7 +26,7 @@ def main():
     server = args.server.expanduser().resolve()
     version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines()
                    if line.startswith('mod_version='))
-    mod = args.mod or ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
+    mod = args.mod or ROOT / f'build/libs/skyweave-compat-{version}-mc1.21.1-neoforge.jar'
     launch = list((server / 'libraries/net/neoforged/neoforge').glob('21.1.264/unix_args.txt'))
     if len(launch) != 1:
         parser.error('Expected the supported NeoForge 21.1.264 launch configuration')
@@ -34,7 +34,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     report = {'scenario': args.scenario, 'artifact': str(mod), 'sha256': hashlib.sha256(mod.read_bytes()).hexdigest()}
     selected = {}
-    with tempfile.TemporaryDirectory(prefix='create-sky-startup-') as directory:
+    with tempfile.TemporaryDirectory(prefix='skyweave-startup-') as directory:
         run = Path(directory)
         (run / 'libraries').symlink_to(server / 'libraries', target_is_directory=True)
         (run / 'mods').mkdir()
@@ -56,7 +56,7 @@ def main():
                     meta = (tomllib.loads(jar.read('META-INF/neoforge.mods.toml').decode())
                             if 'META-INF/neoforge.mods.toml' in jar.namelist() else {})
                 ids = {entry['modId'] for entry in meta.get('mods', [])}
-                if ids & {'create_sky_compat', 'veil_iris_fix', 'sky_village_neighbors'}:
+                if ids & {'skyweave_compat', 'create_sky_compat', 'veil_iris_fix', 'sky_village_neighbors'}:
                     continue
                 if args.scenario in {'terrain', 'terrain-disabled'} and 'sky_archipelago' not in ids:
                     continue
@@ -70,14 +70,14 @@ def main():
                 selected[source.name] = hashlib.sha256(source.read_bytes()).hexdigest()
         if args.scenario in {'all-disabled', 'terrain-disabled', 'unsupported-disabled', 'questlog-disabled', 'macaw-disabled'}:
             import re
-            keys = re.findall(r'\("([a-z_]+\.[a-z_]+)"', (ROOT / 'src/main/java/design/inherent/createskycompat/Feature.java').read_text())
-            (run / 'config/create_sky_compat-features.properties').write_text(''.join(f'{key}=false\n' for key in keys))
+            keys = re.findall(r'\("([a-z_]+\.[a-z_]+)"', (ROOT / 'src/main/java/design/inherent/skyweavecompat/Feature.java').read_text())
+            (run / 'config/skyweave_compat-features.properties').write_text(''.join(f'{key}=false\n' for key in keys))
         if args.enable:
             import re
-            keys = set(re.findall(r'\("([a-z_]+\.[a-z_]+)"', (ROOT / 'src/main/java/design/inherent/createskycompat/Feature.java').read_text()))
+            keys = set(re.findall(r'\("([a-z_]+\.[a-z_]+)"', (ROOT / 'src/main/java/design/inherent/skyweavecompat/Feature.java').read_text()))
             if not set(args.enable) <= keys:
                 parser.error('Unknown fixture feature key')
-            feature_file = run / 'config/create_sky_compat-features.properties'
+            feature_file = run / 'config/skyweave_compat-features.properties'
             lines = feature_file.read_text().splitlines() if feature_file.exists() else []
             lines = [line for line in lines if line.partition('=')[0] not in args.enable]
             feature_file.write_text('\n'.join(lines + [key + '=true' for key in args.enable]) + '\n')
@@ -113,11 +113,11 @@ def main():
         # Exported transformed targets must not reference Compat when no adapter was selected.
         references = []
         for target in (run / '.mixin.out').rglob('*.class'):
-            if b'design/inherent/createskycompat/' in target.read_bytes():
+            if b'design/inherent/skyweavecompat/' in target.read_bytes():
                 references.append(str(target.relative_to(run / '.mixin.out')))
         report.update(dependencies=selected, startup=done, exit_code=process.returncode,
                       seconds=round(time.monotonic() - started, 2), transformed_targets=references,
-                      active_lines=[line for line in text.splitlines() if 'Create Sky Compat active adaptations:' in line],
+                      active_lines=[line for line in text.splitlines() if 'Skyweave Compat active adaptations:' in line],
                       generated_config=sorted(p.name for p in (run / 'config').iterdir()))
         inactive = args.scenario in {'standalone', 'all-disabled', 'terrain-disabled', 'unsupported-disabled', 'questlog-disabled', 'macaw-disabled'}
         report['passed'] = (done and process.returncode == 0 and bool(report['active_lines'])

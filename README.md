@@ -1,7 +1,7 @@
-# Create Sky Compat
+# Skyweave Compat
 
 Optional terrain, gameplay, and rendering adaptations for Minecraft 1.21.1.
-Every adaptation has a startup switch. The Create Sky modpack is not required.
+Every adaptation has a startup switch. The Skyweave modpack is not required.
 
 ## Installation
 
@@ -10,7 +10,7 @@ No content mod is required. With no supported targets installed, no adapters act
 Use it on the client for rendering fixes; install it on both sides with matching
 configuration when using the expanded island preset.
 
-Edit `config/create_sky_compat-features.properties` before startup to disable
+Edit `config/skyweave_compat-features.properties` before startup to disable
 unwanted features. Changes require a full process restart. Disabled adaptations
 select no target mixins, callbacks, or data packs and do not constrain target
 versions. An enabled adaptation activates only when its full dependency combination
@@ -51,8 +51,8 @@ Upstream mods retain their own dependencies. Create/Propulsion ore IDs are optio
 members of the relative-placement tags, not required mods.
 
 No world preset is selected automatically. To use the expanded terrain, install
-Sky Archipelago and create a new world with **Create Sky Islands**, or set
-`level-type=create_sky_compat:islands_v1` before creating a dedicated-server world.
+Sky Archipelago and create a new world with **Skyweave Islands**, or set
+`level-type=skyweave_compat:islands_v1` before creating a dedicated-server world.
 Do not change an existing save's generator or recorded generation configuration.
 Ordinary Sky Archipelago worlds receive only applicable enabled adaptations.
 
@@ -128,7 +128,7 @@ and [contracts and limitations](docs/development/questlog.md).
 
 ## Island terrain
 
-**Create Sky Islands** uses a build range from Y=-128 through Y=767. Clusters have
+**Skyweave Islands** uses a build range from Y=-128 through Y=767. Clusters have
 large anchor islands surrounded by smaller companions. Default anchor height
 targets are 250 to 400 blocks, with placement fitted to leave floor clearance and
 building headroom. Ore placement, large iron/copper veins and classic cave carvers
@@ -170,15 +170,15 @@ predictions do not include later structures or player-built blocks.
 
 ## Configuration
 
-Open **Mods → Create Sky Compat → Config** for one scrollable page of categories,
+Open **Mods → Skyweave Compat → Config** for one scrollable page of categories,
 mod-specific settings and fix status. Sidebar links jump to sections. Journal preferences apply immediately; fix changes save for the
 next startup. The menu edits local files, not a connected server.
 
-Feature switches remain in `config/create_sky_compat-features.properties`.
-Village tuning uses `config/create_sky_compat-common.toml`. Island geometry lives in
-`config/create_sky_compat-generation.json`; cavity and native-carver controls live in
-`config/create_sky_compat-interiors.json`, and local basins use
-`config/create_sky_compat-water.json`. Restart the game/server after changes;
+Feature switches remain in `config/skyweave_compat-features.properties`.
+Village tuning uses `config/skyweave_compat-common.toml`. Island geometry lives in
+`config/skyweave_compat-generation.json`; cavity and native-carver controls live in
+`config/skyweave_compat-interiors.json`, and local basins use
+`config/skyweave_compat-water.json`. Restart the game/server after changes;
 changed generation settings require a fresh world.
 The server's configuration controls multiplayer generation.
 
@@ -191,3 +191,5 @@ See [configuration](docs/configuration.md) for controls and limitations,
 Original implementation: MIT. Incorporated framebuffer code and its test infrastructure:
 LGPL-3.0-only. See [NOTICE](NOTICE) and [license texts](licenses/). Upstream binaries
 and templates are not bundled. This is an independent compatibility mod.
+
+Skyweave Compat is independent of the unfinished Skyweave civilization mod. The playable pack is Create: Skyweave. Version 0.20.0 changes registry identity and requires a fresh world; see [existing saves](docs/configuration.md#release-identity-and-existing-saves).

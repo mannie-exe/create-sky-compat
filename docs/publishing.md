@@ -12,6 +12,8 @@ Main branch pushes run validation without publishing a release. Documentation
 changes need no version bump or tag.
 
 Update `mod_version`, release notes and verification evidence before tagging.
+After the content commit, run `git-cliff --tag v<version> --output CHANGELOG.md`
+with git-cliff 2.14.2 and commit the generated changelog as release preparation.
 Never overwrite published release files. The release script accepts `--stage-only`
 to validate and stage downloaded CI artifacts without calling GitHub releases.
 Download CI artifacts into `build/ci/build-<runner>/` before staging;
@@ -28,18 +30,18 @@ Modrinth publication is deferred. Use these fields if publication is approved:
 | Field | Selection |
 | --- | --- |
 | Project type | Mod |
-| Name | Create Sky Compat |
-| Slug | `create-sky-compat` |
+| Name | Skyweave Compat |
+| Slug | `skyweave-compat` |
 | Summary | Optional terrain, gameplay, and rendering adaptations with independent startup switches |
 | Category | World Generation; Utility as an optional second category |
 | Environment | Required on client and server for the expanded preset |
 | License | MIT AND LGPL-3.0-only; see NOTICE |
-| Source | `https://github.com/mannie-exe/create-sky-compat` |
-| Issues | `https://github.com/mannie-exe/create-sky-compat/issues` |
+| Source | `https://github.com/mannie-exe/skyweave-compat` |
+| Issues | `https://github.com/mannie-exe/skyweave-compat/issues` |
 | Description | README installation, placement and configuration sections |
 
 For the current prerelease, select **Beta**, **Minecraft 1.21.1**, and **NeoForge**.
-Upload `create-sky-compat-<version>-mc1.21.1-neoforge.jar` as the primary file.
+Upload `skyweave-compat-<version>-mc1.21.1-neoforge.jar` as the primary file.
 Declare all integrated content mods optional, including Sky Archipelago. Use the
 [configuration matrix](configuration.md#adaptation-switches) for supported versions
 and multi-mod requirements instead of maintaining another dependency list.

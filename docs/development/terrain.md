@@ -1,6 +1,6 @@
 # Island generation
 
-The `create_sky_compat:islands_v1` preset owns the expanded terrain described here.
+The `skyweave_compat:islands_v1` preset owns the expanded terrain described here.
 The [verification record](verification.md) distinguishes native observations from
 unverified survival balance and vehicle capabilities.
 
@@ -317,7 +317,7 @@ coal and emerald attempts can land in air, while attempts below the datum remain
 in the deep body where replacement rules permit them. Native counts are unchanged.
 
 `OreHeightMixin` intercepts the existing height modifier only for features in
-`#create_sky_compat:relative_geology`, inside the opted-in generator. It samples
+`#skyweave_compat:relative_geology`, inside the opted-in generator. It samples
 the original height provider against an explicit reference context. Absolute,
 bottom-relative and top-relative anchors retain their original meaning. It
 consumes the sample even when the target column is void, then maps successful
@@ -576,7 +576,7 @@ Sky Village cargo placement and delivery completion remain separate play checks.
 ## Atmosphere
 
 The preset uses a Sable dimension-physics data record under
-`data/create_sky_compat/dimension_physics/islands_v1.json`. A narrow lookup adapter
+`data/skyweave_compat/dimension_physics/islands_v1.json`. A narrow lookup adapter
 selects that profile only for this dimension type. Sable's native loader and
 network packet carry the record; no custom packet or global Overworld override is
 needed. A higher-priority explicit dimension record remains authoritative.
@@ -593,7 +593,7 @@ loading or interpolation alone cannot validate a ship design.
 Before levels load, `GenerationGuard` records the seed, algorithm revision,
 geometry parameters, resolved embedded settings, village policy and structure set,
 biome source, noise settings, dimension and the ancient-city eligibility policy
-in `create-sky-generation.json` within a new world's directory. Object keys are
+in `skyweave-generation.json` within a new world's directory. Object keys are
 canonicalized so map iteration cannot change the identity. Reopening with a
 different identity fails before generation. Existing region files without an
 identity are not adopted. Replacing the generator in a marked world is rejected.

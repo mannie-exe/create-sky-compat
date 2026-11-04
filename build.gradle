@@ -4,7 +4,7 @@ plugins {
 }
 version = mod_version
 group = 'design.inherent'
-base.archivesName = 'create-sky-compat'
+base.archivesName = 'skyweave-compat'
 java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
     withSourcesJar()
@@ -27,7 +27,7 @@ neoForge {
         client { client(); gameDirectory = file('runs/client') }
         server { server(); gameDirectory = file('runs/server'); programArgument '--nogui' }
     }
-    mods { create_sky_compat { sourceSet(sourceSets.main) } }
+    mods { skyweave_compat { sourceSet(sourceSets.main) } }
 }
 configurations {
     localRuntime
@@ -94,7 +94,7 @@ tasks.withType(AbstractArchiveTask).configureEach {
     reproducibleFileOrder = true
 }
 tasks.named('jar', Jar) {
-    archiveFileName = "create-sky-compat-${version}-mc1.21.1-neoforge.jar"
+    archiveFileName = "skyweave-compat-${version}-mc1.21.1-neoforge.jar"
     from 'LICENSE', 'NOTICE'
     from('licenses') { into 'licenses' }
 }
@@ -234,7 +234,7 @@ tasks.register('compileProbeJava', JavaCompile) {
 }
 tasks.register('probeJar', Jar) {
     dependsOn compileProbeJava
-    archiveFileName = 'create-sky-compat-probe.jar'
+    archiveFileName = 'skyweave-compat-probe.jar'
     destinationDirectory = layout.buildDirectory.dir('probe')
     from layout.buildDirectory.dir('classes/probe')
     from 'src/probe/resources'
@@ -249,7 +249,7 @@ tasks.register('compileClientProbeJava', JavaCompile) {
 }
 tasks.register('clientProbeJar', Jar) {
     dependsOn compileClientProbeJava
-    archiveFileName = 'create-sky-client-probe.jar'
+    archiveFileName = 'skyweave-client-probe.jar'
     destinationDirectory = layout.buildDirectory.dir('probe')
     from layout.buildDirectory.dir('classes/clientProbe')
     from 'src/clientProbe/resources'
@@ -335,7 +335,7 @@ dependencies {
 tasks.register('framebufferServerProbe', JavaExec) {
     dependsOn 'testClasses'
     classpath = sourceSets.test.runtimeClasspath
-    mainClass = 'design.inherent.createskycompat.rendering.ServerProbe'
+    mainClass = 'design.inherent.skyweavecompat.rendering.ServerProbe'
     javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
 }
 tasks.register('verifyIris') {

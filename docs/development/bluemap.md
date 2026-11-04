@@ -16,7 +16,7 @@ verified generation marker. Only explicitly selected map IDs whose save path
 matches that Sky Archipelago world are published. Ordinary Sky Archipelago worlds
 use their own dimension bounds; foreign generators are excluded.
 
-The adapter registers `create-sky-compat/viewer.js` through BlueMap's webapp API.
+The adapter registers `skyweave-compat/viewer.js` through BlueMap's webapp API.
 Schema 2 settings include per-map exclusive height bounds. API reload and server
 shutdown clear selection. The original renderer returns when selection is empty,
 settings are invalid or the supported browser implementation is unavailable.
@@ -41,7 +41,7 @@ edges can remain visible from below or beyond the detailed area.
 
 Detach restores methods and shader sources and disposes owned geometry. It keeps
 captured manager references because BlueMap clears its manager properties before
-notifying listeners of a map change. `window.createSkyBlueMap.metrics` exposes
+notifying listeners of a map change. `window.skyweaveBlueMap.metrics` exposes
 activity, radius, retained geometry and fallback reason for browser inspection.
 
 ## Upstream boundaries

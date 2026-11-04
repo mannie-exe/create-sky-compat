@@ -18,9 +18,9 @@ Macaw covered-lantern assembly and requires Macaw's Lights and Lamps. Each funct
 is a one-shot visual fixture; remove the previous sublevel before repeating it.
 
 For an isolated minimum-installation client, use the same probe with
-`-Dcreate_sky_compat.probe.lighting.minimum=true`. It opens a fresh flat fixture
+`-Dskyweave_compat.probe.lighting.minimum=true`. It opens a fresh flat fixture
 and records a loaded player/level without querying SDL APIs or building a scene.
-For Colorwheel, also enable `-Dcreate_sky_compat.probe.colorwheel=true` with the
+For Colorwheel, also enable `-Dskyweave_compat.probe.colorwheel=true` with the
 supported renderer installed. `colorwheel-state.json` records the actual backend,
 Iris sampler limit and shader-on native terrain/emission bytes. The extended-vertex
 probe is intentionally skipped when shaders are off. Neither probe is shipped.

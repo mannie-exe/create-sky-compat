@@ -59,7 +59,7 @@ public class BootstrapProbe {
    if(gum.defaultBlockState().getCollisionShape(level,pos,net.minecraft.world.phys.shapes.CollisionContext.of(fake)).isEmpty())throw new AssertionError("Gum crouching collision");
    out.addProperty("gumCrouchingCollision",true);
    out.addProperty("registeredObtainableBlocks",ids.length);out.addProperty("loadedRecipes",ids.length);out.addProperty("bubbleGumDrops",drops.getFirst().getCount());
-   out.addProperty("bootstrapOwnedByCompat",design.inherent.createskycompat.OptionalIntegrations.enabled(design.inherent.createskycompat.Feature.LINEAR_BOOTSTRAP));
+   out.addProperty("bootstrapOwnedByCompat",design.inherent.skyweavecompat.OptionalIntegrations.enabled(design.inherent.skyweavecompat.Feature.LINEAR_BOOTSTRAP));
    assemblyTests(server,out);
    transmissionTests(server,out);
    Files.writeString(Path.of(System.getProperty("linear.review.output")),new GsonBuilder().setPrettyPrinting().create().toJson(out));
@@ -120,7 +120,7 @@ public class BootstrapProbe {
    var motor=(com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity)level.getBlockEntity(driver);motor.generatedSpeed.setValue(32);motor.tick();motor.updateGeneratedRotation();
    a.tick();b.tick();
    if(a.getSpeed()!=32||b.getSpeed()!=0)throw new AssertionError("Invalid-coupling drive control "+invalid+": "+a.getSpeed()+" / "+b.getSpeed());
-   if(((design.inherent.createskycompat.linear.TransmissionEndpoint)a).createSky$peer()!=null||((design.inherent.createskycompat.linear.TransmissionEndpoint)b).createSky$peer()!=null)throw new AssertionError("Accepted invalid coupling "+invalid);
+   if(((design.inherent.skyweavecompat.linear.TransmissionEndpoint)a).skyweave$peer()!=null||((design.inherent.skyweavecompat.linear.TransmissionEndpoint)b).skyweave$peer()!=null)throw new AssertionError("Accepted invalid coupling "+invalid);
    var row=new JsonObject();row.addProperty("rejected",invalid);rows.add(row);
   }
   var gyroBlock=BuiltInRegistries.BLOCK.get(ResourceLocation.parse("linearbearing:gyroscopic_gearbox"));

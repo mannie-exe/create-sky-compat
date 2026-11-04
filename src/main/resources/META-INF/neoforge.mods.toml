@@ -1,207 +1,207 @@
 modLoader="javafml"
 loaderVersion="[4,)"
 license="MIT AND LGPL-3.0-only"
-issueTrackerURL="https://github.com/mannie-exe/create-sky-compat/issues"
+issueTrackerURL="https://github.com/mannie-exe/skyweave-compat/issues"
 [[mods]]
-modId="create_sky_compat"
+modId="skyweave_compat"
 version="${version}"
-displayName="Create Sky Compat"
+displayName="Skyweave Compat"
 authors="mannie-exe"
-displayURL="https://github.com/mannie-exe/create-sky-compat"
-description='''Optional, individually configurable terrain, gameplay, and rendering adaptations. The Create Sky modpack is not required.'''
+displayURL="https://github.com/mannie-exe/skyweave-compat"
+description='''Optional, individually configurable terrain, gameplay, and rendering adaptations. The Skyweave modpack is not required.'''
 [[mixins]]
-config="create_sky_compat.mixins.json"
-[[dependencies.create_sky_compat]]
+config="skyweave_compat.mixins.json"
+[[dependencies.skyweave_compat]]
 modId="minecraft"
 type="required"
 versionRange="[1.21.1]"
 side="BOTH"
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="neoforge"
 type="required"
 versionRange="[21.1.264,21.2)"
 side="BOTH"
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="sky_archipelago"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="skyvillages"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="architectury"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="sable"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="aeronautics_delivery_quests"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="distanthorizons"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="bluemap"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="analogaudio"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="create"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="veil"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="iris"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="sodium"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="aeronautics"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="questlog"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="sabledynlights"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="lambdynlights"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="colorwheel"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="flywheel"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="linearbearing"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="linearbearingsfix"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="simulated"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="ponder"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="jade"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="aeronautics_utility_objects"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="analoglib"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="yigd"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="createredstonelinkgui"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="create_redstone_additions"
 type="optional"
 versionRange="[0,)"
 side="BOTH"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="rechiseled"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="fusion"
 type="optional"
 versionRange="[0,)"
 side="CLIENT"
 
-[[dependencies.create_sky_compat]]
+[[dependencies.skyweave_compat]]
 modId="mcwbridges"
 type="optional"
 versionRange="[0,)"

@@ -1,5 +1,15 @@
 # Verification
 
+## Identity migration, 0.20.0
+
+Tested on 2026-11-04 from `~/production/skyweave-compat` with Java 21 and NeoForge 21.1.264. Candidate JAR SHA-256: `4194514849f43b57c05a6a4e85423cf20d5d3d2a8bb6b20cbe79e5891e6a17e2`.
+
+`./gradlew --no-daemon check build clientProbeJar probeJar` passes 123 Java tests, six release-tool tests, generated Ponder checks, exact upstream hashes, and artifact boundaries. The new marker tests reject old worlds both without chunks and with a competing new marker; rejection preserves the old marker. Existing tests cover optional loading and client/server exclusion. A comparison of all 246 production Java files against the previous revision found only identity substitutions, explicit legacy-marker rejection, and the documented persistence/noise exceptions.
+
+`tools/startup_probe.py --scenario standalone` and `--scenario full` pass in disposable dedicated servers. `tools/probe.py --generation adapted --seed 42 --reopen --heap 6G`, with and without `--minimal`, generates and reopens fresh worlds successfully. These commands use the installed server only as read-only library/mod input. The first full generation attempt exposed an old unversioned Compat JAR in the fixture; metadata-based filtering fixed duplicate installation before the successful retry. No live instance or world was modified.
+
+The renamed physical-client artifact still needs its native check. Historical GPU and gameplay evidence below remains attributable to its recorded release, not this JAR.
+
 ## World-text lighting, 0.19.0
 
 Tested on 2026-11-04 with Minecraft 1.21.1, NeoForge 21.1.264, Iris

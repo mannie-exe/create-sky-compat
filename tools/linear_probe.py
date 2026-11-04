@@ -27,7 +27,7 @@ def digest(path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--server', type=Path, required=True, help='Read-only installed game directory')
-    parser.add_argument('--pack', type=Path, required=True, help='Read-only authored Create Sky directory')
+    parser.add_argument('--pack', type=Path, required=True, help='Read-only authored Skyweave directory')
     parser.add_argument('--java', type=Path, required=True, help='Java 21 executable; javac must be alongside it')
     parser.add_argument('--linear', type=Path, help='Unmodified Linear Bearing 1.3.5 JAR')
     parser.add_argument('--redstone-gui', type=Path)
@@ -60,9 +60,9 @@ def main():
         parser.error('Unexpected YiGD 2.0.13 bytes')
     version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines()
                    if line.startswith('mod_version='))
-    mod = args.mod or ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
+    mod = args.mod or ROOT / f'build/libs/skyweave-compat-{version}-mc1.21.1-neoforge.jar'
     runtime = json.loads(subprocess.check_output(['node', str(args.pack / 'web/scripts/runtime-inputs.mjs'), str(args.pack)], text=True))
-    excluded = {'create-sky-compat', 'linear-bearing', 'linear-bearings-fix'}
+    excluded = {'skyweave-compat', 'linear-bearing', 'linear-bearings-fix'}
     if args.yigd:
         excluded.add('yigd')
     if args.linkage:
@@ -137,13 +137,13 @@ def main():
             jar.writestr('META-INF/neoforge.mods.toml', 'modLoader="javafml"\nloaderVersion="[4,)"\nlicense="MIT"\n[[mods]]\nmodId="linear_review_probe"\nversion="1.0.0"\ndisplayName="Isolated compatibility checks"\n')
         shutil.copytree(args.pack / 'overrides/common/config', run / 'config')
         if args.linkage_baseline:
-            settings = run / 'config/create_sky_compat-features.properties'
+            settings = run / 'config/skyweave_compat-features.properties'
             import re
             text = settings.read_text() if settings.exists() else ''
             text = re.sub(r'(?m)^transmission_linkage\.[^\n]*\n?', '', text)
             settings.write_text(text + '\ntransmission_linkage.interactions=false\ntransmission_linkage.jade=false\n')
         if args.redstone_baseline:
-            settings = run / 'config/create_sky_compat-features.properties'
+            settings = run / 'config/skyweave_compat-features.properties'
             import re
             text = re.sub(r'(?m)^(redstone_link_gui|redstone_additions)\.[^\n]*\n?', '', settings.read_text() if settings.exists() else '')
             keys = ['redstone_link_gui.interactions', 'redstone_link_gui.relocation', 'redstone_link_gui.ship_access', 'redstone_additions.logic', 'redstone_additions.scraping', 'redstone_additions.wrench', 'redstone_additions.transparency']

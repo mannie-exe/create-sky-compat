@@ -3,7 +3,7 @@ package linearreview;
 import com.google.gson.*;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.motor.CreativeMotorBlockEntity;
-import design.inherent.createskycompat.linear.TransmissionEndpoint;
+import design.inherent.skyweavecompat.linear.TransmissionEndpoint;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.physics.constraint.*;
@@ -80,7 +80,7 @@ public final class TransmissionProbe {
    RigidBodyHandle.of(gyroShip).applyAngularImpulse(new Vector3d(0,20,0));}
   if(tick>6&&tick<35&&!restore){var sensor=kinetic(level,gyro);var converter=kinetic(level,gyro.above());peakGyro=Math.max(peakGyro,Math.abs(converter.getSpeed()));if(sensor.calculateAddedStressCapacity()!=0)throw new AssertionError("Gyro generated capacity");}
   if(tick==20){checkPair(level,100,false);checkPair(level,200,true);report.addProperty(restore?"coldPairsRestored":"pairsRunning",true);
-   if(!restore){var a=kinetic(level,new BlockPos(300,150,0));var b=kinetic(level,new BlockPos(303,150,0));if(((TransmissionEndpoint)a).createSky$peer()!=null||((TransmissionEndpoint)b).createSky$peer()!=null)throw new AssertionError("Conflicting sources coupled");report.addProperty("conflictingSourcesRejected",true);level.destroyBlock(new BlockPos(304,150,0),false);}
+   if(!restore){var a=kinetic(level,new BlockPos(300,150,0));var b=kinetic(level,new BlockPos(303,150,0));if(((TransmissionEndpoint)a).skyweave$peer()!=null||((TransmissionEndpoint)b).skyweave$peer()!=null)throw new AssertionError("Conflicting sources coupled");report.addProperty("conflictingSourcesRejected",true);level.destroyBlock(new BlockPos(304,150,0),false);}
   }
   if(tick==30&&!restore){
    var a=kinetic(level,new BlockPos(20,150,0));var b=kinetic(level,shipPort);var load=kinetic(level,shipPort.south());var sourceWorld=Sable.HELPER.projectOutOfSubLevel(level,a.getBlockPos().getCenter());var targetWorld=Sable.HELPER.projectOutOfSubLevel(level,b.getBlockPos().getCenter());

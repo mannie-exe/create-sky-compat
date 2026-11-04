@@ -139,12 +139,12 @@ continued compatibility from compilation or an unchanged public class name.
 Run `./gradlew --no-daemon check build clientProbeJar`. Dedicated startup probes
 support `standalone`, `questlog`, `questlog-disabled`, `unsupported-disabled` and
 `full` with a read-only installed server as their library source. The separate
-client probe's `-Dcreate_sky_compat.probe.journal=true` mode opens the disposable
+client probe's `-Dskyweave_compat.probe.journal=true` mode opens the disposable
 `journal-review` flat save and `questlog:ux/long`; copy `tools/fixtures/questlog/quests`
 into that fixture's `config/questlog/quests` first. Never enable it in a personal
 instance. It changes fixture inventory/progress and writes claim/render reports.
-For an isolated remote fixture use `-Dcreate_sky_compat.probe.journal.server=host:port`.
-Use `-Dcreate_sky_compat.probe.journal.entry=questlog:ux/hidden` to inspect the
+For an isolated remote fixture use `-Dskyweave_compat.probe.journal.server=host:port`.
+Use `-Dskyweave_compat.probe.journal.entry=questlog:ux/hidden` to inspect the
 disabled-details fixture. The optional fixture resource pack in
 `tools/fixtures/questlog/resources` supplies long English/German labels; copy it
 into the test client's resourcepacks directory and select it. The same probe JAR

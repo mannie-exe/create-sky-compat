@@ -3,7 +3,7 @@
 The optional `lighting.sodium` client adaptation connects Sable Dynamic Lights
 (SDL) 2.0.1 to Sodium 0.8.13 on Minecraft 1.21.1. Create 6.0.10 and
 LambDynamicLights 4.8.11+1.21.1 are required by the selected integration. Sable,
-Iris, Sky Archipelago and the Create Sky modpack are not prerequisites for this
+Iris, Sky Archipelago and the Skyweave modpack are not prerequisites for this
 hook. [Configuration](../configuration.md#adaptation-switches) owns activation.
 
 ## Ownership and hook
@@ -138,10 +138,10 @@ It is not a visual persistence test of every DH source provider.
 ## Isolated verification
 
 Build the test-only probe with `./gradlew --no-daemon clientProbeJar`. In an owned,
-disposable client, set `-Dcreate_sky_compat.probe.lighting=true`. It opens only
+disposable client, set `-Dskyweave_compat.probe.lighting=true`. It opens only
 `saves/lighting-review`, creates a night flat scene, and writes `lighting-control.json`
 and `lighting-scene.json` to that fixture's game directory. Use
-`-Dcreate_sky_compat.probe.lighting.controlOnly=true` for a client without Sable or
+`-Dskyweave_compat.probe.lighting.controlOnly=true` for a client without Sable or
 Aeronautics. Do not put the probe or its flags in a player's instance.
 
 The full scene uses a static control, a supported rotating Create lantern,

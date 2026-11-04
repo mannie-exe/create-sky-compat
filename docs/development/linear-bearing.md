@@ -143,7 +143,7 @@ records exact hashes, inputs, results and logs. Nothing is sent to the source se
 
 ```sh
 python3 tools/linear_probe.py --server /path/to/server/game \
-  --pack /path/to/create_sky --java /path/to/java21/bin/java \
+  --pack /path/to/create-skyweave --java /path/to/java21/bin/java \
   --linear /path/to/linearbearing-1.3.5.jar --scenario carriage
 ```
 
@@ -151,7 +151,7 @@ Use `--fix /path/to/linearbearingsfix-1.0.3.jar` for coexistence. Other finite
 scenes are `bootstrap`, `parent`, `reopen`, `disassembly` and `transmission`.
 Carriage orientations are `floor`, `ceiling`, `wall-front` and `wall-back`;
 disassembly also accepts `height` and `quarter`. `clientProbeJar` contains the
-opt-in `-Dcreate_sky_compat.probe.linear=true` integrated review scene. Its
+opt-in `-Dskyweave_compat.probe.linear=true` integrated review scene. Its
 `compatprobe_linear_use` command sends a real empty-hand use packet;
 `compatprobe_linear_brake` changes fixture power. Neither probe ships in Compat.
 

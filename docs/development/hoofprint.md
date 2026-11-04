@@ -5,7 +5,7 @@ inspection; the adapter below is proposed, not implemented or tested in game.
 
 ## Configuration limits
 
-Create Sky pins [Hoofprint 1.3.0+1.21](https://modrinth.com/mod/hoofprint/version/YQxLELnA)
+Skyweave pins [Hoofprint 1.3.0+1.21](https://modrinth.com/mod/hoofprint/version/YQxLELnA)
 and Surveyor 1.2.4+1.21, using Connector and Forgified Fabric API on NeoForge.
 The inspected Hoofprint JAR has SHA-256
 `9078d6e61a0730712607f0791fc2243517c95d742134b6dc0b1d2912513f30cb`.

@@ -36,7 +36,7 @@ def main():
     args = parser.parse_args()
     server = args.server.resolve()
     version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines() if line.startswith('mod_version='))
-    artifact = ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
+    artifact = ROOT / f'build/libs/skyweave-compat-{version}-mc1.21.1-neoforge.jar'
     selected = {}
     for jar in (server / 'mods').glob('*.jar'):
         with zipfile.ZipFile(jar) as archive:
@@ -51,11 +51,11 @@ def main():
     output = ROOT / 'build/verification'
     output.mkdir(parents=True, exist_ok=True)
     report = {'artifactSha256': hashlib.sha256(artifact.read_bytes()).hexdigest(), 'cases': [], 'complete': False}
-    cases = [('adapted', 'create_sky_compat:islands_v1', [-128, 768]),
+    cases = [('adapted', 'skyweave_compat:islands_v1', [-128, 768]),
              ('ordinary', 'sky_archipelago:sky_islands', [-64, 320]),
              ('foreign', 'minecraft:flat', None)]
     for name, preset, expected in cases:
-        with tempfile.TemporaryDirectory(prefix='create-sky-bluemap-') as temp:
+        with tempfile.TemporaryDirectory(prefix='skyweave-bluemap-') as temp:
             run = Path(temp)
             (run / 'libraries').symlink_to(server / 'libraries', target_is_directory=True)
             (run / 'mods').mkdir()
@@ -73,10 +73,10 @@ def main():
             (config / 'maps/world.conf').write_text('world: "world"\ndimension: "minecraft:overworld"\n')
             (run / 'bluemap').mkdir()
             shutil.copy2(server / 'bluemap/minecraft-client-1.21.1.jar', run / 'bluemap/minecraft-client-1.21.1.jar')
-            policy = run / 'config/create_sky_compat-bluemap.json'
+            policy = run / 'config/skyweave_compat-bluemap.json'
             settings = dict(maps=['world'], detailDistance=4000, tileRadius=31, concurrentRequests=4, geometryMiB=256)
             policy.write_text(json.dumps(settings))
-            manifest = run / 'bluemap/web/create-sky-compat/settings.json'
+            manifest = run / 'bluemap/web/skyweave-compat/settings.json'
             launch = next((server / 'libraries/net/neoforged/neoforge').glob('*/unix_args.txt'))
             log_path = output / f'bluemap-{name}.log'
             with log_path.open('w') as log:
@@ -101,7 +101,7 @@ def main():
                     process.stdin.write('stop\n'); process.stdin.flush()
                     assert process.wait(timeout=90) == 0
                     assert json.loads(manifest.read_text())['maps'] == []
-                    errors = ['Encountered an unexpected exception', 'Exception stopping the server', 'Could not clear Create Sky BlueMap', 'Create Sky BlueMap adapter disabled']
+                    errors = ['Encountered an unexpected exception', 'Exception stopping the server', 'Could not clear Skyweave BlueMap', 'Skyweave BlueMap adapter disabled']
                     assert not any(error in log_path.read_text(errors='replace') for error in errors)
                     report['cases'].append(dict(preset=preset, bounds=expected, selected=bool(expected), reload=bool(expected), shutdownCleared=True))
                     print(f'{name}: selection, bounds and lifecycle passed', flush=True)

@@ -1,11 +1,8 @@
-# 0.19.0
+# Skyweave Compat 0.20.0
 
-- Keep text displays and entity names readable with independent, default-on Iris
-  lighting adaptations. Selected text uses Iris fallback programs while ordinary
-  geometry keeps its shader lighting. Later shader color processing still applies.
-- Enable the separate text-display and nametag cast-shadow exclusions by default.
-- Center the measured footer hint against the configuration screen's button row.
+- Rename the independently installable mod to Skyweave Compat, with mod ID `skyweave_compat`, package `design.inherent.skyweavecompat`, and canonical repository `mannie-exe/skyweave-compat`.
+- Rename configuration files, resources, translations, integration packs, probes, and release artifacts together. Skyweave's civilization mod is not a dependency.
+- Require a fresh world for the new registry identity. Existing Create Sky Compat saves must stay on their original release; legacy generation markers are rejected, including with terrain disabled. Never rename or remove a marker to force conversion.
+- Preserve terrain algorithms, numerical profiles, interior noise salts, and DH's existing cache identity. Minecraft 1.21.1, NeoForge 21.1.264, and optional integration pins are unchanged.
 
-Minecraft 1.21.1, NeoForge 21.1.264. Rendering adapters target Iris
-1.8.14-beta.1+mc1.21.1. See [verification](docs/development/verification.md) for native
-shader checks and coverage limits. No generation or world-format changes.
+Automated build/package checks, minimum and full dedicated-server startup, and minimum/full fresh-world generation with reopening passed. Native client verification for this renamed artifact is pending; earlier rendering observations apply to their recorded releases. See [verification](docs/development/verification.md).

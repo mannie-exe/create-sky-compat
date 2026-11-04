@@ -24,9 +24,9 @@ public class CarriageProbe {
   if(!net.neoforged.fml.ModList.get().isLoaded("jade"))return;
   var accessor=Class.forName("snownee.jade.api.BlockAccessor");
   Object proxy=java.lang.reflect.Proxy.newProxyInstance(accessor.getClassLoader(),new Class[]{accessor},(object,method,args)->method.getName().equals("getBlockEntity")?entity:null);
-  var type=Class.forName("design.inherent.createskycompat.linear.LinearJadeProvider");var provider=type.getField("INSTANCE").get(null);var data=new net.minecraft.nbt.CompoundTag();
+  var type=Class.forName("design.inherent.skyweavecompat.linear.LinearJadeProvider");var provider=type.getField("INSTANCE").get(null);var data=new net.minecraft.nbt.CompoundTag();
   type.getMethod("appendServerData",net.minecraft.nbt.CompoundTag.class,accessor).invoke(provider,data,proxy);
-  var state=data.getCompound("create_sky_compat:linear");if(!state.contains("braked")||state.getBoolean("braked")!=expected)throw new AssertionError("Jade brake status disagrees with native constraint");
+  var state=data.getCompound("skyweave_compat:linear");if(!state.contains("braked")||state.getBoolean("braked")!=expected)throw new AssertionError("Jade brake status disagrees with native constraint");
   report.addProperty(expected?"jadeBraked":"jadeReleased",true);
  }
  private boolean start;private int tick;private ServerSubLevel ship;private BlockPos carriage;private Vec3 initial, freeStart, lockStart, releaseStart;private Direction normal=Direction.UP, rail=Direction.SOUTH;private BlockPos control;private final BlockPos connector=new BlockPos(20,150,20);private final JsonObject report=new JsonObject();

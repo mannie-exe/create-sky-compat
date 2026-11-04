@@ -11,16 +11,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def outputs():
-    source = (ROOT / 'src/main/java/design/inherent/createskycompat/linear/client/LinearScenes.java').read_text(encoding="utf-8")
-    lang = ROOT / 'src/main/resources/assets/create_sky_compat/lang/en_us.json'
+    source = (ROOT / 'src/main/java/design/inherent/skyweavecompat/linear/client/LinearScenes.java').read_text(encoding="utf-8")
+    lang = ROOT / 'src/main/resources/assets/skyweave_compat/lang/en_us.json'
     strings = {k: v for k, v in json.loads(lang.read_text(encoding="utf-8")).items()
-               if not k.startswith('create_sky_compat.ponder.linear_')}
+               if not k.startswith('skyweave_compat.ponder.linear_')}
     for match in re.finditer(r'public static void (\w+)\(.*?\n    }', source, re.S):
         body = match.group()
         title = re.search(r'start\(builder, util, "(\w+)", ("[^"]*")\)', body)
         if not title:
             raise ValueError(f'Scene has no title: {match[1]}')
-        prefix = f'create_sky_compat.ponder.linear_{title[1]}'
+        prefix = f'skyweave_compat.ponder.linear_{title[1]}'
         strings[prefix + '.header'] = json.loads(title[2])
         for index, text in enumerate(re.findall(r'explain\(scene, ("[^"]*")', body), 1):
             strings[f'{prefix}.text_{index}'] = json.loads(text)
@@ -43,7 +43,7 @@ def outputs():
     nbt += named(9, 'blocks', b'\x0a' + integer(2) + blocks)
     nbt += named(9, 'entities', b'\x0a' + integer(0))
     nbt += b'\x00'
-    structure = ROOT / 'src/main/resources/assets/create_sky_compat/ponder/linear/workbench.nbt'
+    structure = ROOT / 'src/main/resources/assets/skyweave_compat/ponder/linear/workbench.nbt'
     return {lang: (json.dumps(strings, ensure_ascii=False, indent=2) + '\n').encode(),
             structure: gzip.compress(nbt, compresslevel=9, mtime=0)}
 

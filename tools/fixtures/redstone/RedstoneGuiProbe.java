@@ -29,7 +29,7 @@ import com.ggrgg.createredstonelinkgui.common.menu.RedstoneLinkMenu;
 import com.ggrgg.createredstonelinkgui.common.network.*;
 import com.simibubi.create.content.redstone.link.*;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import design.inherent.createskycompat.redstone.RedstoneEditEvent;
+import design.inherent.skyweavecompat.redstone.RedstoneEditEvent;
 
 public final class RedstoneGuiProbe {
     public static void check(ServerLevel level,JsonObject report,boolean baseline) {

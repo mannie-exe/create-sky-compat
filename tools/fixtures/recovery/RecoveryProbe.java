@@ -7,7 +7,7 @@ import com.b1n_ry.yigd.data.DeathInfoManager;
 import com.b1n_ry.yigd.data.GraveStatus;
 import com.google.gson.*;
 import com.mojang.authlib.GameProfile;
-import design.inherent.createskycompat.recovery.*;
+import design.inherent.skyweavecompat.recovery.*;
 import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.api.physics.constraint.FixedConstraintConfiguration;
 import dev.ryanhcode.sable.api.physics.constraint.PhysicsConstraintHandle;
@@ -87,7 +87,7 @@ public final class RecoveryProbe {
                     ((EntityMovementExtension)actor).sable$setTrackingSubLevel(ship);
                     actor.setOnGround(true);
                     NeoForge.EVENT_BUS.post(new PlayerTickEvent.Post(actor));
-                    require(actor.getPersistentData().contains("create_sky_compat:deck_support"), "support not recorded: grounded="+actor.onGround()
+                    require(actor.getPersistentData().contains("skyweave_compat:deck_support"), "support not recorded: grounded="+actor.onGround()
                             +" tracking="+dev.ryanhcode.sable.Sable.HELPER.getTrackingSubLevel(actor)
                             +" feet="+feet+" inverse="+ship.logicalPose().transformPositionInverse(actor.position())
                             +" center="+center+" state="+level.getBlockState(center)
@@ -163,7 +163,7 @@ public final class RecoveryProbe {
             ((EntityMovementExtension)actor).sable$setTrackingSubLevel(trialShip);
             actor.setOnGround(true);
             NeoForge.EVENT_BUS.post(new PlayerTickEvent.Post(actor));
-            require(actor.getPersistentData().contains("create_sky_compat:deck_support"), "trial support missing");
+            require(actor.getPersistentData().contains("skyweave_compat:deck_support"), "trial support missing");
             if (tick == 20) SubLevelContainer.getContainer(level).removeSubLevel(trialShip, SubLevelRemovalReason.REMOVED);
             protect = tick == 100;
             actor.getInventory().clearContent();

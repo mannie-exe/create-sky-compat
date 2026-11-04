@@ -17,7 +17,7 @@ artifact hashes, viewing angles, and native logs with the result. Unpause physic
 only when deliberately testing movement in this disposable scene.
 
 Optional telemetry: build `clientProbeJar`, install only its fixture JAR in the test
-client, and launch with `-Dcreate_sky_compat.probe.rendering=true`.
+client, and launch with `-Dskyweave_compat.probe.rendering=true`.
 `CLIENT_FLIGHT_PROBE` records valid balloon capacity, predicted volume, render-region
 presence and construct bounds. Remove the probe after testing.
 

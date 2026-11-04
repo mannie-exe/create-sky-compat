@@ -83,10 +83,10 @@ if args.natural_profile != 'current' and not args.natural:
     parser.error('--natural-profile requires --natural')
 server = args.server.expanduser().resolve()
 version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines() if line.startswith('mod_version='))
-mod = ROOT / f'build/libs/create-sky-compat-{version}-mc1.21.1-neoforge.jar'
+mod = ROOT / f'build/libs/skyweave-compat-{version}-mc1.21.1-neoforge.jar'
 if args.mod:
     mod = args.mod.expanduser().resolve()
-fixture = ROOT / 'build/probe/create-sky-compat-probe.jar'
+fixture = ROOT / 'build/probe/skyweave-compat-probe.jar'
 output = ROOT / 'build/verification'
 output.mkdir(parents=True, exist_ok=True)
 name = f'islands-{args.seed}' if args.islands else f'mechanics-{args.seed}' if args.mechanics else f'biomes-{args.seed}' if args.biomes else f'generation-{args.generation}-{args.seed}' if args.generation else 'terrain' if args.terrain else f'natural-{args.natural_profile}-{args.seed}' if args.natural else 'placement'
@@ -113,23 +113,24 @@ if args.minimal:
 if args.audio: name = f'audio-{args.audio}'
 report = output / (name + '.json')
 report.unlink(missing_ok=True)
-with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
+with tempfile.TemporaryDirectory(prefix='skyweave-compat-') as directory:
     run = Path(directory)
     (run / 'libraries').symlink_to(server / 'libraries', target_is_directory=True)
     (run / 'mods').mkdir()
     for source in (server / 'mods').glob('*.jar'):
-        if source.name.startswith(('create-sky-compat-', 'sky-village-neighbors-', 'veil-iris-fix-')):
+        with zipfile.ZipFile(source) as jar:
+            metadata = (tomllib.loads(jar.read('META-INF/neoforge.mods.toml').decode())
+                        if 'META-INF/neoforge.mods.toml' in jar.namelist() else {})
+        ids = {mod['modId'] for mod in metadata.get('mods', [])}
+        # Empack bindings may use unversioned filenames; identity comes from metadata.
+        if ids & {'skyweave_compat', 'create_sky_compat', 'sky_village_neighbors', 'veil_iris_fix'}:
             continue
         if args.minimal or (args.audio and args.audio != 'full'):
             selected = {'sky_archipelago'}
             if args.audio in ('create', 'pair'): selected.add('create')
             if args.audio in ('analog', 'pair'): selected.add('analogaudio')
-            with zipfile.ZipFile(source) as jar:
-                if 'META-INF/neoforge.mods.toml' not in jar.namelist():
-                    continue
-                metadata = tomllib.loads(jar.read('META-INF/neoforge.mods.toml').decode())
-                if not any(mod['modId'] in selected for mod in metadata.get('mods', [])):
-                    continue
+            if not ids & selected:
+                continue
         (run / 'mods' / source.name).symlink_to(source)
     if args.minimal and len(list((run / 'mods').glob('*.jar'))) != 1:
         raise SystemExit('Minimal run requires exactly one installed Sky Archipelago JAR')
@@ -143,7 +144,7 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
         if not args.minimal and args.audio in (None, 'full') and (server / folder).exists():
             shutil.copytree(server / folder, run / folder)
     (run / 'config').mkdir(exist_ok=True)
-    feature_file = run / 'config/create_sky_compat-features.properties'
+    feature_file = run / 'config/skyweave_compat-features.properties'
     feature_settings = {}
     if feature_file.exists():
         for line in feature_file.read_text().splitlines():
@@ -163,21 +164,21 @@ with tempfile.TemporaryDirectory(prefix='create-sky-compat-') as directory:
         (bluemap / 'webserver.conf').write_text('enabled: false\n')
         (bluemap / 'core.conf').write_text('accept-download: false\nmetrics: false\n')
 
-    (run / 'config/create_sky_compat-common.toml').write_text(
+    (run / 'config/skyweave_compat-common.toml').write_text(
         f'minimumGap = 64\nmaximumGap = {args.maximum_gap}\nminimumIslandRadius = 96\n')
     if args.generation_config:
-        shutil.copy2(args.generation_config.expanduser().resolve(), run / 'config/create_sky_compat-generation.json')
+        shutil.copy2(args.generation_config.expanduser().resolve(), run / 'config/skyweave_compat-generation.json')
     if args.interior_config:
-        shutil.copy2(args.interior_config.expanduser().resolve(), run / 'config/create_sky_compat-interiors.json')
+        shutil.copy2(args.interior_config.expanduser().resolve(), run / 'config/skyweave_compat-interiors.json')
     if args.water_config:
-        shutil.copy2(args.water_config.expanduser().resolve(), run / 'config/create_sky_compat-water.json')
+        shutil.copy2(args.water_config.expanduser().resolve(), run / 'config/skyweave_compat-water.json')
     if args.ocean_config:
-        shutil.copy2(args.ocean_config.expanduser().resolve(), run / 'config/create_sky_compat-oceans.json')
+        shutil.copy2(args.ocean_config.expanduser().resolve(), run / 'config/skyweave_compat-oceans.json')
     # Reuse the owner's existing EULA acceptance; never create acceptance implicitly.
     shutil.copy2(server / 'eula.txt', run / 'eula.txt')
-    preset = {'current': 'sky_archipelago:sky_islands', 'adapted': 'create_sky_compat:islands_v1', 'vanilla': 'minecraft:normal'}.get(args.generation, ('create_sky_compat:islands_v1' if args.natural_profile == 'adapted' else 'sky_archipelago:sky_islands') if args.natural else 'minecraft:flat')
-    if args.structures or args.surface_structures or args.coverage or args.benchmark or args.biomes or args.surface_climate or args.mechanics or args.islands or args.chunk_futures or args.dh_pregen: preset = 'create_sky_compat:islands_v1'
-    if args.interiors or args.veins or args.water or args.materials or args.oceans: preset = 'create_sky_compat:islands_v1'
+    preset = {'current': 'sky_archipelago:sky_islands', 'adapted': 'skyweave_compat:islands_v1', 'vanilla': 'minecraft:normal'}.get(args.generation, ('skyweave_compat:islands_v1' if args.natural_profile == 'adapted' else 'sky_archipelago:sky_islands') if args.natural else 'minecraft:flat')
+    if args.structures or args.surface_structures or args.coverage or args.benchmark or args.biomes or args.surface_climate or args.mechanics or args.islands or args.chunk_futures or args.dh_pregen: preset = 'skyweave_compat:islands_v1'
+    if args.interiors or args.veins or args.water or args.materials or args.oceans: preset = 'skyweave_compat:islands_v1'
     (run / 'server.properties').write_text('\n'.join([
         'server-ip=127.0.0.1', 'server-port=0', 'online-mode=false',
         'level-name=probe-world', f'level-type={preset}', f'level-seed={args.seed}',

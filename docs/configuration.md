@@ -1,8 +1,14 @@
 # Configuration
 
+## Release identity and existing saves
+
+Skyweave Compat 0.20.0 uses `skyweave_compat` resources and configuration filenames. Install it in a fresh instance and create a fresh world. Old `create_sky_compat` registry identities are not aliases; keep existing Create Sky Compat worlds on their original release. The generation guard rejects `create-sky-generation.json`, including when terrain is disabled. Never rename or delete that marker to bypass the guard. Config values may be copied deliberately to the corresponding new files before creating a world; existing files are not silently imported.
+
+The interior noise salt `create_sky_compat:interiors` remains an opaque deterministic input so the same seed retains its terrain algorithm. DH's `create-sky-lod-world-id` marker and `csky_` cache key format remain persistence contracts, preserving existing cache discovery. They are not public resource aliases. Other serialized owned IDs, including grave recovery metadata, use the new namespace only; this release does not convert existing saved data.
+
 ## Adaptation switches
 
-`config/create_sky_compat-features.properties` is the authoritative startup feature
+`config/skyweave_compat-features.properties` is the authoritative startup feature
 file. It is created when absent; supplied values are preserved. Use literal `true`
 or `false`. Unknown keys, duplicates, and invalid values fail with an explanation.
 Missing keys use their documented defaults. Restart the entire game/server after
@@ -93,7 +99,7 @@ providing separate class-loading switches.
 
 ## Village tuning
 
-`config/create_sky_compat-common.toml` is registered only when a village adaptation
+`config/skyweave_compat-common.toml` is registered only when a village adaptation
 is active. NeoForge's client config screen edits its distances. The startup feature
 file owns activation, including `villages.clearance`; the tuning file does not
 contain a second enable switch.
@@ -111,8 +117,8 @@ captured at server startup; existing structures are not moved or removed.
 
 ## Island geometry
 
-`config/create_sky_compat-generation.json` is created at startup and applies only
-to **Create Sky Islands**. Edit it with the game/server stopped; restart the whole
+`config/skyweave_compat-generation.json` is created at startup and applies only
+to **Skyweave Islands**. Edit it with the game/server stopped; restart the whole
 process to reload it. It is separate from the NeoForge village settings screen.
 Use matching files on client and server. Geometry changes require a fresh world;
 the saved identity rejects changes to an existing world.
@@ -153,7 +159,7 @@ Ordinary Sky Archipelago worlds continue to use upstream controls.
 
 ## Island interiors
 
-`config/create_sky_compat-interiors.json` controls interior selection in Create Sky
+`config/skyweave_compat-interiors.json` controls interior selection in Skyweave
 Islands. It is generated at startup, applies only to the opted-in preset, and is
 part of saved generation identity. Restart with a fresh world after changing it.
 All fields are required; invalid values and unknown fields fail explicitly.
@@ -177,7 +183,7 @@ the preset's native `ore_veins_enabled` setting independently of cavity selectio
 
 ## Local water
 
-`config/create_sky_compat-water.json` controls local water regions in Create Sky
+`config/skyweave_compat-water.json` controls local water regions in Skyweave
 Islands. It is generated at startup and included in saved generation identity.
 All fields are required; changes require a fresh world. This does not enable
 Sky Archipelago's global ocean or change the world's sea level.
@@ -205,7 +211,7 @@ setting does not make every basin an ocean or populate it with all aquatic mobs.
 
 ## Ocean experiments
 
-`config/create_sky_compat-oceans.json` is generated with `enabled: false`. It controls
+`config/skyweave_compat-oceans.json` is generated with `enabled: false`. It controls
 experimental local ocean habitats in the opted-in preset, independently of the
 global ocean layer. All fields are required and included in saved generation identity.
 Use a fresh test world when enabling or changing these settings.
@@ -236,7 +242,7 @@ records the tested scope.
 
 ## Biome materials
 
-The `create_sky_compat:surface_mud` biome tag selects mud for the upper three soil
+The `skyweave_compat:surface_mud` biome tag selects mud for the upper three soil
 blocks where upstream selected grass/dirt. It contains `minecraft:mangrove_swamp`
 by default. Existing Sky Archipelago surface-override tags take precedence;
 openings, fluids and deeper rock are preserved. Override the tag in a datapack
@@ -256,7 +262,7 @@ matches a sky category token.
 
 The neighbor filter uses the resolved terrain settings and island field. In ordinary
 Sky Archipelago worlds it works with upstream spacing modes without changing them.
-Create Sky Islands uses the geometry profile above. Neither path overrides biome
+Skyweave Islands uses the geometry profile above. Neither path overrides biome
 eligibility.
 
 ## Tuning
@@ -266,7 +272,7 @@ villages closer, at the cost of more clusters without a village. Decrease
 `minimumIslandRadius` to allow small islands to qualify as hosts. Increase
 `minimumGap` to leave a wider void around villages.
 
-In the versioned Create Sky preset, each anchor receives a deterministic allowance
+In the versioned Skyweave preset, each anchor receives a deterministic allowance
 of 0–3 villages. The weights are 96:24:8:3: approximately 73.3% receive zero, 18.3%
 one, 6.1% two and 2.3% three. Companions share their anchor's allowance. These are
 maximums, not promised counts: biome, layout and clearance rules can reject a site.
@@ -279,9 +285,9 @@ structure-set datapack. The neighbor rule only filters those candidates.
 ## BlueMap viewer
 
 On a dedicated server with BlueMap 5.7, edit
-`config/create_sky_compat-bluemap.json`. The mod default selects no maps. Add map
+`config/skyweave_compat-bluemap.json`. The mod default selects no maps. Add map
 IDs to `maps` to opt in; only maps of the running Sky Archipelago Overworld qualify.
-Both the ordinary Sky Archipelago generator and Create Sky Islands are supported.
+Both the ordinary Sky Archipelago generator and Skyweave Islands are supported.
 The current world's actual vertical bounds are used. Nether, End and foreign
 generators retain the original viewer.
 
@@ -324,9 +330,9 @@ See [DH implementation](development/lod.md) for boundaries and update checks.
 
 ## Questlog
 
-`config/create_sky_compat-journal-client.toml` is registered when either client
+`config/skyweave_compat-journal-client.toml` is registered when either client
 journal feature is active. The Settings bookmark opens grouped Display and
-Notifications preferences. Mods → Create Sky Compat → Config → Client → Questlog
+Notifications preferences. Mods → Skyweave Compat → Config → Client → Questlog
 edits the same values. Changes save locally and apply without restart.
 The three startup switches remain independent.
 
@@ -342,7 +348,7 @@ switch does not affect native automatic rewards or change inventory overflow rul
 
 Notifications honor `toast_on_complete` exclusions. First-progress notices use
 that same flag unless a quest definition explicitly supplies
-`"create_sky_compat": {"toast_on_progress": false}` (or `true`). This optional
+`"skyweave_compat": {"toast_on_progress": false}` (or `true`). This optional
 metadata is not required by ordinary journals. Keep it in the owning authoring
 source if used; do not hand-edit generated quest files. With the notification
 adapter enabled, native unlock popups/toasts are suppressed. There are no notices
@@ -357,7 +363,7 @@ though its NeoForge metadata does not declare that prerequisite.
 
 ## Configuration interface
 
-Open **Mods → Create Sky Compat → Config**. The sidebar groups local settings by
+Open **Mods → Skyweave Compat → Config**. The sidebar groups local settings by
 Client, Server / shared, and World generation, then by mod. Shared entries identify
 which sides need the fix; these categories do not change loader requirements.
 
