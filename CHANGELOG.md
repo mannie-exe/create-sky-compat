@@ -2,11 +2,21 @@
 
 Generated from Git history. Player-facing release summaries are in [release notes](RELEASE_NOTES.md).
 
+## v0.21.1 · 2026-11-05
+
+### Build and verification
+
+- Qualify Colorwheel 1.3.2 and NeoForge 265 ([c02ca54](https://github.com/mannie-exe/skyweave-compat/commit/c02ca5417b877be2698016e62d62373d904358b6))
+
 ## v0.21.0 · 2026-11-05
 
 ### Features
 
 - Assemble verified shaders on clients ([b92d6c7](https://github.com/mannie-exe/skyweave-compat/commit/b92d6c746aeb14e4070d961fcec6dc0fb722d386))
+
+### Maintenance
+
+- Prepare compatibility release 0.21.0 ([e05f8e6](https://github.com/mannie-exe/skyweave-compat/commit/e05f8e6a9bc8326cdfa4db92bd23275f24bebef6))
 
 ## v0.20.1 · 2026-11-05
 
