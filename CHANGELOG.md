@@ -2,12 +2,17 @@
 
 Generated from Git history. Player-facing release summaries are in [release notes](RELEASE_NOTES.md).
 
+## v0.21.0 · 2026-11-05
+
+### Features
+
+- Assemble verified shaders on clients ([b92d6c7](https://github.com/mannie-exe/skyweave-compat/commit/b92d6c746aeb14e4070d961fcec6dc0fb722d386))
+
 ## v0.20.1 · 2026-11-05
 
 ### Fixes
 
 - Correct public compatibility mod names ([c1a9c97](https://github.com/mannie-exe/skyweave-compat/commit/c1a9c97c6b4cfbe5a3e93327bb22f7a0483a846c))
-
 
 ## v0.20.0 · 2026-11-04
 
