@@ -27,9 +27,9 @@ def main():
     version = next(line.split('=', 1)[1] for line in (ROOT / 'gradle.properties').read_text().splitlines()
                    if line.startswith('mod_version='))
     mod = args.mod or ROOT / f'build/libs/skyweave-compat-{version}-mc1.21.1-neoforge.jar'
-    launch = list((server / 'libraries/net/neoforged/neoforge').glob('21.1.264/unix_args.txt'))
+    launch = list((server / 'libraries/net/neoforged/neoforge').glob('21.1.265/unix_args.txt'))
     if len(launch) != 1:
-        parser.error('Expected the supported NeoForge 21.1.264 launch configuration')
+        parser.error('Expected the supported NeoForge 21.1.265 launch configuration')
     output = ROOT / 'build/verification'
     output.mkdir(parents=True, exist_ok=True)
     report = {'scenario': args.scenario, 'artifact': str(mod), 'sha256': hashlib.sha256(mod.read_bytes()).hexdigest()}

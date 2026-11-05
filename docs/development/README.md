@@ -6,7 +6,7 @@ Use JDK 21 and the checked-in Gradle wrapper:
 ./gradlew --no-daemon check build
 ```
 
-The target is Minecraft 1.21.1 / NeoForge 21.1.264. Sky Archipelago 1.3.6 and
+The target is Minecraft 1.21.1 / NeoForge 21.1.265. Sky Archipelago 1.3.6 and
 Sky Villages 1.0.6 are pinned by Modrinth version ID and SHA-256. They are downloaded
 for compilation/testing, not redistributed. Architectury 13.0.11 is included in
 the development runtime for Sky Villages. Output is in `build/libs`.

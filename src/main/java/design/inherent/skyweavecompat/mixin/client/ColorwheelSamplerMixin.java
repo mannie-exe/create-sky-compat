@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.At;
 /** Unsupported OIT never binds its textures; do not starve Iris of those unused units. */
 @Mixin(targets = "dev.djefrey.colorwheel.compile.ClrwlProgram", remap = false)
 public abstract class ColorwheelSamplerMixin {
-    // Colorwheel 1.3.0 reserves base slots 0..6, OIT depth/noise 7..8 and coefficients 9+.
+    // Colorwheel reserves base slots 0..6, OIT depth/noise 7..8 and coefficients 9+.
     @Unique private static final int SKYWEAVE_FIRST_OIT_UNIT = 7;
 
     @WrapOperation(method = "postLink", at = @At(value = "INVOKE",

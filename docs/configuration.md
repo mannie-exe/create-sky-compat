@@ -74,8 +74,8 @@ inactive selections.
 | `rendering.text_display_lighting` | Neutral text-display lighting; later shader color processing remains | Client, Iris version above; default on |
 | `rendering.nametag_lighting` | Neutral base-renderer nametag lighting; later shader color processing remains | Client, Iris version above; default on |
 | `rendering.construct_material_ids` | Annotate construct shader materials | Client, Sable 2.0.6, Iris version above, Sodium 0.8.13+mc1.21.1 |
-| `rendering.colorwheel_samplers` | Release unused OIT sampler slots when Colorwheel disables OIT | Client, Colorwheel 1.3.0+mc1.21.1, Iris version above, Flywheel 1.0.6; independent of Sable |
-| `rendering.colorwheel_materials` | Colorwheel terrain/emission metadata on direct construct draws | Client, active `rendering.construct_material_ids`, Colorwheel 1.3.0+mc1.21.1 |
+| `rendering.colorwheel_samplers` | Release unused OIT sampler slots when Colorwheel disables OIT | Client, Colorwheel 1.3.2+mc1.21.1, Iris version above, Flywheel 1.0.6; independent of Sable |
+| `rendering.colorwheel_materials` | Colorwheel terrain/emission metadata on direct construct draws | Client, active `rendering.construct_material_ids`, Colorwheel 1.3.2+mc1.21.1 |
 | `rendering.single_block_model_data` | Match model data used for layer selection and tessellation | Client, Sable 2.0.6 |
 | `rendering.single_block_passes` | Draw single-block geometry in its current Iris terrain pass | Client, Sable 2.0.6, Iris 1.8.14-beta.1+mc1.21.1, Sodium 0.8.13+mc1.21.1 |
 | `macaw.bridge_lantern_shape` | Hanging stair-lantern outline and selection; matching resource model required, default on | Shared, Macaw’s Bridges 3.1.2 |

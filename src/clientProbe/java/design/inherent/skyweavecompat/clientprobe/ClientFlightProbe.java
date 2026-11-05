@@ -19,6 +19,7 @@ public final class ClientFlightProbe {
     public ClientFlightProbe() {
         if (Boolean.getBoolean("skyweave_compat.probe.resources")) {
             new ClientResourcesProbe();
+            if (Boolean.getBoolean("skyweave_compat.probe.colorwheel")) new ClientColorwheelProbe();
             if (Boolean.getBoolean("skyweave_compat.probe.configuration")) new ClientConfigurationProbe();
             return;
         }

@@ -218,7 +218,7 @@ class FeatureSelectionTest {
             Map.entry("create", "6.0.10"), Map.entry("veil", "4.3.2"),
             Map.entry("iris", "1.8.14-beta.1+mc1.21.1"), Map.entry("sodium", "0.8.13+mc1.21.1"),
             Map.entry("sabledynlights", "2.0.1"), Map.entry("lambdynlights", "4.8.11+1.21.1"),
-            Map.entry("flywheel", "1.0.6"), Map.entry("colorwheel", "1.3.0+mc1.21.1"),
+            Map.entry("flywheel", "1.0.6"), Map.entry("colorwheel", "1.3.2+mc1.21.1"),
             Map.entry("aeronautics", "1.3.2"), Map.entry("questlog", "3.5.0"));
 
     @Test void colorwheelBridgeRequiresItsOwnerAndRespectsAbsenceDisableAndSide() {
@@ -262,7 +262,7 @@ class FeatureSelectionTest {
 
     @Test void colorwheelSamplerRepairNeedsNeitherSableNorTerrain() {
         var settings = only(Feature.COLORWHEEL_SAMPLERS);
-        var versions = new HashMap<>(Map.of("colorwheel", "1.3.0+mc1.21.1",
+        var versions = new HashMap<>(Map.of("colorwheel", "1.3.2+mc1.21.1",
                 "iris", "1.8.14-beta.1+mc1.21.1", "flywheel", "1.0.6"));
         assertEquals(java.util.List.of("client.ColorwheelSamplerMixin"),
                 FeatureSelection.select(settings, versions, true).mixins(true));

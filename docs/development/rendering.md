@@ -253,11 +253,15 @@ establish correct Ponder previews, Copycat normals, or shadow-map projection.
 
 ## Colorwheel
 
-Colorwheel 1.3.0+mc1.21.1 supplies shader-aware Flywheel backends. The optional
+The 1.3.2 buffer/DSA repairs do not replace the adapters below. Its inspected
+`ClrwlProgram` sampler registration and `GlCompat` capability policy retain the
+1.3.0 behavior; recheck those owners before retiring either adaptation.
+
+Colorwheel 1.3.2+mc1.21.1 supplies shader-aware Flywheel backends. The optional
 `rendering.colorwheel_materials` bridge requires the existing construct-material
 adaptation and is selected only on physical clients. Its compile artifact is
-Modrinth `8rq5KP4U`, SHA-256
-`3c7c1f91b1add47053f40a58375de492b87ce83309be378527f100cb842c07c0`.
+Modrinth `lV874ox8`, SHA-256
+`6f881290ff7f71e36bba189d87c31fb104c668f01aac19ac0d003fac3cc1cd5f`.
 
 Colorwheel wraps NeoForge `ModelBlockRenderer.tesselateBlock`, but Sable 2.0.6's
 platform calls `tesselateWithoutAO` directly. The existing Skyweave: Compatibility Patches scope reaches

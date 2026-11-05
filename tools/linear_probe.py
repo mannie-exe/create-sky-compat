@@ -114,7 +114,7 @@ def main():
             shutil.copy2(path, run / 'mods' / path.name)
         libraries = args.server / 'libraries'
         (run / 'libraries').symlink_to(libraries, target_is_directory=True)
-        game = libraries / 'net/neoforged/neoforge/21.1.264/neoforge-21.1.264-server.jar'
+        game = libraries / 'net/neoforged/neoforge/21.1.265/neoforge-21.1.265-server.jar'
         dependencies = list((ROOT / 'build/dependencies').glob('*.jar'))
         classpath = ':'.join(map(str, [game, *sorted(libraries.rglob('*.jar')), *sorted((run / 'mods').glob('*.jar')), *dependencies, *[p.resolve() for p in [args.redstone_gui, args.redstone_additions] if p]]))
         classes = run / 'classes'
@@ -176,7 +176,7 @@ def main():
                        f'-Dredstone.review.baseline={str(args.redstone_baseline).lower()}',
                        f'-Dlinkage.review.baseline={str(args.linkage_baseline).lower()}',
                        f'-Dlinear.review.reopen={str(args.scenario == "reopen").lower()}',
-                       '@' + str(libraries / 'net/neoforged/neoforge/21.1.264/unix_args.txt'), 'nogui']
+                       '@' + str(libraries / 'net/neoforged/neoforge/21.1.265/unix_args.txt'), 'nogui']
             with (output / f'{phase}.log').open('w') as log:
                 result = subprocess.run(command, cwd=run, stdout=log, stderr=subprocess.STDOUT, timeout=180)
             if args.scenario == 'recovery' and (run / 'config/yigd.json').is_file():

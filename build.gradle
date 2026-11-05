@@ -22,7 +22,7 @@ repositories {
     }
 }
 neoForge {
-    version = '21.1.264'
+    version = '21.1.265'
     runs {
         client { client(); gameDirectory = file('runs/client') }
         server { server(); gameDirectory = file('runs/server'); programArgument '--nogui' }
@@ -60,8 +60,8 @@ dependencies {
     compileOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
     testRuntimeOnly('maven.modrinth:linear-bearing:8SJdnoXS') { transitive = false }
     flywheelSource('maven.modrinth:create:UjX6dr61') { transitive = false }
-    compileOnly('maven.modrinth:colorwheel:8rq5KP4U') { transitive = false }
-    testRuntimeOnly('maven.modrinth:colorwheel:8rq5KP4U') { transitive = false }
+    compileOnly('maven.modrinth:colorwheel:lV874ox8') { transitive = false }
+    testRuntimeOnly('maven.modrinth:colorwheel:lV874ox8') { transitive = false }
     compileOnly('maven.modrinth:create:UjX6dr61') { transitive = false }
     testRuntimeOnly('maven.modrinth:create:UjX6dr61') { transitive = false }
     compileOnly('maven.modrinth:sable-dynamic-lights:vjb0hAWB') { transitive = false }
@@ -176,7 +176,7 @@ tasks.register('verifyUpstream') {
             it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'colorwheel'
         }?.file
         if (colorwheel == null || java.security.MessageDigest.getInstance('SHA-256').digest(colorwheel.bytes).encodeHex().toString()
-                != '3c7c1f91b1add47053f40a58375de492b87ce83309be378527f100cb842c07c0') {
+                != '6f881290ff7f71e36bba189d87c31fb104c668f01aac19ac0d003fac3cc1cd5f') {
             throw new GradleException('Unexpected Colorwheel compile-only dependency')
         }
 

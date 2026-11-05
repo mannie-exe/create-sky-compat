@@ -42,7 +42,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |
 | Iris | 1.8.14-beta.1+mc1.21.1 | Independent neutral lighting and shadow exclusions for text displays and entity nametags |
 | Aeronautics + Iris | 1.3.2 + the Iris version above | Exclude the balloon hot-air overlay from shadow rendering |
-| Colorwheel | 1.3.0+mc1.21.1 | Separate non-OIT sampler allocation and direct Sable material metadata repairs |
+| Colorwheel | 1.3.2+mc1.21.1 | Separate non-OIT sampler allocation and direct Sable material metadata repairs |
 | Sable + Iris + Sodium | 2.0.6 + the Iris version above + 0.8.13+mc1.21.1 | Shader block IDs and single-block render passes |
 
 Remove Veil Iris Fix when enabling the incorporated framebuffer adaptation.

@@ -1,5 +1,37 @@
 # Verification
 
+## 0.21.1 dependency qualification
+
+Verified on 2026-11-05 with Java 21.0.13, Apple Silicon, Minecraft 1.21.1,
+NeoForge 21.1.265 and Colorwheel 1.3.2+mc1.21.1. Candidate JAR SHA-256:
+`99fe10b41446785c1b83f41b26fb019fd4a8bcdb95b5fcdaf80fda01c574fc9e`.
+`./gradlew --no-daemon check build clientProbeJar probeJar` passes 137 Java tests,
+release-tool checks, exact dependency verification, transformed targets and
+artifact boundaries. Standalone and full-pack dedicated-server startup passed;
+the full check used this exact candidate.
+
+Minimal and full adapted-generation fixtures generated and reopened seed 42 with
+matching ore counts on NeoForge 21.1.265 using this exact candidate. They do not
+constitute a new terrain survey or Sky Archipelago 1.4 qualification.
+
+The isolated full client loaded the updated resource stack and selected
+`flywheel:instancing` without shaders and `colorwheel:instancing` with shaders.
+On the 16-texture-unit Apple driver, the native direct-buffer probe observed
+terrain metadata and packed emission 15 while emitting four vertices. Static and
+assembled material samples rendered under generated BSL 10.1.8 / Colorwheel
+Patcher 1.0.5 and Complementary Unbound 5.9.3 / Euphoria 1.10.5 / Skyweave 0.1.0.
+Shader switching and the small glass/Copycat fixture also rendered. This is not a
+repeat of moving-flight, every glass boundary, FA entity animation, inventory
+interaction or GPU performance testing. Photon remains untested on Apple hardware.
+
+The shader-lab check passes with this runner. Author and recipient archives have
+identical paths and decompressed payloads; their ZIP bytes differ, so this pass
+does not establish byte-identical archives across the two Java environments.
+Veil logs unsupported boolean-uniform warnings during shader linkage; no causal
+rendering failure was established and those warnings are not claimed repaired.
+Native images and state records are retained in the local harness under
+`images/2026-11-05-dependency-upgrade/`.
+
 ## 0.21.0 shader assembly and glass integration
 
 Java 21.0.13 on Apple Silicon, Minecraft 1.21.1 and NeoForge 21.1.264:

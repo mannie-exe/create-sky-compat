@@ -129,8 +129,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case BALLOON -> Map.of("aeronautics", "1.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
             case TEXT_DISPLAY_LIGHTING, NAMETAG_LIGHTING, TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW -> Map.of("iris", "1.8.14-beta.1+mc1.21.1");
             case MATERIAL_IDS, SINGLE_BLOCK_PASSES -> Map.of("sable", "2.0.6", "iris", "1.8.14-beta.1+mc1.21.1", "sodium", "0.8.13+mc1.21.1");
-            case COLORWHEEL_SAMPLERS -> Map.of("colorwheel", "1.3.0+mc1.21.1", "iris", "1.8.14-beta.1+mc1.21.1", "flywheel", "1.0.6");
-            case COLORWHEEL_MATERIALS -> Map.of("colorwheel", "1.3.0+mc1.21.1");
+            case COLORWHEEL_SAMPLERS -> Map.of("colorwheel", "1.3.2+mc1.21.1", "iris", "1.8.14-beta.1+mc1.21.1", "flywheel", "1.0.6");
+            case COLORWHEEL_MATERIALS -> Map.of("colorwheel", "1.3.2+mc1.21.1");
             case LIGHTING_LIFECYCLE -> Map.of("sabledynlights", "2.0.1", "lambdynlights", "4.8.11+1.21.1", "create", "6.0.10");
             case SODIUM_LIGHTING -> Map.of("sabledynlights", "2.0.1", "lambdynlights", "4.8.11+1.21.1",
                     "sodium", "0.8.13+mc1.21.1", "create", "6.0.10");

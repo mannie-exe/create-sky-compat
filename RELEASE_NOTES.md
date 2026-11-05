@@ -1,9 +1,13 @@
-# Skyweave: Compatibility Patches 0.20.1
+# Skyweave: Compatibility Patches 0.21.1
 
-Correct the mod-list name, configuration heading, built-in resource descriptions, diagnostics, release title, and documentation. The mod ID, package, config filenames, feature switches, and behavior remain unchanged from 0.20.0.
+Qualify the existing optional Colorwheel adapters for 1.3.2 and target NeoForge
+21.1.265 in development builds and native probes. Retain the sampler/material
+repairs; the upstream buffer and DSA fixes do not replace them. Shader recipes
+must declare the corresponding Colorwheel runtime version.
 
-Existing 0.20.0 worlds retain their registry identity. Worlds created with Create Sky Compat 0.19.0 or earlier still require their original release; this update does not convert them or bypass the generation guard.
+Terrain generation remains on Sky Archipelago 1.3.6. No world identity,
+configuration defaults or shader assembly algorithm changes are included.
 
-Build/package checks and disposable dedicated-server startup are verified in [verification](docs/development/verification.md). Interactive client rendering was not rechecked for this text-only update.
-
-Previous release: [0.20.0](docs/releases/0.20.0.md).
+See [verification](docs/development/verification.md) for the candidate artifact,
+native rendering scope and remaining limits. Previous release:
+[0.21.0](docs/releases/0.21.0.md).
