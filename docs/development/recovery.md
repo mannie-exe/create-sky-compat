@@ -4,7 +4,7 @@
 also run on integrated servers; Create, Aeronautics and island generation are not
 prerequisites. YiGD item and XP storage must both be enabled for adapted deaths.
 
-YiGD owns inventories, experience, grave identity, ownership, and claim state. Compat records support and construct references, not another copy of grave contents. Normal world deaths retain YiGD placement. Deaths on a supported Sable deck and void deaths following a verified deck departure use construct-aware placement.
+YiGD owns inventories, experience, grave identity, ownership, and claim state. Skyweave: Compatibility Patches records support and construct references, not another copy of grave contents. Normal world deaths retain YiGD placement. Deaths on a supported Sable deck and void deaths following a verified deck departure use construct-aware placement.
 
 ## Placement contract
 

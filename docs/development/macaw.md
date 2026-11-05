@@ -4,7 +4,7 @@
 
 ## Ownership
 
-The resource pack owns the visible model. Compat owns the outline and selection correction; it includes no Macaw or Better Lanterns assets. `LanternLayout` records the approved model envelope in pixels. The canonical east-facing bounds rotate around the block center using the native blockstate rotations. Update this layout and the pack recipe together.
+The resource pack owns the visible model. Skyweave: Compatibility Patches owns the outline and selection correction; it includes no Macaw or Better Lanterns assets. `LanternLayout` records the approved model envelope in pixels. The canonical east-facing bounds rotate around the block center using the native blockstate rotations. Update this layout and the pack recipe together.
 
 The lantern body extends below the owning cell and slightly past one horizontal face. Changing `getShape` alone leaves rays that never visit the owner unable to select it. A native shape-only check confirmed that a direct outline intersection can coexist with a world-ray miss.
 

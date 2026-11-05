@@ -43,6 +43,6 @@ activation changes. Background startup and transformed-bytecode checks do not
 replace native client checks when rendering behavior changes.
 
 The pack owns static resource/model patches and its explicit feature selections.
-Compat owns runtime hooks. The Atlas consumes runtime exports, not this adapter
+Skyweave: Compatibility Patches owns runtime hooks. The Atlas consumes runtime exports, not this adapter
 reference; shader IDs are not recipe or weight data. Update the owning pack/app
 pipeline only when its actual inputs or interpretation change.

@@ -12,7 +12,7 @@ public final class GenerationIdentity {
     public static void rejectLegacy(Path world) {
         if (Files.exists(world.resolve("create-sky-generation.json"), LinkOption.NOFOLLOW_LINKS)) {
             throw new IllegalStateException("This world uses Create Sky Compat registry identities. "
-                    + "Open it with its original release; Skyweave Compat requires a separate fresh world.");
+                    + "Open it with its original release; Skyweave: Compatibility Patches requires a separate fresh world.");
         }
     }
 

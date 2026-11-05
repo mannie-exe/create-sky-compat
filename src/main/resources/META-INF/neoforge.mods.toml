@@ -5,7 +5,7 @@ issueTrackerURL="https://github.com/mannie-exe/skyweave-compat/issues"
 [[mods]]
 modId="skyweave_compat"
 version="${version}"
-displayName="Skyweave Compat"
+displayName="Skyweave: Compatibility Patches"
 authors="mannie-exe"
 displayURL="https://github.com/mannie-exe/skyweave-compat"
 description='''Optional, individually configurable terrain, gameplay, and rendering adaptations. The Skyweave modpack is not required.'''

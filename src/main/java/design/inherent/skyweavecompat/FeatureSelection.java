@@ -56,16 +56,16 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 String version = mods.get(entry.getKey()), expected = entry.getValue();
                 if (!(expected.endsWith(".") ? version.startsWith(expected) : version.equals(expected))
                         && !(entry.getKey().equals("questlog") && expected.equals("3.5.0") && version.equals("3.5.3")))
-                    throw new IllegalStateException("Skyweave Compat " + feature.key + " requires "
+                    throw new IllegalStateException("Skyweave: Compatibility Patches " + feature.key + " requires "
                             + entry.getKey() + " " + expected + "; found " + version
                             + ". Disable this adaptation in " + FeatureSettings.FILE + " or install the supported version.");
             }
             if (feature == Feature.FRAMEBUFFER && mods.containsKey("veil_iris_fix"))
-                throw new IllegalStateException("Remove Veil Iris Fix: its framebuffer correction is included in Skyweave Compat. "
+                throw new IllegalStateException("Remove Veil Iris Fix: its framebuffer correction is included in Skyweave: Compatibility Patches. "
                         + "Alternatively disable " + feature.key + " in " + FeatureSettings.FILE + ".");
             if ((feature == Feature.VILLAGE_CLEARANCE || feature == Feature.VILLAGE_PLACEMENT)
                     && mods.containsKey("sky_village_neighbors"))
-                throw new IllegalStateException("Remove Sky Village Neighbors or disable Compat's village adaptations in " + FeatureSettings.FILE);
+                throw new IllegalStateException("Remove Sky Village Neighbors or disable village adaptations in Skyweave: Compatibility Patches in " + FeatureSettings.FILE);
             active.add(feature);
         }
         var inactive = new LinkedHashMap<Feature, String>();

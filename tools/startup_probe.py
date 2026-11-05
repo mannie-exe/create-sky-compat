@@ -117,7 +117,7 @@ def main():
                 references.append(str(target.relative_to(run / '.mixin.out')))
         report.update(dependencies=selected, startup=done, exit_code=process.returncode,
                       seconds=round(time.monotonic() - started, 2), transformed_targets=references,
-                      active_lines=[line for line in text.splitlines() if 'Skyweave Compat active adaptations:' in line],
+                      active_lines=[line for line in text.splitlines() if 'Skyweave: Compatibility Patches active adaptations:' in line],
                       generated_config=sorted(p.name for p in (run / 'config').iterdir()))
         inactive = args.scenario in {'standalone', 'all-disabled', 'terrain-disabled', 'unsupported-disabled', 'questlog-disabled', 'macaw-disabled'}
         report['passed'] = (done and process.returncode == 0 and bool(report['active_lines'])

@@ -1,5 +1,13 @@
 # Verification
 
+## Display text, 0.20.1
+
+Verified on 2026-11-04 with Java 21 and NeoForge 21.1.264. Candidate JAR SHA-256: `f8392b30a6eb7d73a541b6f20a6b6ef2abad6e4c282e99fb991ddbeaea551120`.
+
+`./gradlew --no-daemon check build clientProbeJar` passes 123 Java tests, six release-tool tests, generated-resource checks, upstream verification, and package boundaries. Production Java changes are confined to string literals. The built JAR retains `skyweave_compat` and exposes Skyweave: Compatibility Patches in mod metadata and the configuration translation.
+
+`tools/startup_probe.py --scenario standalone` and `--scenario full` pass against disposable dedicated servers using installed libraries as read-only inputs. Startup logs contain the corrected display name. This text-only update changes no registry, saved-world, terrain, or feature-selection behavior. Interactive client layout/rendering was not rechecked.
+
 ## Identity migration, 0.20.0
 
 Tested on 2026-11-04 from `~/production/skyweave-compat` with Java 21 and NeoForge 21.1.264. Candidate JAR SHA-256: `4194514849f43b57c05a6a4e85423cf20d5d3d2a8bb6b20cbe79e5891e6a17e2`.

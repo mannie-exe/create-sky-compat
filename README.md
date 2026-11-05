@@ -1,4 +1,4 @@
-# Skyweave Compat
+# Skyweave: Compatibility Patches
 
 Optional terrain, gameplay, and rendering adaptations for Minecraft 1.21.1.
 Every adaptation has a startup switch. The Skyweave modpack is not required.
@@ -46,7 +46,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Sable + Iris + Sodium | 2.0.6 + the Iris version above + 0.8.13+mc1.21.1 | Shader block IDs and single-block render passes |
 
 Remove Veil Iris Fix when enabling the incorporated framebuffer adaptation.
-Remove Sky Village Neighbors when enabling Compat's village adaptations.
+Remove Sky Village Neighbors when enabling Skyweave: Compatibility Patches' village adaptations.
 Upstream mods retain their own dependencies. Create/Propulsion ore IDs are optional
 members of the relative-placement tags, not required mods.
 
@@ -75,7 +75,7 @@ limits, analog signal changes and pack-owned resource fixes.
 Independent switches repair dedicated startup and gum drops, passive-guide braking
 and recovery, magnetic/spring kinetic transmission, and gyro sensing. Links use
 Create's real source and stress network. The gyro supplies a signal with zero
-stress capacity. Linear Bearings Fix 1.0.3 can remain installed; Compat defers its
+stress capacity. Linear Bearings Fix 1.0.3 can remain installed; Skyweave: Compatibility Patches defers its
 overlapping startup/drop repairs. Read [machinery contracts and dependency
 ownership](docs/development/linear-bearing.md) before changing or removing these adapters.
 
@@ -104,7 +104,7 @@ repairs, not another lighting engine or a general cabin-occlusion fix. See
 
 ## Distant terrain
 
-DH generates and renders distant terrain through its ordinary pipeline. Compat
+DH generates and renders distant terrain through its ordinary pipeline. Skyweave: Compatibility Patches
 adds focused lifecycle fixes and optional per-save cache isolation; it does not
 provide a separate terrain predictor. Existing DH cache keys
 remain unchanged by default. See [DH configuration](docs/configuration.md#distant-horizons)
@@ -123,7 +123,7 @@ Journal notifications announce first observed objective progress and completion,
 not prerequisite unlocks. Completing an entry immediately suppresses its start
 notification. Reward collection remains explicit. The interface and notifications
 work on clients connected to ordinary Questlog servers; invalid reward-request
-protection requires Compat on the server. See [journal settings](docs/configuration.md#questlog)
+protection requires Skyweave: Compatibility Patches on the server. See [journal settings](docs/configuration.md#questlog)
 and [contracts and limitations](docs/development/questlog.md).
 
 ## Island terrain
@@ -170,7 +170,7 @@ predictions do not include later structures or player-built blocks.
 
 ## Configuration
 
-Open **Mods → Skyweave Compat → Config** for one scrollable page of categories,
+Open **Mods → Skyweave: Compatibility Patches → Config** for one scrollable page of categories,
 mod-specific settings and fix status. Sidebar links jump to sections. Journal preferences apply immediately; fix changes save for the
 next startup. The menu edits local files, not a connected server.
 
@@ -192,4 +192,4 @@ Original implementation: MIT. Incorporated framebuffer code and its test infrast
 LGPL-3.0-only. See [NOTICE](NOTICE) and [license texts](licenses/). Upstream binaries
 and templates are not bundled. This is an independent compatibility mod.
 
-Skyweave Compat is independent of the unfinished Skyweave civilization mod. The playable pack is Create: Skyweave. Version 0.20.0 changes registry identity and requires a fresh world; see [existing saves](docs/configuration.md#release-identity-and-existing-saves).
+Skyweave: Compatibility Patches is independent of the unfinished Skyweave civilization mod. The playable pack is Create: Skyweave. Version 0.20.0 changes registry identity and requires a fresh world; see [existing saves](docs/configuration.md#release-identity-and-existing-saves).

@@ -1,5 +1,5 @@
 {
-  "skyweave_compat.configuration.title": "Skyweave Compat",
+  "skyweave_compat.configuration.title": "Skyweave: Compatibility Patches",
   "skyweave_compat.config.minimumGap": "Minimum terrain gap",
   "skyweave_compat.config.maximumGap": "Maximum island distance",
   "skyweave_compat.config.minimumIslandRadius": "Minimum host island radius",

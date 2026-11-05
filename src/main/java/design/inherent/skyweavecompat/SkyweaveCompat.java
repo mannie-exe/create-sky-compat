@@ -16,8 +16,8 @@ public final class SkyweaveCompat {
 
     public SkyweaveCompat(ModContainer container, IEventBus modBus) {
         var selection = OptionalIntegrations.selection();
-        com.mojang.logging.LogUtils.getLogger().info("Skyweave Compat active adaptations: {}", selection.active());
-        com.mojang.logging.LogUtils.getLogger().debug("Skyweave Compat inactive adaptations: {}", selection.inactive());
+        com.mojang.logging.LogUtils.getLogger().info("Skyweave: Compatibility Patches active adaptations: {}", selection.active());
+        com.mojang.logging.LogUtils.getLogger().debug("Skyweave: Compatibility Patches inactive adaptations: {}", selection.inactive());
         if (selection.enabled(Feature.REDSTONE_SCRAPING))
             design.inherent.skyweavecompat.redstone.RedstoneScraping.register();
         if (selection.enabled(Feature.SABLE_GRAVES))
@@ -35,7 +35,7 @@ public final class SkyweaveCompat {
                 var root = event.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
                 design.inherent.skyweavecompat.terrain.GenerationIdentity.rejectLegacy(root);
                 if (java.nio.file.Files.exists(root.resolve(design.inherent.skyweavecompat.terrain.GenerationIdentity.FILE)))
-                    throw new IllegalStateException("This save requires Skyweave Compat terrain.preset and Sky Archipelago 1.3.6. "
+                    throw new IllegalStateException("This save requires Skyweave: Compatibility Patches terrain.preset and Sky Archipelago 1.3.6. "
                             + "Restore its recorded configuration; automatic world conversion is unsupported.");
             });
         }

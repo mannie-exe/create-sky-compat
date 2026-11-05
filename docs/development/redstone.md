@@ -53,7 +53,7 @@ The client transparency adapter gives the lit inverter its cutout render layer.
 Loot tables and missing Ponder tag translations belong to the installing pack.
 Version 1.0.5 stores block tables under the pre-1.21 directory; provide the nine
 ordinary self-drops under `data/create_redstone_additions/loot_table/blocks/`.
-Compat does not distribute upstream models, schematics or language files.
+Skyweave: Compatibility Patches does not distribute upstream models, schematics or language files.
 
 Review [upstream repair PR #6](https://github.com/SiliconCarbideCube/create-redstone-additions/pull/6)
 when updating Additions. Its placement, feedback, support and scraping findings

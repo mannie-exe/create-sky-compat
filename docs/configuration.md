@@ -2,7 +2,7 @@
 
 ## Release identity and existing saves
 
-Skyweave Compat 0.20.0 uses `skyweave_compat` resources and configuration filenames. Install it in a fresh instance and create a fresh world. Old `create_sky_compat` registry identities are not aliases; keep existing Create Sky Compat worlds on their original release. The generation guard rejects `create-sky-generation.json`, including when terrain is disabled. Never rename or delete that marker to bypass the guard. Config values may be copied deliberately to the corresponding new files before creating a world; existing files are not silently imported.
+Skyweave: Compatibility Patches 0.20.0 uses `skyweave_compat` resources and configuration filenames. Install it in a fresh instance and create a fresh world. Old `create_sky_compat` registry identities are not aliases; keep existing Create Sky Compat worlds on their original release. The generation guard rejects `create-sky-generation.json`, including when terrain is disabled. Never rename or delete that marker to bypass the guard. Config values may be copied deliberately to the corresponding new files before creating a world; existing files are not silently imported.
 
 The interior noise salt `create_sky_compat:interiors` remains an opaque deterministic input so the same seed retains its terrain algorithm. DH's `create-sky-lod-world-id` marker and `csky_` cache key format remain persistence contracts, preserving existing cache discovery. They are not public resource aliases. Other serialized owned IDs, including grave recovery metadata, use the new namespace only; this release does not convert existing saved data.
 
@@ -86,9 +86,9 @@ inactive selections.
 | `rechiseled.glass_culling` | Keep differently oriented glass faces visible | Client, Rechiseled 1.2.6; independent of Create and Fusion APIs |
 
 For rendering fixes alone, disable `terrain.preset`, `villages.clearance`,
-`bluemap.viewer`, and unwanted independent adaptations. To make Compat inert, set
+`bluemap.viewer`, and unwanted independent adaptations. To make Skyweave: Compatibility Patches inert, set
 every switch to false. An installed mod's own behavior and dependencies remain
-its responsibility. Compat still reads its own feature file and protects its own
+its responsibility. Skyweave: Compatibility Patches still reads its own feature file and protects its own
 saved generation identity; disabling terrain is not a way to convert a marked save.
 
 The island preset is never chosen automatically. Generation-related switches are
@@ -311,7 +311,7 @@ when underside geometry is required. See [implementation and limits](development
 ## Distant Horizons
 
 DH 3.3.3 remains responsible for its ordinary generation, delivery, and rendering.
-The feature table above owns Compat's three independent startup switches.
+The feature table above owns Skyweave: Compatibility Patches' three independent startup switches.
 
 Enable `distant_horizons.world_cache` to use a UUID saved in
 `create-sky-lod-world-id` for Sky Archipelago saves. DH's `sendLevelKeys` must also
@@ -319,7 +319,7 @@ be enabled. Enable the cache adapter on the client to suppress ambiguous legacy
 imports into those UUID namespaces. Foreign generators retain ordinary keys.
 
 The default false setting selects upstream cache behavior and installs no cache
-hooks, even if a Compat identity marker exists. Enabling selects a different
+hooks, even if a Skyweave: Compatibility Patches identity marker exists. Enabling selects a different
 client namespace without moving, deleting, or populating old caches. A retained
 marker is reused when re-enabling the adapter; keep it with the save. Malformed
 markers fail when the adapter is active. Server databases are not renamed.
@@ -332,7 +332,7 @@ See [DH implementation](development/lod.md) for boundaries and update checks.
 
 `config/skyweave_compat-journal-client.toml` is registered when either client
 journal feature is active. The Settings bookmark opens grouped Display and
-Notifications preferences. Mods → Skyweave Compat → Config → Client → Questlog
+Notifications preferences. Mods → Skyweave: Compatibility Patches → Config → Client → Questlog
 edits the same values. Changes save locally and apply without restart.
 The three startup switches remain independent.
 
@@ -363,7 +363,7 @@ though its NeoForge metadata does not declare that prerequisite.
 
 ## Configuration interface
 
-Open **Mods → Skyweave Compat → Config**. The sidebar groups local settings by
+Open **Mods → Skyweave: Compatibility Patches → Config**. The sidebar groups local settings by
 Client, Server / shared, and World generation, then by mod. Shared entries identify
 which sides need the fix; these categories do not change loader requirements.
 
@@ -414,7 +414,7 @@ full-bright text does not itself stop a display casting a shader shadow.
 
 The catalogue links its native client click-mode file and common relocation-range
 file under their owning mod groups. These are upstream settings, separate from
-Compat startup switches. Default `clickMode="SHIFT_SLOT"` requires an empty hand
+Skyweave: Compatibility Patches startup switches. Default `clickMode="SHIFT_SLOT"` requires an empty hand
 and Shift + right-click on a frequency slot; default `moveRange=24` applies to
 the relocation tool. Keep the common value consistent on both sides. Client
 settings are personal; common settings are not server-to-client configuration sync.

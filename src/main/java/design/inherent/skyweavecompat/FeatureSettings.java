@@ -61,7 +61,7 @@ public record FeatureSettings(Map<Feature, Boolean> values) {
     }
 
     public static String defaults() {
-        var text = new StringBuilder("# Skyweave Compat adaptations. Changes require a full game/server restart.\n"
+        var text = new StringBuilder("# Skyweave: Compatibility Patches adaptations. Changes require a full game/server restart.\n"
                 + "# Missing dependencies leave an adaptation inactive. See docs/configuration.md.\n"
                 + "# Disable terrain.preset to use only independent fixes. No world preset is selected automatically.\n");
         for (Feature feature : Feature.values())

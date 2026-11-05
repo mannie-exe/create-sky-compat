@@ -1,7 +1,7 @@
 # Questlog integration
 
 Questlog remains the authority for definitions, objectives, progress and reward
-collection. Compat adapts its existing screen and packets; it adds no quest store,
+collection. Skyweave: Compatibility Patches adapts its existing screen and packets; it adds no quest store,
 server handshake, item scanner or reward-grant implementation. This integration
 has no terrain dependency. [Configuration](../configuration.md#questlog) owns
 switches, preferences and authoring options.
@@ -65,12 +65,12 @@ Images use explicit objective icons and native reward ItemStacks, including thei
 components and counts. No arbitrary matching item is guessed for tag predicates.
 Condition symbols supplement readable labels; unknown objective types keep their
 native text. Both aids can be disabled. No extra pack assets or localization keys
-are required in journal authoring data. Compat's own interface strings are in its
+are required in journal authoring data. Skyweave: Compatibility Patches' own interface strings are in its
 ordinary Minecraft language resources.
 
 Reward previews are read-only until completion. Native choice groups are selected
 separately from collection; non-item and unknown reward displays retain native
-labels. Compat does not simulate arbitrary reward implementations. Native inventory
+labels. Skyweave: Compatibility Patches does not simulate arbitrary reward implementations. Native inventory
 insertion/overflow remains owned by Questlog's `ItemReward` and `Util.giveToPlayer`.
 
 ## Notifications

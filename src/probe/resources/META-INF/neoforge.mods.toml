@@ -4,4 +4,4 @@ license="MIT"
 [[mods]]
 modId="skyweave_compat_probe"
 version="1.0.0"
-displayName="Skyweave Compat test fixture"
+displayName="Skyweave: Compatibility Patches test fixture"

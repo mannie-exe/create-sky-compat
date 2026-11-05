@@ -75,7 +75,7 @@ No integration data is unconditionally exposed at the JAR's `data/` root.
 
 See [adapter maintenance](adapters.md) for ownership, dependency updates, and
 retirement conditions, and [rendering](rendering.md) for client-specific paths.
-The minimum runtime is NeoForge plus Compat; development dependencies are not
+The minimum runtime is NeoForge plus Skyweave: Compatibility Patches; development dependencies are not
 runtime requirements. `tools/startup_probe.py` covers disposable dedicated-server
 startup combinations. It never launches a client or touches the installed save.
 
@@ -88,7 +88,7 @@ python3 tools/probe.py --generation adapted --minimal --seed 42 --reopen --heap 
   --server /path/to/server/game --java /path/to/java
 ```
 
-It stages only Sky Archipelago, Compat and the separate probe, without copying
+It stages only Sky Archipelago, Skyweave: Compatibility Patches and the separate probe, without copying
 other mods' configs.
 The full check omits `--minimal`. These cover the general gameplay integration set. The optional BlueMap boundary
 has a separate minimal-plus-BlueMap check described in [BlueMap](bluemap.md).

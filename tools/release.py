@@ -56,7 +56,7 @@ if args.stage_only:
 subprocess.run([
     "gh", "release", "create", tag,
     *map(str, sorted(destination.iterdir())),
-    "--verify-tag", "--draft", "--prerelease", "--title", f"Skyweave Compat {version}",
+    "--verify-tag", "--draft", "--prerelease", "--title", f"Skyweave: Compatibility Patches {version}",
     "--notes-file", "RELEASE_NOTES.md",
 ], cwd=root, check=True)
 subprocess.run(["gh", "release", "edit", tag, "--draft=false"], cwd=root, check=True)

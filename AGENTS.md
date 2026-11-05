@@ -1,4 +1,6 @@
-# Skyweave Compat
+# Skyweave: Compatibility Patches
+
+Use **Create: Skyweave** for the modpack; **Skyweave modpack** or **the Skyweave modpack** is also acceptable in prose. Use **Skyweave: Compatibility Patches** for the independent compatibility mod. Preserve machine identities, including `create-skyweave`, `create_skyweave`, `skyweave-compat`, `skyweave_compat`, and Java package/class names. Put naming guidance in AGENTS.md; use the names directly in other documentation and interfaces.
 
 Maintain an independently installable mod of optional terrain and compatibility adaptations.
 Keep minimum dependencies and optional adapters explicit.

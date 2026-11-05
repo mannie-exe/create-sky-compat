@@ -69,7 +69,7 @@ native generation command in [development](README.md). Then run:
 python3 tools/bluemap_probe.py --server /path/to/server/game --java /path/to/java
 ```
 
-This uses disposable dedicated servers with only Sky Archipelago, Compat and
+This uses disposable dedicated servers with only Sky Archipelago, Skyweave: Compatibility Patches and
 BlueMap. It checks expanded/ordinary bounds, foreign-generator exclusion, reload
 selection and shutdown cleanup. It reuses the installed libraries and accepted
 Minecraft resource download without editing the source instance.

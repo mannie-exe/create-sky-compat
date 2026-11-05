@@ -166,7 +166,7 @@ nametag renderers bypassing the base method are outside coverage.
 Fallbacks are created on the render thread through Iris's own factory, which
 registers them with `loadedShaders` and owns their destruction. Each pipeline
 caches at most three programs and 256 recent font-type wrappers. Destruction clears
-Compat's references without double-closing Iris resources. Shaders off and
+Skyweave: Compatibility Patches' references without double-closing Iris resources. Shaders off and
 non-Iris pipelines return the original buffer source.
 
 Before updating Minecraft or Iris, recheck concrete/bridge descriptors, font
@@ -223,11 +223,11 @@ Modrinth `8rq5KP4U`, SHA-256
 `3c7c1f91b1add47053f40a58375de492b87ce83309be378527f100cb842c07c0`.
 
 Colorwheel wraps NeoForge `ModelBlockRenderer.tesselateBlock`, but Sable 2.0.6's
-platform calls `tesselateWithoutAO` directly. The existing Compat scope reaches
+platform calls `tesselateWithoutAO` directly. The existing Skyweave: Compatibility Patches scope reaches
 that path; plain Iris `beginBlock` alone does not set Colorwheel's terrain and
 emission fields. Colorwheel stores that emission in the fourth byte of Iris's
 mid-block vertex attribute. `ColorwheelMaterialMixin` selects a writer for
-Compat's own scope, using `clrwlBeginBlock`/`clrwlEndBlock` where supported and
+Skyweave: Compatibility Patches' own scope, using `clrwlBeginBlock`/`clrwlEndBlock` where supported and
 retaining the Iris protocol on plain mesh emitters. Nested scopes restore their
 parent writer and material through failures. No upstream mixin is cancelled.
 
@@ -251,7 +251,7 @@ This bridge does not take ownership of ordinary world tessellation, mesh storage
 Flywheel engines, Sable transforms or shader programs. It does not claim to repair
 all nested upstream annotation paths. The other rendering adaptations remain
 independent; disabling construct material IDs also disables this dependent bridge.
-Missing/disabled Colorwheel loads no Colorwheel API through Compat.
+Missing/disabled Colorwheel loads no Colorwheel API through Skyweave: Compatibility Patches.
 
 Review Colorwheel's buffer API and mid-block encoding, its tessellation wrappers,
 Sable's direct flat/AO calls and Flywheel mesh emitters together before upgrading.

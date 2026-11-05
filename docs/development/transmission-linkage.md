@@ -58,7 +58,7 @@ The six native tutorials use shared English keys under
 `aeronautics_utility_objects.ponder.shared`. Text corrections can be supplied by a
 resource pack or resource-only mod; they do not require a new optional runtime
 adapter. Keep them with the distributing pack's maintained resources rather than
-duplicating them in Compat.
+duplicating them in Skyweave: Compatibility Patches.
 
 Review tutorial claims against the actual implementation: Expected Length is a
 distance, Stretch Resistance damps axial motion, and Return Force restores target

@@ -1,6 +1,6 @@
 # Distant Horizons integration
 
-Compat uses DH's ordinary terrain generation, storage and rendering. It does not
+Skyweave: Compatibility Patches uses DH's ordinary terrain generation, storage and rendering. It does not
 provide a separate terrain predictor. Optional hooks target DH 3.3.3 on Minecraft
 1.21.1 / NeoForge 21.1.264. The compile-only artifact is pinned by SHA-256 in
 `build.gradle`; `FeatureSelection` and active feature tests must agree.
@@ -33,7 +33,7 @@ See [operator configuration](../configuration.md#distant-horizons) before enabli
 on an existing installation.
 
 `LegacyCacheMixin` prevents DH's pre-2.3 dimension-only cache import only for the
-complete Compat UUID key format. It leaves the old directory untouched. Ordinary
+complete Skyweave: Compatibility Patches UUID key format. It leaves the old directory untouched. Ordinary
 and merely similar keys retain native migration. This avoids attributing an
 unidentified old save to a new UUID cache; it is not a general cache migration tool.
 
@@ -59,7 +59,7 @@ Preserve the other entries. This excludes lichen from distant representations;
 native lichen, fluid rendering and ordinary foliage tinting remain unchanged.
 Reopening the same fixture and LOD database removed the stripe and preserved
 all three substrates' original materials and colors. No cache deletion or new
-fluid Mixin is needed. Compat does not rewrite an operator's DH configuration;
+fluid Mixin is needed. Skyweave: Compatibility Patches does not rewrite an operator's DH configuration;
 the modpack owns its chosen default.
 
 | Lichen included in LOD tinting | Lichen excluded; same saved fixture |
@@ -94,7 +94,7 @@ No report has been submitted.
 | Client wrapper ownership | DH `getWrapper`, `onUnload`, keyed branch and weak-reference map | Concurrent ownership tests, actual connection/reconnect and shutdown |
 | Shutdown unloading | Minecraft `ChunkMap.processUnloads`/`scheduleUnload`; DH generation cleanup | Isolated shutdown with generation active, retained queued work |
 | Cache identity | DH server wrapper key creation and level-key handshake | Default-key preservation, opt-in identity across reopen and dimensions |
-| Legacy import | DH `DhClientLevel` constructor's legacy-folder check | Actual client constructor with ordinary and Compat keys; no user cache edits |
+| Legacy import | DH `DhClientLevel` constructor's legacy-folder check | Actual client constructor with ordinary and Skyweave: Compatibility Patches keys; no user cache edits |
 | Fluid colors | DH block/material wrappers, client color cache and render-data conversion; installed shaders | Known source/flow states, native/LOD views and shader controls |
 
 Keep optional adapters selected through loader metadata before resolving DH

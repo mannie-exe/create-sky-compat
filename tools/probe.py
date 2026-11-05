@@ -15,13 +15,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--mod', type=Path, help='Exact Compat JAR for an isolated comparison; defaults to the local build')
+parser.add_argument('--mod', type=Path, help='Exact Skyweave: Compatibility Patches JAR for an isolated comparison; defaults to the local build')
 parser.add_argument('--server', type=Path, required=True, help='Installed game directory; read-only input')
 parser.add_argument('--java', default='java')
 parser.add_argument('--heap', choices=['4G', '6G', '8G'], default='4G', help='Maximum Java heap; distributed island scans need 6G')
 parser.add_argument('--samples', type=int, default=12, help='Layouts per seed')
 parser.add_argument('--reopen', action='store_true', help='Reopen generated samples and require unchanged ore counts or village starts')
-parser.add_argument('--minimal', action='store_true', help='Generate with only Sky Archipelago and Compat, plus the read-only probe')
+parser.add_argument('--minimal', action='store_true', help='Generate with only Sky Archipelago and Skyweave: Compatibility Patches, plus the read-only probe')
 parser.add_argument('--dh-stop-after', type=int, default=0, metavar='SECONDS', help='With --dh-pregen, stop the disposable server during generation (1 to 30 seconds)')
 parser.add_argument('--dh-world-key', action='store_true', help='With --dh-pregen, verify opt-in per-save cache identity in the disposable world')
 mode = parser.add_mutually_exclusive_group()

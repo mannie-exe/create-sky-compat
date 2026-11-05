@@ -41,7 +41,7 @@ public abstract class StructureSupportMixin {
         var footprint = new NeighborRule.Footprint(bounds.minX(), bounds.minZ(), bounds.maxX(), bounds.maxZ());
         var decision = NeighborRule.evaluate(footprint, NeighborConfig.settings(), new IslandTerrain(context));
         if (decision == NeighborRule.Decision.TOO_CLOSE || decision == NeighborRule.Decision.NO_HOST) {
-            LogUtils.getLogger().debug("Skyweave Compat rejected {}: {}", bounds, decision);
+            LogUtils.getLogger().debug("Skyweave: Compatibility Patches rejected {}: {}", bounds, decision);
             callback.setReturnValue(report.withAccepted(false));
         }
     }

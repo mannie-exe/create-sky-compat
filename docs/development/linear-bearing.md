@@ -11,19 +11,19 @@ network mutations run on the logical server.
 `linear_bearing.bootstrap` removes only the released constructor's three
 client-registration sites on a dedicated server. Block, component, data-generation
 and creative-tab registration remain. Its built-in data pack supplies the missing
-bubble-gum block drop. With Linear Bearings Fix 1.0.3 present, Compat defers both
+bubble-gum block drop. With Linear Bearings Fix 1.0.3 present, Skyweave: Compatibility Patches defers both
 repairs and leaves its machinery adaptations active. An unfamiliar standalone-fix
 version requires review before enabling this switch.
 
 Modrinth declares the standalone fix as a dependency of Linear Bearing; the
 released NeoForge metadata does not. Keep the catalogue dependency in distributions
 unless the package manager supports an explicit, reviewed reconciliation. Do not
-spoof the fix's mod ID. Manual installations can omit it when Compat supplies the
+spoof the fix's mod ID. Manual installations can omit it when Skyweave: Compatibility Patches supplies the
 startup/drop repairs. Turning off those repairs without a replacement restores
 the original dedicated startup failure and missing drop.
 
 The catalogue labels the projects Apache-2.0, while the selected JAR metadata says
-All Rights Reserved. Compat implements its repairs independently; it does not
+All Rights Reserved. Skyweave: Compatibility Patches implements its repairs independently; it does not
 redistribute upstream binaries or decompiled source. The small fix repository is
 not an original-source repository for the whole mod.
 
@@ -43,7 +43,7 @@ uses a relative constraint and reciprocal Sable actor links. The native docking
 handle owns disposal; normal docking behavior, connector pairing and inventory
 interfaces remain separate. Loss of alignment, owner, casing or power releases
 the brake. Relationships rebuild from geometry and power after loading; native
-constraint handles are not saved by Compat.
+constraint handles are not saved by Skyweave: Compatibility Patches.
 
 Empty-hand use of the casing recovers a braked carriage. It requires exactly one
 engaged carriage and an aligned block grid. Destination cells must be loaded,
@@ -153,7 +153,7 @@ Carriage orientations are `floor`, `ceiling`, `wall-front` and `wall-back`;
 disassembly also accepts `height` and `quarter`. `clientProbeJar` contains the
 opt-in `-Dskyweave_compat.probe.linear=true` integrated review scene. Its
 `compatprobe_linear_use` command sends a real empty-hand use packet;
-`compatprobe_linear_brake` changes fixture power. Neither probe ships in Compat.
+`compatprobe_linear_brake` changes fixture power. Neither probe ships in Skyweave: Compatibility Patches.
 
 [Verification](verification.md) owns measured results and outstanding limits.
 
@@ -168,7 +168,7 @@ adaptations enabled. No client registration runs on a dedicated server.
 The released upstream JAR contains one dormant tutorial: its service declaration
 is not discovered by this Ponder version, and its raw Item-array registration does
 not match the ResourceLocation-array API. Its kinetic-drive prose also differs
-from the passive guide. Compat registers an independent plugin explicitly; it
+from the passive guide. Skyweave: Compatibility Patches registers an independent plugin explicitly; it
 does not activate that plugin or duplicate an upstream scene that already works.
 
 Scenes use normal Ponder section animations, staged reveals, control prompts,
@@ -218,7 +218,7 @@ The supported upstream selections are Linear Bearing Modrinth version `8SJdnoXS`
 `MQ6XuOMQ` (project `xLxyRluH`). Their SHA-256 values are
 `29563cdb52a82ac7d8b3aca823cd47a15c443e06314df06ca1a635ae9e91a253` and
 `04afaaaf62951fc4cccfbb4468572fea2a876a6b5e872a6c60545d171fb21976`.
-Use a published, verified Compat artifact before making a playable pack depend on
+Use a published, verified Skyweave: Compatibility Patches artifact before making a playable pack depend on
 these repairs. Keep all four switches enabled for this contract; defaults are true.
 
 Apply the approved journal source changes together with the dependency selections,

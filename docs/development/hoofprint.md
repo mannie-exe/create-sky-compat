@@ -50,7 +50,7 @@ and [`HoofprintScreen.java`](https://github.com/HestiMae/hoofprint/blob/78225fdb
 The released JAR's annotations and those scale paths were also inspected with
 `javap -p -c` / `javap -p -c -v`; conclusions do not rely on branch names alone.
 
-## Proposed Compat adapter
+## Proposed Skyweave: Compatibility Patches adapter
 
 Use an independently selectable, physical-client-only adaptation, tentatively
 `hoofprint.zoom`. Gate it through `FeatureSelection` and `OptionalMixinPlugin`

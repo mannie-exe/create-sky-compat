@@ -10,7 +10,7 @@ hook. [Configuration](../configuration.md#adaptation-switches) owns activation.
 
 SDL owns scanning, source registration, Create/Sable transforms and virtual
 client light propagation. Lamb owns its dynamic-light lookup and rebuild
-scheduler. Compat keeps dynamic illumination client-local and preserves ordinary server
+scheduler. Skyweave: Compatibility Patches keeps dynamic illumination client-local and preserves ordinary server
 lighting. It changes no spawning rules, block states, mass or terrain generation.
 
 SDL's released Sodium mixin targets two obsolete class namespaces and an instance
@@ -163,7 +163,7 @@ Install SDL and Lamb on clients only; the selected Create and Sodium dependencie
 are already listed above. Keep `lighting.sodium` and `lighting.lifecycle` enabled.
 Do not add Contraption Lights or a second Sodium Dynamic Lights engine. Existing
 Sable, Iris/Veil, DH and resource adapters keep their current owners and settings.
-Use the verified Compat artifact identified in the verification record when
+Use the verified Skyweave: Compatibility Patches artifact identified in the verification record when
 preparing a release; these instructions do not install it into an existing profile.
 
 This adaptation is suitable for further playtesting with the stated approximation

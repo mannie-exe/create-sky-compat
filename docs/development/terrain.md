@@ -10,7 +10,7 @@ The preset owns its dimension type, noise settings and embedded Sky Archipelago
 settings. Both height envelopes are `[-128, 768)`. The noise settings retain
 Minecraft 1.21.1's Overworld router and surface definitions with the expanded
 envelope. Sky Archipelago still supplies terrain filling and surface treatment;
-this bypasses the complete vanilla terrain pipeline. Compat supplies its own interior
+this bypasses the complete vanilla terrain pipeline. Skyweave: Compatibility Patches supplies its own interior
 composition and connects the native large-vein material rule. Classic carving still
 has a separate native aquifer query, described below.
 
@@ -272,7 +272,7 @@ raw blocks, reference-depth distributions, fill/query agreement and reopening.
 Sky Archipelago 1.3.6 replaces `fillFromNoise` with `SkyIslandTerrainPass` column
 material plans. It updates `OCEAN_FLOOR_WG` and `WORLD_SURFACE_WG` during filling;
 `getBaseColumn` uses the same material plan. The upstream `getBaseHeight`
-prediction does not distinguish heightmap predicates. Compat resolves those
+prediction does not distinguish heightmap predicates. Skyweave: Compatibility Patches resolves those
 predicates against its material column where local source water makes the water
 surface differ from the solid floor. These baseline queries are not substitutes
 for completed chunk heightmaps after trees, fluid updates or structures.
@@ -285,7 +285,7 @@ then blends supported structure bases and mineshaft chains. This is not vanilla
 badlands banding/pillars, swamp hydrology or powder-snow terrain. A noise-settings
 surface-rule JSON does not make those features execute here.
 
-Compat adds tagged mangrove mud at the actual surface-write boundary. Upstream's
+Skyweave: Compatibility Patches adds tagged mangrove mud at the actual surface-write boundary. Upstream's
 `SurfaceMaterial` enum would otherwise convert a custom mud layer back into its
 fixed palette. `BiomeMaterials` changes only the upper three grass/dirt soil blocks;
 upstream override tags win, and the existing opening/fluid guard still applies.
