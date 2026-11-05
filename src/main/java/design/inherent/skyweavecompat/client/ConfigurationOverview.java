@@ -141,6 +141,7 @@ public final class ConfigurationOverview extends Screen {
             if (OptionalIntegrations.enabled(Feature.QUESTLOG_INTERFACE) || OptionalIntegrations.enabled(Feature.QUESTLOG_NOTIFICATIONS)) buildPreferences();
             else content.row(text("preferences"), text("unavailable"));
         }
+        if (group == Group.IRIS && OptionalIntegrations.enabled(Feature.SHADER_PATCHES)) buildShaders();
         var features = SettingsCatalog.features(group);
         if (!features.isEmpty()) content.heading(text("fixes"));
         for (Feature feature : features) addFeature(feature);
@@ -148,6 +149,17 @@ public final class ConfigurationOverview extends Screen {
         if (!files.isEmpty()) content.heading(text("tuning"));
         for (var file : files) addFile(file);
         if (files.stream().anyMatch(file -> !Files.isRegularFile(FMLPaths.CONFIGDIR.get().resolve(file.filename())))) folder();
+    }
+    private void buildShaders() {
+        content.heading(text("shaders.title"));
+        for (var status : ShaderAssembly.states())
+            content.row(Component.literal(status.id()), text("shaders." + status.state()).append(status.detail().isEmpty() ? "" : "\n" + status.detail()));
+        content.row(text("shaders.rebuild"), text("shaders.rebuild_help"), button(text("shaders.rebuild"), 85, () -> {
+            ShaderAssembly.requestRebuild();
+            try { net.irisshaders.iris.Iris.reload(); }
+            catch (Exception failure) { feedback = text("change_failed").append(" ").append(String.valueOf(failure.getMessage())); }
+            remember(); rebuildWidgets();
+        }));
     }
     private void buildPreferences() {
         content.heading(text("preferences"));

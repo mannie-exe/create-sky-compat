@@ -37,7 +37,7 @@ public enum Feature {
     LINEAR_JADE("linear_bearing.jade"),
     DH_HANDOFF("distant_horizons.client_handoff"),
     DH_SHUTDOWN("distant_horizons.shutdown"),
-    DH_CACHE("distant_horizons.world_cache", false),
+    DH_CACHE("distant_horizons.world_cache"),
     BLUEMAP("bluemap.viewer"),
     FRAMEBUFFER("rendering.veil_framebuffer"),
     BALLOON("rendering.balloon_shadow_pass"),
@@ -50,9 +50,10 @@ public enum Feature {
     COLORWHEEL_MATERIALS("rendering.colorwheel_materials"),
     MODEL_DATA("rendering.single_block_model_data"),
     SINGLE_BLOCK_PASSES("rendering.single_block_passes"),
-    MACAW_LANTERN("macaw.bridge_lantern_shape", false),
-    CREATE_BACKFACES("create.glass_backfaces", false),
-    FUSION_BACKFACES("fusion.glass_backfaces", false),
+    MACAW_LANTERN("macaw.bridge_lantern_shape"),
+    SHADER_PATCHES("rendering.shader_patches"),
+    CREATE_BACKFACES("create.glass_backfaces"),
+    FUSION_BACKFACES("fusion.glass_backfaces"),
     CREATE_WINDOWS("create.window_culling"),
     RECHISELED_GLASS("rechiseled.glass_culling"),
     LIGHTING_LIFECYCLE("lighting.lifecycle"),
@@ -64,9 +65,8 @@ public enum Feature {
     public final String key;
     public final boolean defaultEnabled;
 
-    Feature(String key) { this(key, true); }
-    Feature(String key, boolean defaultEnabled) {
+    Feature(String key) {
         this.key = key;
-        this.defaultEnabled = defaultEnabled;
+        this.defaultEnabled = true;
     }
 }

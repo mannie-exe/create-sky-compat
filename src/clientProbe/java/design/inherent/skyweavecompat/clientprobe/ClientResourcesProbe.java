@@ -106,6 +106,11 @@ final class ClientResourcesProbe {
                                 net.neoforged.fml.ModList.get().getModContainerById("skyweave_compat").orElseThrow(), mc.screen));
                         case "close" -> mc.player.closeContainer();
                         case "hide" -> { mc.options.hideGui = command.get("value").getAsBoolean(); mc.options.pauseOnLostFocus = false; }
+                        case "shader_rebuild" -> {
+                            if (!design.inherent.skyweavecompat.OptionalIntegrations.enabled(design.inherent.skyweavecompat.Feature.SHADER_PATCHES)) throw new IllegalStateException("Shader assembly is disabled");
+                            design.inherent.skyweavecompat.client.ShaderAssembly.requestRebuild();
+                            net.irisshaders.iris.Iris.reload();
+                        }
                         case "shaders" -> {
                             if (!net.neoforged.fml.ModList.get().isLoaded("iris"))
                                 throw new IllegalStateException("Shader switching requires Iris in the review fixture");
@@ -200,12 +205,20 @@ final class ClientResourcesProbe {
                                     var sprite = quad.getSprite();
                                     sample.addProperty("sprite", sprite.contents().name().toString());
                                     sample.addProperty("face", quad.getDirection().getName());
+                                    sample.addProperty("quadClass", quad.getClass().getName());
+                                    sample.addProperty("tint", quad.getTintIndex());
+                                    sample.addProperty("shade", quad.isShade());
+                                    sample.addProperty("ambientOcclusion", quad.hasAmbientOcclusion());
+                                    var positions = new com.google.gson.JsonArray();
                                     var uv = new com.google.gson.JsonArray();
                                     for (int vertex = 0; vertex < 4; vertex++) {
                                         int offset = vertex * (vertices.length / 4);
+                                        for (int axis = 0; axis < 3; axis++)
+                                            positions.add(Float.intBitsToFloat(vertices[offset + axis]));
                                         uv.add(16 * (Float.intBitsToFloat(vertices[offset + 4]) - sprite.getU0()) / (sprite.getU1() - sprite.getU0()));
                                         uv.add(16 * (Float.intBitsToFloat(vertices[offset + 5]) - sprite.getV0()) / (sprite.getV1() - sprite.getV0()));
                                     }
+                                    sample.add("positions", positions);
                                     sample.add("uv", uv); samples.add(sample);
                                     for (int vertex = 0; vertex < 4; vertex++) for (int axis = 0; axis < 3; axis++) {
                                         double value = Float.intBitsToFloat(vertices[vertex * (vertices.length / 4) + axis]);
@@ -228,6 +241,11 @@ final class ClientResourcesProbe {
                                 modelReport.addProperty("benchmarkIterations", iterations);
                                 modelReport.addProperty("benchmarkQuads", emitted);
                                 modelReport.addProperty("benchmarkMillis", (System.nanoTime() - started) / 1_000_000.0);
+                                started = System.nanoTime();
+                                for (int iteration = 0; iteration < iterations; iteration++)
+                                    model.getModelData(mc.level, pos, state,
+                                            net.neoforged.neoforge.client.model.data.ModelData.EMPTY);
+                                modelReport.addProperty("modelDataMillis", (System.nanoTime() - started) / 1_000_000.0);
                             }
                             modelReport.add("quads", counts); modelReport.add("skipNeighborFace", culling);
                             modelReport.add("renderFace", visible); modelReport.add("surfaces", surfaces);

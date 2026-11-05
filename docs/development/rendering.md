@@ -6,7 +6,7 @@ activation and versions. No renderer classes load on dedicated-server paths.
 
 ## Glass backfaces
 
-`create.glass_backfaces` and `fusion.glass_backfaces` are separate opt-in client
+`create.glass_backfaces` and `fusion.glass_backfaces` are separate default-on client
 adaptations. They append reverse-facing copies of final processed quads while
 retaining native neighbor-cull groups. Existing window-material and glass-axis
 visibility switches remain independent: they decide whether a boundary is exposed;
@@ -16,6 +16,14 @@ The Create hook runs after `CTModel.getQuads` has selected CT tiles. It qualifie
 Create's connected glass, window and glass-pane implementations, including their
 subclasses. The Fusion hook runs after `BaseBakedModel` processors and qualifies
 vanilla glass/panes and Rechiseled's glass pillar implementation.
+Create's plain Tiled Glass and Tiled Glass Pane use standard cube/multipart
+models rather than `CTModel`. `PlainGlassModels` wraps only their block-state
+models at NeoForge's `ModifyBakingResult` event, after ordinary model modifiers.
+It delegates native materials, render types, pane state selection and item
+transforms, then reuses the same final-quad and neighbor-contact policy. Inventory
+models remain untouched. The wrapper is registered only when the Create
+adaptation is selected on the physical client; resource reload recreates it.
+
 The selected pack registers 146 Rechiseled glass pillars; other Rechiseled glass
 shape classes are not registered and are excluded. It resolves no Rechiseled class
 and excludes Create models from this path. Native
@@ -27,6 +35,33 @@ and AO flags. It never modifies source lists or vertices; existing coplanar reve
 geometry and its own output are not duplicated. There is no global model wrapper,
 render-state change or persistent quad cache.
 
+For touching surfaces, the same adaptations gather visible, original neighboring
+face rectangles into immutable `ModelData`. Create extends `gatherModelData`'s
+existing builder; Fusion derives its processed result. A thread-local sampling
+guard suppresses recursive contact collection and backface generation, with
+exception-safe cleanup. No level, position or model cache survives the query.
+
+`SurfaceRegions` partitions only the shared area of an axis-aligned rectangular
+boundary face. Its reverse surface moves 1/256 block into its owning block;
+exposed areas keep their original position. This is 1/16 of a 16-pixel texel and
+128 steps in Sodium's compact position encoding. The opposite block receives the
+same treatment independently. The nearer interior material therefore has its own
+depth, while transparent texels still reveal the farther material. Translucent
+blending remains with the renderer. Original faces, native cull groups and CT
+selection are retained; clipped reverse pieces interpolate the original UVs,
+color, light and normals rather than selecting another CT tile.
+
+Collection reads the provided mesh view's six immediate neighbors; it does not
+request chunks or mutate the world. It skips block entities and admits only
+axis-aligned rectangular original faces at cell boundaries. Nonrectangular or
+highly subdivided geometry retains ordinary backfaces: collection allows at most
+128 regions per side and partitioning at most 4,096 cells. Those fallback paths do
+not promise shared-surface separation. Arbitrary intersecting models, overlapping
+models inside one block and alternate renderer depth formats are not covered by
+this geometric policy. Keep distance, grazing-angle and seam checks with native
+verification rather than treating compact-vertex precision as proof of depth
+precision.
+
 Sodium 0.8.13 uses the source cull group for neighbor rejection, then computes
 normal-based mesh batches from emitted geometry. Both boundaries matter when
 updating: changing the source group exposes hidden interfaces, while incorrect
@@ -34,7 +69,9 @@ reverse winding/normal can make mesh batching discard the new face. Review nativ
 lighting and translucent sorting alongside model/UV evidence.
 
 Before updating Create or Fusion, inspect the exact output methods, CT-data
-ownership, modifier dispatch, render-type handling and vertex format. Update pins,
+ownership, modifier dispatch, render-type handling and vertex format. Recheck
+neighbor-model queries, reentry suppression, boundary rectangles, split attributes
+and compact-position/depth precision, including chunk-edge rebuilds and reloads. Update pins,
 selection gates, metadata, package checks and native evidence together. Retire a
 hook only after a released upstream implementation covers the same cases. These
 adapters do not claim arbitrary transparent blocks, fluids, block-entity renderers,
@@ -306,3 +343,91 @@ versus moving ship, and camera movement. Compare shader settings only where they
 distinguish causes. Neither the material-ID nor balloon guard is claimed to fix
 geometric shadow continuity. Sable's separate default-off skylight-shadow setting
 is not Iris's shadow enable switch and is not changed.
+
+## Shader assembly
+
+`rendering.shader_patches` is a default-on physical-client adaptation for Iris
+1.8.14-beta.1+mc1.21.1. Without recipes it performs no assembly. Recipes live in
+`config/skyweave-shaders/recipes/`; the file-only engine is also exposed through
+`ShaderCli` for authoring builds. It requires Java 21 and Gson already supplied
+by Minecraft. No Python, shell hook, source compiler or launcher integration runs
+on recipients.
+
+`ShaderAssemblyMixin` prepares outputs at the beginning of Iris `loadShaderpack`,
+before the selected archive opens. Native `reload` closes its ZIP filesystem and
+pipeline first. The configuration screen's **Rebuild shaders** action uses that
+reload path; it does not overwrite an archive held by the active pipeline.
+Unsupported recipes fail individually. If the selected recipe fails, Iris does
+not load its old or unpatched file; other shader selections remain usable.
+
+For an enabled Euphoria recipe and the exact supported Euphoria Patcher version,
+three additional hooks prepare files before its constructor starts scanning,
+recognize receipt-verified Unbound output in its existing detection result, and
+prevent `BootShaderModificator` from rewriting an owned archive. Native runtime
+uniforms and unrelated user shaders remain with Euphoria. Its normal watcher is
+not disabled. Colorwheel Patcher supplies an overlay input outside `mods/` and
+therefore starts no competing patcher. Colorwheel itself remains a runtime mod.
+
+### Recipes and ownership
+
+Schema 1 defines `id`, `version`, `output`, `base`, `inputs`, ordered `steps`,
+optional `enabled`, exact runtime `requires`, a qualified payload-tree `expected`
+digest, and optional `settings`. Disabled recipes do not read inputs or constrain
+runtime versions. Inputs specify an instance-relative path and SHA-256. They may
+read verified archives from `shader-inputs/` or runtime JARs from `mods/`.
+
+Supported steps are deliberately bounded:
+
+- `overlay`: read an input archive or its named `member`; require the preceding
+  payload-tree `before` digest, then overlay only `shaders/` files.
+- `euphoria-1.10.5`: require `before`, normalize the Complementary TAR, invoke the
+  exact digest-qualified shaded BSDIFF engine, validate its output and restore
+  Unbound style. Recipes cannot select a Java class or another executable engine.
+- `text`: require a file SHA-256, an exact `find` occurrence `count`, and `replace`.
+  An empty find creates an absent file. Targets are shader sources or the two
+  Skyweave provenance files. Unknown operations and fields stop the recipe.
+
+The recipe owns patch versions and ordered source corrections. SHA-256 checks on
+Create's input JAR qualify the material assumptions; the shader lab additionally
+rechecks texture bindings and alpha classification. Changing resource-pack window
+textures requires material review even when Create's JAR itself is unchanged.
+
+Empack owns source inputs and authored recipes. The runner owns its recorded ZIPs
+in `shaderpacks/`, plus intermediates and receipts in `.cache/skyweave-shaders/`.
+It never moves managed inputs, edits unrelated packs or overwrites user presets.
+Only finished shaders enter Iris's list. Original shader and patcher binaries are
+not bundled in Compat.
+
+An instance lock serializes assembly. Sorted stored ZIP entries and fixed timestamps
+make authoring and recipient bytes reproducible. The key includes canonical recipe
+contents, actual verified input digests and engine revision; exact requirements
+are part of that recipe. Cached outputs are checked against their receipt. Missing
+or corrupt outputs can be restored from the verified cache. A forced rebuild still
+uses the same verification. A failed build keeps the last verified bytes; those
+bytes are eligible only under the current key and qualified environment.
+
+Publication uses temporary files and atomic replacement, with a pending receipt
+for recovery between output and receipt publication. A name collision without an
+ownership record is an error. A corrupt receipt is not authority to remove files.
+Completed output-name changes retire only a previously recorded, unchanged ZIP.
+`settings.compatible` permits copying a previous preset only when the destination
+has none or matches an explicitly recorded `settings.seedSha256`; optional `settings.renames` maps exact option names. Iris selection moves
+only from the previous output of that recipe. Enablement and other selections are
+preserved. Keep instance-local cache directories when moving the installation if
+its generated shaders should remain runner-managed.
+
+### Updating
+
+Recheck Iris initial load, archive closing and reload call paths. For Euphoria,
+inspect constructor ordering, `ShaderDetector`'s result fields, style detection,
+watcher behavior, `BootShaderModificator`, shaded TAR normalization and BSDIFF API.
+The reviewed engine JAR digest is a code allowlist, separate from recipe input
+hashes. Updating it requires code review and a new handler qualification.
+
+Recheck Colorwheel's embedded overlay/configuration and shader version, qualify
+Create texture bindings and render layers, update source/text preconditions and
+expected payload hashes, then compare authoring/runtime output bytes. Increment
+the engine revision when handler behavior changes; increment the independent
+Skyweave patch version when its authored behavior changes. Retire a correction
+only after the chosen upstream release covers it. Shader redistribution terms
+remain separate from technical patch generation.

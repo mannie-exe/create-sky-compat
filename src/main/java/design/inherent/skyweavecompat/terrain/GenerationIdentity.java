@@ -8,16 +8,7 @@ public final class GenerationIdentity {
     public static final String FILE = "skyweave-generation.json";
     private GenerationIdentity() {}
 
-    /** Old registry IDs cannot be converted by renaming a marker or disabling terrain. */
-    public static void rejectLegacy(Path world) {
-        if (Files.exists(world.resolve("create-sky-generation.json"), LinkOption.NOFOLLOW_LINKS)) {
-            throw new IllegalStateException("This world uses Create Sky Compat registry identities. "
-                    + "Open it with its original release; Skyweave: Compatibility Patches requires a separate fresh world.");
-        }
-    }
-
     public static void verify(Path world, String identity) throws IOException {
-        rejectLegacy(world);
         Path marker = world.resolve(FILE);
         if (Files.exists(marker)) {
             if (!Files.readString(marker).equals(identity)) {

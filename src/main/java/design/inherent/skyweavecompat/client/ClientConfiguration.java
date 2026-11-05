@@ -15,6 +15,8 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public final class ClientConfiguration {
     public ClientConfiguration(ModContainer container, IEventBus modBus) {
         modBus.addListener(ClientResourceRevision::register);
+        if (OptionalIntegrations.enabled(Feature.CREATE_BACKFACES))
+            modBus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, PlainGlassModels::wrap);
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationOverview::new);
         if (OptionalIntegrations.enabled(Feature.REDSTONE_RENDERING))
             modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) -> event.enqueueWork(() ->

@@ -16,7 +16,7 @@ The outline is a bounding envelope, like the upstream lantern outline, rather th
 
 The compile-only artifact is Modrinth version `aQ7rY7ng`, SHA-256 `070b817d3282760d9789b22ce13779613c8b558e02012fd5884d343175d88fd9`. Review `Bridge_Lantern.getShape`, inherited collision, `LIGHTSTATE` updates, facing rotations and placement/removal behavior before changing its pin. Review Minecraft's `BlockGetter.clip` traversal and `ClipContext` shape modes when changing Minecraft or renderer integrations.
 
-Keep the feature opt-in unless the matching model is independently guaranteed. Retire the shape and selection hooks together if upstream adopts the same placement. A new native model or changed support behavior requires a fresh comparison; a matching filename is insufficient.
+The feature defaults on and expects the matching model resources. Consumers without those resources must disable it. Retire the shape and selection hooks together if upstream adopts the same placement. A new native model or changed support behavior requires a fresh comparison; a matching filename is insufficient.
 
 ## Verification
 

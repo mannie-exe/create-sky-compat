@@ -8,7 +8,9 @@ Keep Sky Villages floating beside Sky Archipelago terrain. Preserve foreign
 generators and saved-world generation identity; never silently convert worlds.
 Own the incorporated Veil/Iris rendering adapters here; keep static pack resources in the pack.
 Only Minecraft, NeoForge and necessary base libraries may be required.
-Feature switches are immutable startup configuration. Disabled adapters must not
+Stable adaptations default on when their dependencies and physical side qualify;
+explicit false selections remain authoritative. Pack resources are part of the
+supported visual contract. Feature switches are immutable startup configuration. Disabled adapters must not
 select target mixins, load foreign classes, expose data or constrain target versions.
 Use Java 21, NeoForge and exact upstream dependency pins. Do not bundle upstream
 binaries, templates or decompiled sources.

@@ -2,7 +2,7 @@
 
 ## Release identity and existing saves
 
-Skyweave: Compatibility Patches 0.20.0 uses `skyweave_compat` resources and configuration filenames. Install it in a fresh instance and create a fresh world. Old `create_sky_compat` registry identities are not aliases; keep existing Create Sky Compat worlds on their original release. The generation guard rejects `create-sky-generation.json`, including when terrain is disabled. Never rename or delete that marker to bypass the guard. Config values may be copied deliberately to the corresponding new files before creating a world; existing files are not silently imported.
+Skyweave: Compatibility Patches uses `skyweave_compat` resources and configuration filenames. Saved registry references must match the installed resources. Existing saves are not automatically converted, and old names are not aliases. A deliberate namespace migration must update saved references as well as the generation marker filename; changing a marker alone does not migrate a save. The generation guard verifies the recorded settings and rejects incompatible terrain configuration.
 
 The interior noise salt `create_sky_compat:interiors` remains an opaque deterministic input so the same seed retains its terrain algorithm. DH's `create-sky-lod-world-id` marker and `csky_` cache key format remain persistence contracts, preserving existing cache discovery. They are not public resource aliases. Other serialized owned IDs, including grave recovery metadata, use the new namespace only; this release does not convert existing saved data.
 
@@ -14,9 +14,7 @@ or `false`. Unknown keys, duplicates, and invalid values fail with an explanatio
 Missing keys use their documented defaults. Restart the entire game/server after
 changing switches; applied mixins cannot be unloaded during play.
 
-All switches default to `true` except `distant_horizons.world_cache`,
-`macaw.bridge_lantern_shape`, `create.glass_backfaces` and `fusion.glass_backfaces`,
-which default to `false`. A true setting is eligibility, not proof of activation.
+All switches default to `true`; explicit `false` selections remain authoritative. A true setting is eligibility, not proof of activation.
 Missing targets,
 physical-side restrictions, or disabled prerequisites leave an adapter inactive.
 An active combination validates the versions below. Disabling its switch avoids
@@ -61,13 +59,14 @@ inactive selections.
 | `linear_bearing.jade` | Server-backed brake/link status and inspection hints | Active carriage adapter, Jade 15.10.6+neoforge |
 | `distant_horizons.client_handoff` | Concurrent client wrapper ownership | Client, DH 3.3.3 |
 | `distant_horizons.shutdown` | Bounded island unload passes | DH 3.3.3, Sky Archipelago 1.3.6 |
-| `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.3.6; default false |
+| `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.3.6; default true |
 | `lighting.lifecycle` | Keep moving lights client-local and remove old world owners | Client, Sable Dynamic Lights 2.0.1, LambDynamicLights 4.8.11+1.21.1, Create 6.0.10 |
 | `lighting.sodium` | Position-aware moving-light lookup in Sodium | Client, Sable Dynamic Lights 2.0.1, LambDynamicLights 4.8.11+1.21.1, Create 6.0.10, Sodium 0.8.13+mc1.21.1; Sable and Iris are not required |
 | `questlog.interface` | Wrapped conditions, reward preview and scrollbar/input adaptation | Client, Questlog 3.5.0 or 3.5.3 |
 | `questlog.notifications` | First-progress and completion toasts | Client, Questlog 3.5.0 or 3.5.3 |
 | `questlog.reward_validation` | Validate eligibility and choices before grants | Logical server, Questlog 3.5.0 or 3.5.3 |
 | `bluemap.viewer` | Viewer adapter registration | Dedicated server, BlueMap 5.7, Sky Archipelago 1.3.6; map opt-in below |
+| `rendering.shader_patches` | Assemble verified shader recipes before Iris opens them; default on | Client, Iris 1.8.14-beta.1+mc1.21.1; recipe-specific runtime requirements are separate |
 | `rendering.veil_framebuffer` | Framebuffer preservation and active Iris target | Client, Veil 4.3.2, Iris 1.8.14-beta.1+mc1.21.1 |
 | `rendering.balloon_shadow_pass` | Exclude screen-space balloon effect from shadow pass | Client, Aeronautics 1.3.2, Iris version above |
 | `rendering.text_display_shadow_pass` | Exclude text displays and their backgrounds from shader shadows; default on | Client, Iris version above |
@@ -79,11 +78,16 @@ inactive selections.
 | `rendering.colorwheel_materials` | Colorwheel terrain/emission metadata on direct construct draws | Client, active `rendering.construct_material_ids`, Colorwheel 1.3.0+mc1.21.1 |
 | `rendering.single_block_model_data` | Match model data used for layer selection and tessellation | Client, Sable 2.0.6 |
 | `rendering.single_block_passes` | Draw single-block geometry in its current Iris terrain pass | Client, Sable 2.0.6, Iris 1.8.14-beta.1+mc1.21.1, Sodium 0.8.13+mc1.21.1 |
-| `macaw.bridge_lantern_shape` | Hanging stair-lantern outline and selection; matching resource model required, default off | Shared, Macaw’s Bridges 3.1.2 |
-| `create.glass_backfaces` | Show exposed Create glass from behind, retaining final connected textures | Client, Create 6.0.10; opt-in, independent of terrain and renderers |
-| `fusion.glass_backfaces` | Show exposed vanilla/Rechiseled glass from behind after Fusion processing | Client, Fusion 1.3.16; opt-in, no required Rechiseled installation |
+| `macaw.bridge_lantern_shape` | Hanging stair-lantern outline and selection; matching resource model required, default on | Shared, Macaw’s Bridges 3.1.2 |
+| `create.glass_backfaces` | Show exposed Create glass from behind, retaining final connected textures | Client, Create 6.0.10; default on, independent of terrain and renderers |
+| `fusion.glass_backfaces` | Show exposed vanilla/Rechiseled glass from behind after Fusion processing | Client, Fusion 1.3.16; default on, no required Rechiseled installation |
 | `create.window_culling` | Keep window faces visible across different window materials | Client, Create 6.0.10; independent of Fusion, Rechiseled and shaders |
 | `rechiseled.glass_culling` | Keep differently oriented glass faces visible | Client, Rechiseled 1.2.6; independent of Create and Fusion APIs |
+
+Both two-sided glass switches also separate touching rectangular surfaces during
+mesh construction. No extra switch or Sodium/Iris dependency is needed. See
+[glass backfaces](development/rendering.md#glass-backfaces) for the material policy,
+coverage and unsupported geometry.
 
 For rendering fixes alone, disable `terrain.preset`, `villages.clearance`,
 `bluemap.viewer`, and unwanted independent adaptations. To make Skyweave: Compatibility Patches inert, set
@@ -318,7 +322,7 @@ Enable `distant_horizons.world_cache` to use a UUID saved in
 be enabled. Enable the cache adapter on the client to suppress ambiguous legacy
 imports into those UUID namespaces. Foreign generators retain ordinary keys.
 
-The default false setting selects upstream cache behavior and installs no cache
+An explicit false setting selects upstream cache behavior and installs no cache
 hooks, even if a Skyweave: Compatibility Patches identity marker exists. Enabling selects a different
 client namespace without moving, deleting, or populating old caches. A retained
 marker is reused when re-enabling the adapter; keep it with the save. Malformed

@@ -1,5 +1,44 @@
 # Verification
 
+## 0.21.0 shader assembly and glass integration
+
+Java 21.0.13 on Apple Silicon, Minecraft 1.21.1 and NeoForge 21.1.264:
+`./gradlew --no-daemon check build clientProbeJar` passes, including seven focused
+shader workspace tests for composition/preconditions, bounded input and expansion,
+canonical identity, deterministic rebuilding, cache repair, locking, interrupted
+publication, ownership and selection/preset preservation. Existing geometry,
+configuration and generation-identity checks remain enabled.
+
+The isolated client generated BSL 10.1.8 + Colorwheel Patcher 1.0.5 from a genuinely
+missing output before Iris first opened it, with no Euphoria mod or launch hook.
+A subsequent full-pack cold run generated Complementary Unbound 5.9.3 + Euphoria
+1.10.5 + Skyweave 0.1.0 before the native patcher scanner. Receipt-based recognition
+removed the initial misleading missing-input report. Both shader choices compiled
+and rendered the glass fixture. Repeated shader loads preserved ZIP hashes and
+modification times; explicit rebuilds produced identical bytes. A deliberately
+incorrect source precondition retained the old file but blocked its selection;
+restoring the recipe made the qualified shader usable again. Native output-name
+migration loaded the new archive within the same Iris reload. An exact isolated
+empack installation generated both outputs, then passed `instance prepare` with
+zero managed-file changes or downloads. Resource reload and
+static/assembled Sable material fixtures rendered with the generated Euphoria
+output. This is not a general claim about moving-airship shadows or every GPU.
+
+The shared Java author build matched the previous builder's exact file payloads
+for both recipes; its controlled ZIP metadata now also permits byte-for-byte
+author/recipient comparison. The minimum native client reached its world and
+configuration screen without Iris/Euphoria and selected no adaptations. Disposable
+standalone and full-pack dedicated-server startup checks passed, without shader
+hooks. Native media and state records are retained in the local Resource Review
+harness under `images/2026-11-05-shader-runner/`.
+
+The exact Iris target is 1.8.14-beta.1+mc1.21.1. Euphoria scanner hooks qualify
+1.10.5-r5.9.3-neoforge; Colorwheel runtime is 1.3.0+mc1.21.1. Source inspection and
+native testing cover these versions. Windows archive-handle behavior is enforced
+through Iris's close-before-reload boundary and atomic publication, with headless
+CI coverage; no native Windows GPU session was available. Photon was not forced
+onto unsupported Apple hardware.
+
 ## Display text, 0.20.1
 
 Verified on 2026-11-04 with Java 21 and NeoForge 21.1.264. Candidate JAR SHA-256: `f8392b30a6eb7d73a541b6f20a6b6ef2abad6e4c282e99fb991ddbeaea551120`.
@@ -147,58 +186,90 @@ Native item placement, breaking and replacement preserve the stair state; resour
 `./gradlew --no-daemon check build` passes. Dedicated startup passes with no optional mods, Macaw alone enabled/disabled, future targets disabled and the complete pack. The 0.17.0 build's shipping classes match the ray-tested candidate byte for byte. Feature-selection tests cover missing, unsupported and disabled targets on both physical sides. The package check excludes Macaw classes and probes.
 
 
-## Glass backfaces, 0.16.0
+## Tiled glass and default activation
 
-The candidate targets Minecraft 1.21.1 / NeoForge 21.1.264, Create 6.0.10,
-Fusion 1.3.16 and Sodium 0.8.13. Native macOS ARM64 checks use Java 21 and the
-selected Complementary/Euphoria shader stack, with separate renderer checks
-without Sodium or Iris. Shipping SHA-256:
-`fc41e9b118521f5ce578740c473312f2f8b229a8fa93ac128ac2928c621da672`.
+The 0.20.1 development build with SHA-256
+`8c92065c2a5d86208fdf4d30d86a750bb163f9374e90148e5c9afa560030818e`
+adds the non-CT model path for Create 6.0.10 Tiled Glass and its pane.
+With the old backface switch enabled, native model queries show no generated
+reverse faces on either tiled model, while the CT controls do have them. The new
+wrapper produces six reverse faces on the sampled cube and eighteen on the
+connected pane. Partial cube/pane contact exercises the same shared partitioner.
 
-Inside/outside views cover vanilla glass, light-blue stained glass, Create framed
-glass and Rechiseled Create birch connecting glass. In each 3×3 two-layer wall,
-all nine reverse surfaces preserve the final outward CT UVs while the opposite
-neighbor direction stays hidden. Fusion can emit multiple processed subquads;
-comparisons retain every source vertex/UV association rather than assuming one
-quad per face. The resource-only prototype failed this same Create case.
+An isolated Create/Ponder client with no Sodium or Iris, and a full-pack client
+with the merged Complementary Unbound 5.9.3 + Euphoria 1.10.5 + Skyweave shader,
+render both viewing directions. These checks preserve pane connections and the
+existing CT neighbor; they do not extend the earlier matrix to arbitrary models.
+Source input, native records and raw captures are in the Resource Review harness
+under `images/2026-11-05-tiled-glass`.
 
-Sixteen boundary controls retain native matching/opaque occlusion and covered
-CT references, including panes, Create Deco windows and rotated Rechiseled axes.
-The registry contains 146 Rechiseled glass pillars; other upstream glass shape
-classes are not registered in this pack and are excluded. Create pane geometry
-is retained, not replaced by cube geometry. There is no moving-construct, Copycat,
-fluid, arbitrary resource-pack or DH backface coverage claim.
+The required `check build clientProbeJar` passes 130 Java tests and tooling,
+package and upstream checks. The new model-registration test covers block and
+multipart states, inventory exclusion, namespace isolation and repeated wrapping.
+A fresh feature file contains no false adaptation switches; explicit false values
+still survive loading and editor save/discard. Standalone dedicated startup with
+these defaults selects no optional adapters and exits normally. Pack-specific
+settings remain authoritative, including its explicit DH cache opt-out.
 
-The final artifact repeats all four nine-cell thick-wall comparisons and shader
-captures. Eight representative models retain identical output after resource reload
-and cold reopening. The same artifact with both switches disabled restores all
-four isolated one-sided controls. Stills cover selected viewpoints; no exhaustive
-camera-motion or shader/flicker matrix is claimed.
+## Glass backfaces and shared surfaces
 
-Separate Create-only and Fusion-only clients pass the thick-wall CT comparison
-without Sodium/Iris or the other CT mod. The minimum integrated client loads with
-no optional adapters active. Dedicated standalone, full integration with both
-client switches explicitly enabled, and unsupported-but-disabled metadata fixtures
-start and exit normally. Neither new client hook is selected on a dedicated server.
+Native checks target Minecraft 1.21.1 / NeoForge 21.1.264, Create 6.0.10,
+Fusion 1.3.16, Rechiseled 1.2.6 / Rechiseled Create 1.1.1, Sodium 0.8.13 and
+Iris 1.8.14-beta.1+mc1.21.1. The host is macOS ARM64 with Java 21.0.13.
+The unreleased candidate SHA-256 is
+`91bc3d7aec948c724929641aeb54a2d395847894ef2690f111c4d762ef2b2959`.
 
-The existing native probe bounds model-query repetitions to 2,000. Samples on a
-20×20 two-layer Create wall took about 1–6 ms per 2,000 six-direction queries after
-warm-up on this host. This measures model queries, not chunk-mesh throughput, GPU
-frame time or allocation pressure. Exposed quad counts double; native matching
-interfaces remain culled. No cache or performance bypass was introduced.
+The shader-off fixture covers 13 paired arrangements in both directions:
+Create framed, wooden and iron windows; panes and cube/pane partial contact;
+Fusion/Rechiseled materials and rotated axes; cross-family contact; tinted
+vanilla glass; matching, opaque, separated and chunk-edge controls. Original
+quad CT UVs and native face-visibility decisions match the baseline in the
+compared center samples. Native matching pane interfaces remain culled.
 
-`./gradlew --no-daemon check build clientProbeJar` passes 114 Java tests, six
-Python tooling tests, exact upstream pins and package/resource checks. The new
-probe records the registered targets and bounded query timings and acknowledges
-old commands on opening; a retained quit command must not close the next run.
-Probes and upstream binaries are absent from the shipping JAR.
+A striped diagnostic pack makes material priority visible independently of
+shader reflections. Before the repair, original/reverse geometry overlaps over
+one square block on mixed full faces and 1/8 block on the cube/pane contact, in
+both directions. The candidate removes these coincident same-facing regions.
+The nearer interior strips cover farther strips, holes reveal the farther
+material, and partial-alpha strips still blend. Actual block/face ownership,
+positions, source groups and UVs accompany captures.
 
-The Resource Review harness retains captures, native records and executed protocol
-under `images/2026-11-03-glass-backface-compat`. Initial captures used a candidate
-whose only later resource change was generated English ordering. The final scope
-excludes unregistered Rechiseled shape classes; final artifact checks and native
-controls are recorded with their own hashes. Renderer hooks and quad reversal
-remain the owners described in [rendering](rendering.md#glass-backfaces).
+The final candidate repeats the diagnostic contacts, six representative CT
+arrangements with Skyweave Glass r5.9.3-1.10.5, neighbor removal/restoration and
+resource reload. The latter restore identical model output. Static views cover
+8, 32, 64 and 128 blocks, 75-degree grazing views and a partial-contact corner,
+with shaders off/on. Eight-second mouse-motion recordings of cutout and
+translucent contacts show no observed flicker with either shader state. These
+samples do not establish arbitrary GPU/depth-format behavior or unlimited distance.
+Shader material classification remains a separate shader-lab responsibility.
+
+Separate Create-only and Fusion-only clients load and render the paired blocks
+and panes without Sodium, Iris or the other CT mod. The minimum client reaches
+its world without any optional targets. Disabling each installed CT adapter
+restores native one-sided output with no generated reverse quads. Dedicated
+standalone, full integration
+with both glass switches explicitly enabled, and unsupported-but-disabled
+metadata fixtures start and exit normally; no glass hook is selected on a server.
+
+Three warmed full-pack samples of 2,000 contact-model-data queries took
+20.67, 13.67 and 10.50 ms. This measures render-thread model queries, not chunk-mesh
+throughput, allocations or GPU frame time. No performance improvement is claimed.
+
+`./gradlew --no-daemon check build clientProbeJar` passes 129 Java tests,
+Python tooling checks, exact upstream pins and package/resource checks. Coverage
+includes rectangular overlap/union, clipped UVs and attributes, source immutability,
+repeated wrapping, bounded fallback, exceptional sampling cleanup and existing
+optional feature selection. Dedicated checks use `tools/startup_probe.py` with
+`standalone`, `full` (both glass keys enabled) and `unsupported-disabled`.
+
+The Minecraft Resource Review harness retains raw images, motion clips, native
+records, artifact hashes and the executed protocol in
+`projects/create-sky-resources/images/2026-11-04-shared-glass`.
+The shader-off matrix and first motion recordings precede a bounded fallback
+and sampling-signature cleanup; the final artifact repeats the controls noted
+above. Unsupported nonrectangular, highly subdivided, moving, block-entity,
+Copycat and DH paths are not claimed fixed. See the maintained
+[rendering contract](rendering.md#glass-backfaces) for hooks and update checks.
 
 ## Glass culling, 0.15.0
 

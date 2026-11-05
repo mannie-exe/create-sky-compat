@@ -350,3 +350,13 @@ tasks.register('verifyIris') {
     }
 }
 tasks.named('check') { dependsOn 'framebufferServerProbe', 'verifyIris' }
+
+// File-only authoring entrypoint; no game bootstrap or optional renderer is invoked.
+tasks.register('shaderBuild', JavaExec) {
+    dependsOn classes
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'design.inherent.skyweavecompat.shader.ShaderCli'
+    args providers.gradleProperty('shaderRoot').getOrElse('runs/shader-authoring')
+    if (providers.gradleProperty('shaderCheck').isPresent()) args '--check'
+    if (providers.gradleProperty('shaderRebuild').isPresent()) args '--rebuild'
+}

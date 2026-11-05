@@ -27,7 +27,7 @@ verification of the extracted fix is tracked in [verification](verification.md).
 
 `WorldIdentity` persists one UUID per saved world. `WorldLevelKeyMixin` uses that UUID
 and a hash of the dimension ID in DH's normal server-key handshake. Creation is
-opt-in through `distant_horizons.world_cache`; disabled means no cache hooks,
+enabled by default through `distant_horizons.world_cache`; an explicit false setting selects no cache hooks,
 including for a save with an existing marker. Re-enabling reuses its marker. Server-side database paths do not change.
 See [operator configuration](../configuration.md#distant-horizons) before enabling it
 on an existing installation.

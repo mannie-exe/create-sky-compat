@@ -44,9 +44,9 @@ class FeatureSelectionTest {
         assertFalse(both.enabled(Feature.NAMETAG_SHADOW));
     }
 
-    @Test void glassBackfacesAreIndependentOptInClientAdapters() {
+    @Test void glassBackfacesAreIndependentDefaultOnClientAdapters() {
         for (var feature : java.util.List.of(Feature.CREATE_BACKFACES, Feature.FUSION_BACKFACES)) {
-            assertFalse(feature.defaultEnabled);
+            assertTrue(feature.defaultEnabled);
             var supported = FeatureSelection.dependencies(feature);
             assertTrue(FeatureSelection.select(only(feature), supported, true).enabled(feature));
             assertTrue(FeatureSelection.select(only(feature), supported, false).active().isEmpty());
@@ -58,8 +58,8 @@ class FeatureSelectionTest {
         }
     }
 
-    @Test void hangingLanternIsOptInAndNeedsOnlyMacawOnEitherSide() {
-        assertFalse(Feature.MACAW_LANTERN.defaultEnabled);
+    @Test void hangingLanternDefaultsOnAndNeedsOnlyMacawOnEitherSide() {
+        assertTrue(Feature.MACAW_LANTERN.defaultEnabled);
         for (boolean client : new boolean[]{false, true}) {
             var selected = FeatureSelection.select(only(Feature.MACAW_LANTERN), Map.of("mcwbridges", "3.1.2"), client);
             assertTrue(selected.enabled(Feature.MACAW_LANTERN));
@@ -393,7 +393,7 @@ class FeatureSelectionTest {
         assertThrows(IllegalArgumentException.class, () -> FeatureSettings.read(new StringReader("terrain.preset=true\nterrain.preset=false")));
         var defaults = FeatureSettings.load(directory);
         assertTrue(defaults.enabled(Feature.TERRAIN));
-        assertFalse(defaults.enabled(Feature.DH_CACHE));
+        for (Feature feature : Feature.values()) assertTrue(defaults.enabled(feature), feature.key);
         Files.writeString(directory.resolve(FeatureSettings.FILE), "terrain.preset=false\n");
         assertFalse(FeatureSettings.load(directory).enabled(Feature.TERRAIN));
         assertEquals("terrain.preset=false\n", Files.readString(directory.resolve(FeatureSettings.FILE)));

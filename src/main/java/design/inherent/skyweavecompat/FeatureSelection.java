@@ -88,7 +88,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
 
     public static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case TEXT_DISPLAY_LIGHTING, NAMETAG_LIGHTING, TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW, CREATE_BACKFACES, FUSION_BACKFACES, CREATE_WINDOWS, RECHISELED_GLASS, REDSTONE_RENDERING, AUDIO_TIMELINE, LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
+            case SHADER_PATCHES, TEXT_DISPLAY_LIGHTING, NAMETAG_LIGHTING, TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW, CREATE_BACKFACES, FUSION_BACKFACES, CREATE_WINDOWS, RECHISELED_GLASS, REDSTONE_RENDERING, AUDIO_TIMELINE, LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
                     QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> true;
             default -> false;
         };
@@ -97,6 +97,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
     public static Map<String, String> dependencies(Feature feature) {
         return switch (feature) {
             case MACAW_LANTERN -> Map.of("mcwbridges", "3.1.2");
+            case SHADER_PATCHES -> Map.of("iris", "1.8.14-beta.1+mc1.21.1");
             case CREATE_BACKFACES -> Map.of("create", "6.0.10");
             case FUSION_BACKFACES -> Map.of("fusion", "1.3.16");
             case CREATE_WINDOWS -> Map.of("create", "6.0.10");
@@ -199,6 +200,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case MODEL_DATA -> List.of("client.SingleBlockModelDataMixin");
                 case SINGLE_BLOCK_PASSES -> List.of("client.SingleBlockPassMixin");
                 case MACAW_LANTERN -> List.of("macaw.BridgeLanternShapeMixin", "macaw.ClipModeAccessor", "macaw.LanternRayMixin");
+                case SHADER_PATCHES -> List.of("client.ShaderAssemblyMixin");
                 case CREATE_BACKFACES -> List.of("client.CreateGlassBackfaceMixin");
                 case FUSION_BACKFACES -> List.of("client.FusionGlassBackfaceMixin");
                 case CREATE_WINDOWS -> List.of("client.CreateWindowCullingMixin");

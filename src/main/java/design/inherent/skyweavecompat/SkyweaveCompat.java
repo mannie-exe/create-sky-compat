@@ -33,7 +33,6 @@ public final class SkyweaveCompat {
             // This checks Compat's own save marker without loading or modifying any optional mod.
             NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> {
                 var root = event.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
-                design.inherent.skyweavecompat.terrain.GenerationIdentity.rejectLegacy(root);
                 if (java.nio.file.Files.exists(root.resolve(design.inherent.skyweavecompat.terrain.GenerationIdentity.FILE)))
                     throw new IllegalStateException("This save requires Skyweave: Compatibility Patches terrain.preset and Sky Archipelago 1.3.6. "
                             + "Restore its recorded configuration; automatic world conversion is unsupported.");

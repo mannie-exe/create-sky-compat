@@ -24,7 +24,6 @@ public final class GenerationGuard {
     private GenerationGuard() {}
     public static void verify(MinecraftServer server) {
         var root = server.getWorldPath(LevelResource.ROOT);
-        GenerationIdentity.rejectLegacy(root);
         var stem = server.registryAccess().registryOrThrow(Registries.LEVEL_STEM).getOrThrow(LevelStem.OVERWORLD);
         if (!(stem.generator() instanceof SkyIslandChunkGenerator sky)
                 || !((GeologicalGenerator)(Object)sky).skyweave$isEnabled()) {

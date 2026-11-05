@@ -20,10 +20,10 @@ class StartupEditsTest {
         Path path = file("# retain me\r\nquestlog.interface : true\r\n! retained too\r\nterrain.preset=false");
         var draft = StartupEdits.open(directory);
         draft.set(Feature.QUESTLOG_INTERFACE, false);
-        draft.set(Feature.DH_CACHE, true);
+        draft.set(Feature.DH_CACHE, false);
         assertTrue(draft.dirty()); assertTrue(draft.saved().enabled(Feature.QUESTLOG_INTERFACE));
         draft.save();
-        assertEquals("# retain me\r\nquestlog.interface=false\r\n! retained too\r\nterrain.preset=false\r\ndistant_horizons.world_cache=true\r\n", Files.readString(path));
+        assertEquals("# retain me\r\nquestlog.interface=false\r\n! retained too\r\nterrain.preset=false\r\ndistant_horizons.world_cache=false\r\n", Files.readString(path));
         assertFalse(draft.dirty()); assertFalse(draft.saved().enabled(Feature.QUESTLOG_INTERFACE));
         assertFalse(draft.saved().values().containsKey(Feature.SABLE_GRAVES));
     }
@@ -36,7 +36,7 @@ class StartupEditsTest {
         Path path = file("# defaults only\n"); var draft = StartupEdits.open(directory);
         draft.set(Feature.QUESTLOG_INTERFACE, false);draft.set(Feature.QUESTLOG_INTERFACE, true);
         assertFalse(draft.dirty());draft.save();assertEquals("# defaults only\n",Files.readString(path));
-        draft.set(Feature.DH_CACHE,true);draft.discard();assertFalse(draft.value(Feature.DH_CACHE));
+        draft.set(Feature.DH_CACHE,false);draft.discard();assertTrue(draft.value(Feature.DH_CACHE));
     }
     @Test void externalEditRefusesOverwriteAndKeepsDraftUntilExplicitReload() throws IOException {
         Path path = file("questlog.interface=true\n");var draft=StartupEdits.open(directory);

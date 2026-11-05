@@ -21,7 +21,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | --- | --- | --- |
 | Sky Archipelago | 1.3.6 | Expanded island preset and separately selectable placement/climate adaptations |
 | Create | 6.0.10 | Client window-face culling correction; preserves native connected textures |
-| Glass backfaces | Create 6.0.10 or Fusion 1.3.16 | Independent opt-in two-sided glass retaining native connected textures |
+| Glass backfaces | Create 6.0.10 or Fusion 1.3.16 | Independent default-on two-sided glass retaining native connected textures |
 | Rechiseled | 1.2.6 | Client rotated-glass culling correction, including Rechiseled Create windows |
 | Sky Villages + Architectury | 1.0.6 + 13.x (tested 13.0.11) | Village clearance and placement; needs Sky Archipelago |
 | Sable | 2.0.6 | Island pressure; client single-block model-data correction |
@@ -35,7 +35,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Analog Audio + AnalogLib | 0.1.5-hotfix.1 + 0.1.0 | Client playback timeline correction after loading and standby |
 | Sable + You're in Grave Danger | 2.0.6 + 2.0.13 | Construct-relative graves, bounded loss fallback and moving location tracking |
 | Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
-| Distant Horizons | 3.3.3 | Client handoff, island shutdown, and opt-in cache isolation |
+| Distant Horizons | 3.3.3 | Client handoff, island shutdown, and selectable cache isolation |
 | Macaw’s Bridges | 3.1.2 | Opt-in selection for the matching hanging stair-lantern resource model; enable on both sides |
 | Questlog | 3.5.0, 3.5.3 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
 | BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
@@ -192,4 +192,8 @@ Original implementation: MIT. Incorporated framebuffer code and its test infrast
 LGPL-3.0-only. See [NOTICE](NOTICE) and [license texts](licenses/). Upstream binaries
 and templates are not bundled. This is an independent compatibility mod.
 
-Skyweave: Compatibility Patches is independent of the unfinished Skyweave civilization mod. The playable pack is Create: Skyweave. Version 0.20.0 changes registry identity and requires a fresh world; see [existing saves](docs/configuration.md#release-identity-and-existing-saves).
+Skyweave: Compatibility Patches is independent of the unfinished Skyweave civilization mod. The playable pack is Create: Skyweave. The registry namespace is `skyweave_compat`; see [existing saves](docs/configuration.md#release-identity-and-existing-saves).
+
+Shader recipes can assemble qualified shaders on the client before Iris loads them.
+The [rendering guide](docs/development/rendering.md#shader-assembly) covers inputs,
+ownership, caching and supported patch operations. No recipes are installed by this mod itself.
