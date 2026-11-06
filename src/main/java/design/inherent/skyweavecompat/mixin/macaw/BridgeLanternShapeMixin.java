@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(targets = "com.mcwbridges.kikoz.objects.items.Bridge_Lantern", remap = false)
 abstract class BridgeLanternShapeMixin {
     @Inject(method = "getShape", at = @At("HEAD"), cancellable = true, require = 1)
-    private void skyweave$hangingOutline(BlockState state, BlockGetter level, BlockPos pos,
+    private void skyweave$bridgeOutline(BlockState state, BlockGetter level, BlockPos pos,
             CollisionContext context, CallbackInfoReturnable<VoxelShape> cir) {
-        var shape = LanternShapes.stair(state);
+        var shape = LanternShapes.outline(state);
         if (shape != null) cir.setReturnValue(shape);
     }
 }

@@ -71,6 +71,18 @@ public final class PatchTest {
         ShadowPassProbe.verify(entity, "skyweave$skipNametagShadow");
         assertEquals(1, calls(method(entity, "renderNameTag"), "skyweave$nametagLighting"));
         assertEquals(0, calls(method(entity, "render"), "skyweave$nametagLighting"));
+        var constructDispatcher = transformed(service, transformer,
+                "dev.ryanhcode.sable.sublevel.render.dispatcher.VanillaSubLevelRenderDispatcher");
+        assertEquals(1, calls(method(constructDispatcher, "renderSectionLayer"), "skyweave$chunked"));
+        assertEquals(1, calls(method(constructDispatcher, "renderAfterSections"), "skyweave$single"));
+        for (String path : java.util.List.of("VanillaCoreTransformer", "VanillaTransformer")) {
+            var ast = transformed(service, transformer, "net.irisshaders.iris.pipeline.transform.transformer." + path);
+            assertEquals(1, calls(method(ast, "transform"), "skyweave$depth"));
+        }
+        var constructBuffer = transformed(service, transformer, "com.mojang.blaze3d.vertex.VertexBuffer");
+        assertEquals(1, calls(method(constructBuffer, "_drawWithShader"), "skyweave$singleDraw"));
+        var constructProgram = transformed(service, transformer, "net.irisshaders.iris.pipeline.programs.ExtendedShader");
+        assertEquals(1, calls(method(constructProgram, "<init>"), "skyweave$opaqueSampler"));
         var textMap = transformed(service, transformer, "net.irisshaders.iris.pipeline.programs.ShaderMap");
         assertEquals(1, calls(method(textMap, "getShader"), "skyweave$textShader"));
         var textPipeline = transformed(service, transformer, "net.irisshaders.iris.pipeline.IrisRenderingPipeline");

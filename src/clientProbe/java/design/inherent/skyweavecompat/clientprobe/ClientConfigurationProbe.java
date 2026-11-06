@@ -26,9 +26,17 @@ final class ClientConfigurationProbe {
     private boolean opened;
     private int ticks, sequence = -1;
     private String lastError;
+    private Boolean keyAccepted;
+    private JsonObject nativeKey;
     ClientConfigurationProbe() {
         if (!Files.isRegularFile(root.resolve("config-review-fixture.json"))) throw new IllegalStateException("Configuration probe requires its disposable-fixture marker");
         NeoForge.EVENT_BUS.addListener(this::tick);
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, true,
+                net.neoforged.neoforge.client.event.ScreenEvent.KeyPressed.Pre.class, event -> {
+                    nativeKey = new JsonObject(); nativeKey.addProperty("key", event.getKeyCode());
+                    nativeKey.addProperty("modifiers", event.getModifiers()); nativeKey.addProperty("canceled", event.isCanceled());
+                    nativeKey.addProperty("controlDown", net.minecraft.client.gui.screens.Screen.hasControlDown());
+                });
         if (Boolean.getBoolean("skyweave_compat.probe.configuration.journal")) new ClientJournalProbe();
     }
     private void open() {
@@ -59,7 +67,7 @@ final class ClientConfigurationProbe {
                             var fields = widgets(mc.screen).stream().filter(w -> w instanceof net.minecraft.client.gui.components.EditBox).toList();
                             ((net.minecraft.client.gui.components.EditBox) fields.get(command.get("index").getAsInt())).setValue(command.get("value").getAsString());
                         }
-                        case "key" -> mc.screen.keyPressed(command.get("key").getAsInt(), 0, command.has("modifiers") ? command.get("modifiers").getAsInt() : 0);
+                        case "key" -> keyAccepted = mc.screen.keyPressed(command.get("key").getAsInt(), 0, command.has("modifiers") ? command.get("modifiers").getAsInt() : 0);
                         case "scroll" -> mc.screen.mouseScrolled(command.get("x").getAsDouble(), command.get("y").getAsDouble(), 0, command.get("amount").getAsDouble());
                         case "drag" -> {
                             double x = command.get("x").getAsDouble(), y = command.get("y").getAsDouble();
@@ -73,6 +81,7 @@ final class ClientConfigurationProbe {
                         }
                         case "scale" -> { mc.options.guiScale().set(command.get("value").getAsInt()); mc.resizeDisplay(); }
                         case "resize" -> org.lwjgl.glfw.GLFW.glfwSetWindowSize(mc.getWindow().getWindow(), command.get("width").getAsInt(), command.get("height").getAsInt());
+                        case "text" -> { for (char character : command.get("value").getAsString().toCharArray()) mc.screen.charTyped(character, 0); }
                         case "snapshot" -> {}
                         case "quit" -> mc.stop();
                         default -> throw new IllegalArgumentException("Unknown configuration fixture action");
@@ -94,17 +103,62 @@ final class ClientConfigurationProbe {
             report.addProperty("pid", ProcessHandle.current().pid()); report.addProperty("sequence", sequence); report.addProperty("screen", mc.screen == null ? "none" : mc.screen.getClass().getName());
             report.addProperty("width", mc.getWindow().getGuiScaledWidth()); report.addProperty("height", mc.getWindow().getGuiScaledHeight()); report.addProperty("scale", mc.options.guiScale().get());
             if (error != null) report.addProperty("error", error);
+            report.addProperty("controlDown", net.minecraft.client.gui.screens.Screen.hasControlDown());
+            report.addProperty("keyAccepted", keyAccepted);
+            if (nativeKey != null) report.add("nativeKey", nativeKey);
+            if (mc.screen != null) report.addProperty("focusOwner", String.valueOf(mc.screen.getFocused()));
             if (mc.screen != null) report.addProperty("screenFocusAttached", mc.screen.getFocused() == null || mc.screen.children().contains(mc.screen.getFocused()));
             var rows = new JsonArray();
             if (mc.screen != null) for (var widget : widgets(mc.screen)) {
-                var row = new JsonObject();row.addProperty("label", widget.getMessage().getString());row.addProperty("x",widget.getX());row.addProperty("y",widget.getY());row.addProperty("width",widget.getWidth());row.addProperty("height",widget.getHeight());row.addProperty("active",widget.active);row.addProperty("focused",widget.isFocused());if(widget instanceof net.minecraft.client.gui.components.EditBox input)row.addProperty("value",input.getValue());rows.add(row);
+                var row = new JsonObject();row.addProperty("label", widget.getMessage().getString());row.addProperty("x",widget.getX());row.addProperty("y",widget.getY());row.addProperty("width",widget.getWidth());row.addProperty("height",widget.getHeight());row.addProperty("active",widget.active);row.addProperty("focused",widget.isFocused());row.addProperty("font",widget.getMessage().getStyle().getFont().toString());if(widget instanceof net.minecraft.client.gui.components.EditBox input){row.addProperty("value",input.getValue());row.addProperty("selection",input.getHighlighted());row.addProperty("cursor",input.getCursorPosition());row.addProperty("identity",System.identityHashCode(input));}rows.add(row);
             }
             report.add("widgets", rows);
             if (mc.screen instanceof ConfigurationOverview overview) {
+                for (String name : java.util.List.of("page", "query", "feedback")) {
+                    var field = ConfigurationOverview.class.getDeclaredField(name); field.setAccessible(true);
+                    Object value = field.get(overview);
+                    report.addProperty(name, value instanceof net.minecraft.network.chat.Component text ? text.getString() : String.valueOf(value));
+                }
+                var draftsField = ConfigurationOverview.class.getDeclaredField("json"); draftsField.setAccessible(true);
+                var files = new JsonObject();
+                for (Object value : ((java.util.Map<?, ?>) draftsField.get(overview)).values()) {
+                    var edits = (design.inherent.skyweavecompat.configuration.JsonEdits) value;
+                    var entry = new JsonObject(); entry.addProperty("dirty", edits.dirty());
+                    for (String key : edits.keys()) entry.addProperty(key, edits.value(key));
+                    files.add(edits.definition().filename(), entry);
+                }
+                report.add("files", files);
+                var nativeDrafts = ConfigurationOverview.class.getDeclaredField("toml"); nativeDrafts.setAccessible(true);
+                var registered = new JsonObject();
+                for (Object value : ((java.util.Map<?, ?>) nativeDrafts.get(overview)).values()) {
+                    var edits = (design.inherent.skyweavecompat.configuration.RegisteredEdits) value;
+                    var entry = new JsonObject(); entry.addProperty("dirty", edits.dirty());
+                    var live = new JsonObject();
+                    for (var field : edits.fields()) { entry.addProperty(field.key(), edits.value(field.key())); live.addProperty(field.key(), String.valueOf(field.binding().getRaw())); }
+                    entry.add("live", live);
+                    registered.add(edits.filename(), entry);
+                }
+                report.add("registered", registered);
+                var linkField = ConfigurationOverview.class.getDeclaredField("links"); linkField.setAccessible(true);
+                var navigationKeys = new JsonArray();
+                for (Object key : ((java.util.Map<?, ?>) linkField.get(overview)).keySet()) navigationKeys.add(String.valueOf(key));
+                report.add("navigation.keys", navigationKeys);
                 for (String name : java.util.List.of("content", "navigation")) {
                     var panelField = ConfigurationOverview.class.getDeclaredField(name); panelField.setAccessible(true);
                     Object panel = panelField.get(overview);
-                    for (String property : java.util.List.of("scroll", "activeSection", "maximumScroll", "focusKey")) {
+                    if (name.equals("content")) {
+                        var rowField = panel.getClass().getDeclaredField("rows"); rowField.setAccessible(true);
+                        var anchors = new JsonArray(); var groups = new JsonArray();
+                        for (Object row : (java.util.List<?>) rowField.get(panel)) {
+                            var anchor = row.getClass().getDeclaredMethod("anchor"); anchor.setAccessible(true);
+                            var boundary = row.getClass().getDeclaredMethod("boundary"); boundary.setAccessible(true);
+                            Object key = anchor.invoke(row);
+                            if (key != null) anchors.add(String.valueOf(key));
+                            if (((Number) boundary.invoke(row)).intValue() == 1) groups.add(String.valueOf(key));
+                        }
+                        report.add("content.anchors", anchors); report.add("content.groups", groups);
+                    }
+                    for (String property : java.util.List.of("scroll", "activeSection", "maximumScroll", "focusKey", "highlighted")) {
                         var method = panel.getClass().getDeclaredMethod(property); method.setAccessible(true);
                         Object value = method.invoke(panel);
                         report.addProperty(name + "." + property, value == null ? null : value.toString());

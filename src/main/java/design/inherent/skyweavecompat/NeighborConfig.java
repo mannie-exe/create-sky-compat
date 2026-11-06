@@ -23,8 +23,6 @@ public final class NeighborConfig {
 
     private NeighborConfig() {}
 
-    public static boolean validSavedRange() { return MINIMUM_GAP.getRaw() <= MAXIMUM_GAP.getRaw(); }
-
     public static NeighborRule.Settings settings() { return active; }
 
     public static void beginServer() {

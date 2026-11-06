@@ -35,4 +35,12 @@ class SectionNavigationTest {
         assertThrows(IllegalArgumentException.class, () -> navigation.add("first", 10));
         assertThrows(IllegalArgumentException.class, () -> navigation.jump("missing", 100));
     }
+    @Test void endBookmarkStaysAtTheEndAfterColumnReflow() {
+        var wide = new SectionNavigation(); wide.add("first", 0); wide.add("last", 800);
+        wide.jump("last", 600);
+        var bookmark = wide.remember(600, 600);
+        var narrow = new SectionNavigation(); narrow.add("first", 0); narrow.add("last", 1600);
+        assertEquals(1400, narrow.restore(bookmark, 1400));
+        assertEquals("last", narrow.active(1400, 1400));
+    }
 }

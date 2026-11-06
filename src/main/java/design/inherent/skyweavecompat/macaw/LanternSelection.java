@@ -9,7 +9,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/** Check only the neighboring owners whose hanging outlines enter a visited cell. */
+/** Check only the neighboring owners whose lantern outlines enter a visited cell. */
 public final class LanternSelection {
     public static BlockHitResult extend(BlockGetter getter, ClipContext context, BlockHitResult nativeHit) {
         if (((ClipModeAccessor) context).skyweave$blockMode() != ClipContext.Block.OUTLINE
@@ -26,7 +26,7 @@ public final class LanternSelection {
                     if (!level.hasChunkAt(owner)) continue;
                     var state = level.getBlockState(owner);
                     if (!(state.getBlock() instanceof Bridge_Lantern)) continue;
-                    var shape = LanternShapes.stair(state);
+                    var shape = LanternShapes.outline(state);
                     if (shape == null) continue;
                     var hit = shape.clip(from, context.getTo(), owner);
                     if (hit == null || !inCell(hit, cell)) continue;

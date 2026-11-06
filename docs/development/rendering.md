@@ -21,8 +21,42 @@ models rather than `CTModel`. `PlainGlassModels` wraps only their block-state
 models at NeoForge's `ModifyBakingResult` event, after ordinary model modifiers.
 It delegates native materials, render types, pane state selection and item
 transforms, then reuses the same final-quad and neighbor-contact policy. Inventory
-models remain untouched. The wrapper is registered only when the Create
-adaptation is selected on the physical client; resource reload recreates it.
+models remain untouched. Registration also admits vanilla Tinted Glass under
+`fusion.glass_backfaces` and Macaw's sixteen mosaic blocks/panes under the separate
+`macaw.glass_backfaces` client switch (Macaw's Windows 2.4.2). The latter needs
+neither Create nor Fusion. The same final-quad/contact policy works with simple,
+multipart and processed models; registration takes an explicit target predicate.
+Resource reload recreates the wrappers, and repeated registration does not nest
+them. Provider selection is deliberately scoped rather than inferred from an
+arbitrary block name or a transparent render layer.
+
+Macaw's ordinary, barred and Gothic window glass already supplies opposite-facing
+quads on the same plane in the inspected native models. Those families are not
+wrapped. One-way glass/panes are excluded to retain their directional design.
+Create Deco windows/panes already inherit the supported Create paths; Rechiseled's
+146 glass pillars retain their Fusion path. Missing static families can reuse this
+wrapper after reviewing their model/state ownership and optional feature boundary.
+
+The same wrapper admits the approved caramel-brick family (full blocks, slabs
+and stairs), Linear Bearing bubble gum, Design n’ Decor ornate grate and Bits ’n’
+Bobs industrial grating. Each has an independent default-on client switch and
+requires only its owning mod's supported metadata; upstream dependencies remain
+the owning mod's responsibility. Registration captures the active feature set
+once and uses explicit resource IDs. Both grates retain their original `CTModel`
+as the delegate, so connected tiles are selected before reverse quads are added.
+No panel variants, scaffolding or other translucent blocks are inferred.
+
+Bubble gum uses a static baked cube despite having a block entity. Contact
+sampling therefore admits block-entity neighbors only when their final model is
+one of these explicitly selected static wrappers. The reentry guard still avoids
+recursive sampling. It does not read entity state, alter adhesion or replace a
+block-entity renderer; unrelated block entities remain excluded.
+
+Create's metal scaffolding already models inward-facing side sheets and the
+platform underside. Vanilla scaffolding models posts and framing around a
+two-sided thin platform. Neither is a missing cube-interior case, and both retain
+their native models and culling. Review those inward surfaces before considering
+any future wrapper rather than treating texture alpha as a defect.
 
 The selected pack registers 146 Rechiseled glass pillars; other Rechiseled glass
 shape classes are not registered and are excluded. It resolves no Rechiseled class
@@ -123,6 +157,75 @@ and [Fusion issue 148](https://github.com/SuperMartijn642/Fusion/issues/148).
 The latter explains the separation between texture connections and block culling;
 it is not an exact upstream report of this Create defect. Native results and
 remaining limits belong in [verification](verification.md).
+
+## Distant constructs with shaders
+
+`rendering.construct_distance` requires SSRD, Sable and Iris on the physical
+client. It scopes Iris's `far` uniform to the greater of its current value and
+SSRD's effective, server-capped range. It does not change view distance, tracking,
+simulation or the projection. `rendering.construct_occlusion` independently adds
+DH opaque-terrain depth testing; DH is not required by the distance correction.
+Both switches default on and require a game restart when changed.
+
+`ConstructDrawMixin` wraps the actual chunked draw after shader application and
+SSRD projection setup. For single-block meshes it carries a bounded classification
+through the immediate uploader; `ConstructBufferMixin` applies the uniform scope
+only after that uploader reapplies its shader. Nested and exceptional exits restore
+the classification. A scope around `RenderType.draw` alone is too early.
+Sable 2.0.6 selects this dispatcher through its Sodium reach-around renderer.
+`ConstructUniforms` admits only a bound Iris `ExtendedShader`, an active world
+pipeline with its main target bound and a perspective projection, outside the shadow pass. Locations belong
+to that shader instance, never a global GL-ID cache. It restores uniform values
+and the final program binding on nested and exceptional exits. Missing uniforms
+leave the corresponding responsibility inactive.
+
+The DH adapter injects a dormant fragment guard into Iris's legacy and core
+terrain transformations. Only the construct draw enables it. It leaves original
+outputs, alpha tests and material logic intact, skips programs writing custom
+fragment depth, and reserves one dynamic sampler only if Iris has a spare unit.
+No copied shader ZIP, upstream runtime library or additional framebuffer is
+shipped. Iris's own GLSL transformer is a compile/test dependency.
+
+DH's opaque-pass event authorizes depth for the current Iris frame and pipeline.
+Before DH's translucent pass, sampling uses its live depth texture; afterwards it
+uses Iris's preserved opaque snapshot. A foreign frame/pipeline, inactive DH
+integration, missing texture or matching draw-depth attachment disables the guard.
+Pipeline destruction clears ownership. The adapter owns no GL textures. Each
+fragment uses the actual construct projection and viewport and Iris's matching
+DH projection to compare view-space distances. Cleared depths do not occlude.
+The comparison moves each depth two floating-point steps toward visibility and
+adds 1/64 block of view-space allowance, avoiding an arbitrary large world-space
+bias. This is conservative around precision limits; it does not repair DH's
+terrain approximation or supply missing LODs.
+
+Opaque DH depth deliberately excludes water as an opaque blocker. Native and DH
+water retain their shader's absorption, sorting and composition. This adapter
+does not introduce order-independent transparency. Later shader fog and color
+processing remain authoritative: Complementary's final fog can still hide an
+opaque distant construct when DH rendering is disabled. BSL and Complementary
+must therefore be qualified separately rather than promising every shader draws
+beyond its native fog range.
+
+Block entities use Sable's separate buffered entity-renderer path. Flywheel and
+Colorwheel use their own embedded visual programs; neither is implicitly covered
+by these terrain-program hooks. Existing material, model-data, single-block,
+framebuffer and Colorwheel adaptations remain independent. Do not identify a
+construct through the mere declaration of `SableEnableNormalLighting`; Iris does
+not wire that uniform automatically.
+
+On updates, inspect Sable's selected dispatcher, both draw boundaries and Minecraft's immediate
+uploader apply/draw order, SSRD's
+range/cap and projection scopes, Iris's `ExtendedShader` construction, both GLSL
+transformers, sampler allocator, frame counter and DH texture-copy timing. Recheck
+actual DH draw/reconstruction matrices, viewport/render scale, depth conventions,
+custom fragment depth, texture-unit limits and pipeline destruction. Retire a hook
+only when a released upstream repair covers the same responsibility and passes
+the corresponding native controls.
+
+Upstream tracks [shader visibility](https://github.com/RanoldStranold/SSRD/issues/50),
+[DH/shader interaction](https://github.com/RanoldStranold/SSRD/issues/68), and
+[distance fading](https://github.com/RanoldStranold/SSRD/issues/64).
+See [verification](verification.md#ssrd-shader-adaptations) for tested scope.
 
 ## Framebuffer state
 

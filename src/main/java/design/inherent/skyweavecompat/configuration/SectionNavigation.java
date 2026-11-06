@@ -5,7 +5,9 @@ import java.util.Map;
 
 /** Section positions come from measured rows; an explicit clamped jump keeps its destination selected. */
 public final class SectionNavigation {
-    public record Bookmark(String section, float offset) {}
+    public record Bookmark(String section, float offset, boolean end) {
+        public Bookmark(String section, float offset) { this(section, offset, false); }
+    }
     private final Map<String, Integer> anchors = new LinkedHashMap<>();
     private String destination;
     private float destinationScroll;
@@ -34,12 +36,12 @@ public final class SectionNavigation {
     }
     public Bookmark remember(float scroll, float maximum) {
         String id = active(scroll, maximum);
-        return id == null ? null : new Bookmark(id, scroll - anchors.get(id));
+        return id == null ? null : new Bookmark(id, scroll - anchors.get(id), maximum > 0 && scroll >= maximum - 0.5f);
     }
     public float restore(Bookmark bookmark, float maximum) {
         destination = null;
         if (bookmark == null || !anchors.containsKey(bookmark.section())) return 0;
         destination = bookmark.section();
-        return destinationScroll = Math.clamp(anchors.get(destination) + bookmark.offset(), 0, maximum);
+        return destinationScroll = bookmark.end() ? maximum : Math.clamp(anchors.get(destination) + bookmark.offset(), 0, maximum);
     }
 }

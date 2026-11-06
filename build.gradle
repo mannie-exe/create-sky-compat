@@ -34,6 +34,7 @@ configurations {
     veilSource
     aeronauticsSource
     sodiumSource
+    irisSource
     flywheelSource
     analogSource
     runtimeClasspath.extendsFrom localRuntime
@@ -72,6 +73,9 @@ dependencies {
     sodiumSource('maven.modrinth:sodium:uMOpc5uV') { transitive = false }
     aeronauticsSource('maven.modrinth:create-aeronautics:44pLdPGg') { transitive = false }
     veilSource('maven.modrinth:sable:fg9dTRz9') { transitive = false }
+    irisSource('maven.modrinth:iris:KduFYu4t') { transitive = false }
+    compileOnly('maven.modrinth:ssrd:Zdhm9p2k') { transitive = false }
+    testRuntimeOnly('maven.modrinth:ssrd:Zdhm9p2k') { transitive = false }
     compileOnly('maven.modrinth:iris:KduFYu4t') { transitive = false }
     testImplementation('maven.modrinth:iris:KduFYu4t') { transitive = false }
     testRuntimeOnly 'io.github.llamalad7:mixinextras-neoforge:0.5.5'
@@ -171,6 +175,13 @@ tasks.register('verifyUpstream') {
                 != 'd6b7fdf94359f73dc1fee730eded898d51b3bf0d626710753253becd8e4e6bef') {
             throw new GradleException('Unexpected Ponder compile-only dependency')
         }
+
+        def ssrd = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
+            it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'ssrd'
+        }?.file
+        if (ssrd == null || java.security.MessageDigest.getInstance('SHA-256').digest(ssrd.bytes).encodeHex().toString()
+                != '82eed2803734bd93ac1abf542ae1970586fca290b8bc562aab76190954867431')
+            throw new GradleException('Unexpected SSRD compile-only dependency')
 
         def colorwheel = configurations.compileClasspath.resolvedConfiguration.resolvedArtifacts.find {
             it.moduleVersion.id.group == 'maven.modrinth' && it.name == 'colorwheel'
@@ -291,6 +302,10 @@ def pinnedNestedJar = { String taskName, source, String entry, String outerHash,
     }
     files(output).builtBy(extraction)
 }
+def glslJar = pinnedNestedJar('extractIrisGlsl', configurations.irisSource,
+        'META-INF/jarjar/glsl-transformer-3.0.0-pre3.jar',
+        '60d5f8bf52f25e9986440f4a4270a6bd986d9cff994510e1108ac1547063b314',
+        '0d55650fb8e58dad25b714d447a1ed5a713a6b6120a06610ce216c9b26e852d7')
 def analogJar = pinnedNestedJar('extractAnalogLib', configurations.analogSource,
         'META-INF/jarjar/analoglib-neoforge-0.1.0.jar',
         'effc623ad0b3e332bb29252f5c41f767cb194a47ce5ae195d186f442124807a3',
@@ -320,6 +335,9 @@ def sodiumTestJar = pinnedNestedJar('extractSodium', configurations.sodiumSource
         '575d187b15328d7bddd8a9b1bee64333c22c14735f5780ec49eac0cd5503c08d',
         'd71acbffafd3d177add7624710114d8570cdd70d5553a2b5c8ab371852c59ce3')
 dependencies {
+    compileOnly glslJar
+    testImplementation glslJar
+    testImplementation "org.antlr:antlr4-runtime:4.13.1"
     compileOnly analogJar
     testImplementation analogJar
     compileOnly simulatedJar

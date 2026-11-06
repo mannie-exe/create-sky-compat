@@ -1,7 +1,13 @@
 package design.inherent.skyweavecompat.client;
 
 import design.inherent.skyweavecompat.*;
-import design.inherent.skyweavecompat.configuration.SettingsCatalog;
+import design.inherent.skyweavecompat.configuration.*;
+import design.inherent.skyweavecompat.configuration.SettingsCatalog.Page;
+import net.minecraft.client.gui.components.EditBox;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.EnumSet;
 import design.inherent.skyweavecompat.configuration.SettingsCatalog.Category;
 import design.inherent.skyweavecompat.configuration.SettingsCatalog.Group;
 import design.inherent.skyweavecompat.configuration.StartupEdits;
@@ -23,11 +29,9 @@ import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.config.ModConfigs;
 import net.neoforged.fml.loading.FMLPaths;
-import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 
 /** Local preference editing and next-start configuration; no remote administration or live mixin reload. */
 public final class ConfigurationOverview extends Screen {
-    private final ModContainer container;
     private final Screen parent;
     private StartupEdits draft;
     private Component feedback = Component.empty();
@@ -41,12 +45,24 @@ public final class ConfigurationOverview extends Screen {
     private float navigationScroll;
     private final Map<String, Float> scroll = new HashMap<>();
     private final Map<String, SettingsPanel.NavigationButton> links = new java.util.LinkedHashMap<>();
-    private SectionNavigation.Bookmark documentPosition;
-    private String contentFocus, documentFocus, navigationFocus;
+    private Page page = SettingsCatalog.page(Group.JOURNAL);
+    private final Map<String, SectionNavigation.Bookmark> positions = new HashMap<>();
+    private final Map<String, String> focused = new HashMap<>();
+    private final EnumSet<Category> expanded = EnumSet.of(Category.INTERFACE);
+    private EnumSet<Category> beforeSearch;
+    private final Map<String, JsonEdits> json = new LinkedHashMap<>();
+    private final Map<String, RegisteredEdits> toml = new LinkedHashMap<>();
+    private final Map<String, String> unavailable = new HashMap<>();
+    private String query = "";
+    private EditBox search;
+    private boolean searchPending;
+    private boolean searchFocus;
+    private String contentFocus, navigationFocus;
+    private String selectedEntry;
 
     public ConfigurationOverview(ModContainer container, Screen parent) {
-        super(Component.translatable("skyweave_compat.configuration.title")); this.container = container; this.parent = parent;
-        load();
+        super(Component.translatable("skyweave_compat.configuration.title")); this.parent = parent;
+        load(); loadJson(); loadRegistered();
     }
     static net.minecraft.network.chat.MutableComponent text(String key, Object... args) { return Component.translatable("skyweave_compat.settings." + key, args); }
     private static Component featureName(Feature feature) { return Component.translatable(SettingsCatalog.entry(feature).labelKey()); }
@@ -57,26 +73,52 @@ public final class ConfigurationOverview extends Screen {
         try { if (draft == null) draft = StartupEdits.open(FMLPaths.CONFIGDIR.get()); else draft.reload(); feedback = Component.empty(); }
         catch (Exception failure) { feedback = text("load_failed").append(" ").append(Component.literal(String.valueOf(failure.getMessage()))); }
     }
-    private static String section(Group group) { return "group/" + group.name(); }
-    private String route() { return detail == null ? "document" : "detail/" + detail.key; }
+    private void loadJson() {
+        for (var file : JsonSettings.FILES) try {
+            var edits = json.get(file.filename());
+            if (edits == null) json.put(file.filename(), new JsonEdits(FMLPaths.CONFIGDIR.get(), file)); else edits.reload();
+            unavailable.remove(file.filename());
+        } catch (Exception failure) { unavailable.put(file.filename(), String.valueOf(failure.getMessage())); }
+    }
+    private boolean dirty() { return draft != null && draft.dirty() || json.values().stream().anyMatch(JsonEdits::dirty)
+            || toml.values().stream().anyMatch(RegisteredEdits::dirty); }
+    private void loadRegistered() {
+        for (var entry : SettingsCatalog.FILES) {
+            if (!entry.filename().endsWith(".toml") || entry.help().equals("journal")) continue;
+            try {
+                var config = registered(entry.filename());
+                if (config == null) throw new java.io.IOException(text("registered_unavailable").getString());
+                var edits = toml.get(entry.filename());
+                if (edits == null) toml.put(entry.filename(), new RegisteredEdits(FMLPaths.CONFIGDIR.get(), entry.filename(),
+                        (net.neoforged.neoforge.common.ModConfigSpec) config.getSpec()));
+                else edits.reload();
+                unavailable.remove(entry.filename());
+            } catch (Exception failure) { unavailable.put(entry.filename(), String.valueOf(failure.getMessage())); }
+        }
+    }
+    private String route() { return detail == null ? page == null ? "files" : page.id() : "detail/" + detail.key; }
     private void remember() {
+        searchFocus = search != null && getFocused() == search;
         if (navigation != null) { navigationScroll = navigation.scroll(); navigationFocus = navigation.focusKey(); }
         if (content != null) {
             scroll.put(route(), content.scroll()); contentFocus = content.focusKey();
-            if (detail == null) { documentPosition = content.bookmark(); documentFocus = contentFocus; }
+            positions.put(route(), content.bookmark()); focused.put(route(), contentFocus);
         }
     }
-    private void navigate(String anchor) {
-        if (detail != null) { remember(); detail = null; contentFocus = null; rebuildWidgets(); }
-        content.jump(anchor); contentFocus = null;
+    private void navigate(Page target, String anchor) {
+        remember(); detail = null; page = target;
+        selectedEntry = anchor != null ? anchor : target == null ? "files" : target.id();
+        if (target != null) { expanded.clear(); expanded.add(target.category()); }
+        contentFocus = focused.get(route()); rebuildWidgets();
+        content.jump(selectedEntry);
         updateSelection();
     }
-    private void inspect(Feature feature) {
-        remember(); detail = feature; contentFocus = null; rebuildWidgets();
-    }
+    private void inspect(Feature feature) { remember(); selectedEntry = "feature/" + feature.key; detail = feature; contentFocus = null; rebuildWidgets(); }
     private void updateSelection() {
-        String anchor = detail == null ? content.activeSection() : section(SettingsCatalog.group(detail));
-        links.forEach((id, link) -> link.selected(id.equals(anchor)));
+        String destination = selectedEntry == null ? route() : selectedEntry;
+        String menu = links.containsKey(destination) ? destination : page == null ? "files" : page.id();
+        links.forEach((id, link) -> link.selected(id.equals(menu)));
+        content.highlight(selectedEntry);
     }
     private Button button(Component label, int width, Runnable action) {
         var button = Button.builder(label, b -> action.run()).bounds(0, 0, width, 20).build(); return button;
@@ -97,76 +139,166 @@ public final class ConfigurationOverview extends Screen {
         }
         int paneHeight = Math.max(30, height - top - 38);
         int sidebar = Math.clamp(width / 4, 102, 170);
-        navigation = new SettingsPanel(minecraft, 10, top, sidebar, paneHeight, true);
-        content = new SettingsPanel(minecraft, sidebar + 18, top, Math.max(80, width - sidebar - 28), paneHeight, false);
-        links.clear();
-        for (Category category : Category.values()) {
-            String categoryId = "category/" + category.name();
-            var header = SettingsPanel.navigationButton(category(category), sidebar - 20, true, false, () -> navigate(categoryId));
-            navigation.row(categoryId, category(category), Component.empty(), header);
-            links.put(categoryId, header);
-            for (Group group : SettingsCatalog.groups(category)) {
-                String id = section(group);
-                var entry = SettingsPanel.navigationButton(modName(group), sidebar - 20, false, false, () -> navigate(id));
-                navigation.row(id, entry.getMessage(), Component.empty(), entry); links.put(id, entry);
-            }
+        if (search == null) {
+            search = new EditBox(font, 10, top, sidebar, 20, text("search"));
+            search.setMaxLength(128); search.setValue(query);
+            search.setResponder(value -> {
+                // Native cursor/selection changes also notify EditBox's responder.
+                if (query.equals(value)) return;
+                boolean wasEmpty = query.isBlank(); query = value;
+                if (wasEmpty && !query.isBlank()) beforeSearch = expanded.clone();
+                if (query.isBlank() && beforeSearch != null) {
+                    expanded.clear(); expanded.addAll(beforeSearch);
+                    if (page != null) expanded.add(page.category());
+                    beforeSearch = null;
+                }
+                searchPending = true;
+            });
         }
-        var status = SettingsPanel.navigationButton(text("status_files"), sidebar - 20, false, false, () -> navigate("files"));
-        navigation.row("files", text("status_files"), Component.empty(), status); links.put("files", status);
+        search.setPosition(10, top); search.setWidth(sidebar); search.setMessage(text("search")); search.setHint(text("search"));
+        addRenderableWidget(search);
+        navigation = new SettingsPanel(minecraft, 10, top + 24, sidebar, Math.max(20, paneHeight - 24), true);
+        content = new SettingsPanel(minecraft, sidebar + 18, top, Math.max(80, width - sidebar - 28), paneHeight, false);
+        buildNavigation();
         navigation.finish(navigationScroll); addRenderableWidget(navigation);
         if (detail != null) buildDetails(detail);
-        else buildDocument();
+        else if (page == null) buildStatus();
+        else {
+            content.section(page.id(), text("mod." + page.label()));
+            content.row(category(page.category()), text("page_scope"));
+            buildPage(page);
+        }
         content.finish(scroll.getOrDefault(route(), 0f));
-        if (detail == null) content.restore(documentPosition);
+        content.restore(positions.get(route()));
         addRenderableWidget(content);
         navigation.restoreFocus(navigationFocus);
         content.restoreFocus(contentFocus);
         if (contentFocus != null && content.focusKey() != null) setFocused(content);
         else if (navigationFocus != null && navigation.focusKey() != null) setFocused(navigation);
+        if (searchFocus) { setFocused(search); search.setFocused(true); }
         updateSelection();
         var back = button(Component.translatable("gui.back"), 80, this::onClose); back.setPosition(10, height - 28); addRenderableWidget(back);
         save = button(text("save"), Math.min(110, Math.max(80, width / 4)), this::saveDraft);
-        save.setPosition(width - save.getWidth() - 10, height - 28); save.active = draft != null && draft.dirty(); addRenderableWidget(save);
+        save.setPosition(width - save.getWidth() - 10, height - 28); save.active = dirty(); addRenderableWidget(save);
     }
-    private void buildDocument() {
+    private record Destination(String id, Component label, Component summary, boolean section) {
+        Destination(String id, Component label, Component summary) { this(id, label, summary, false); }
+    }
+    private boolean preferencesAvailable() { return OptionalIntegrations.enabled(Feature.QUESTLOG_INTERFACE) || OptionalIntegrations.enabled(Feature.QUESTLOG_NOTIFICATIONS); }
+    private List<SettingsCatalog.Item> items(SettingsCatalog.Section section) {
+        return section.items().stream().filter(item -> !(item instanceof SettingsCatalog.Preference) || preferencesAvailable())
+                .filter(item -> !(item instanceof SettingsCatalog.ShaderWorkspace) || OptionalIntegrations.enabled(Feature.SHADER_PATCHES)).toList();
+    }
+    private List<SettingsCatalog.Section> sections(Page target) {
+        return target.sections().stream().filter(section -> !items(section).isEmpty()).toList();
+    }
+    private List<Page> pages(Category category) {
+        var collator = java.text.Collator.getInstance(Locale.forLanguageTag(minecraft.getLanguageManager().getSelected().replace('_', '-')));
+        return SettingsCatalog.pages(category).stream().sorted((a, b) -> {
+            int order = collator.compare(text("mod." + a.label()).getString(), text("mod." + b.label()).getString());
+            return order != 0 ? order : a.id().compareTo(b.id());
+        }).toList();
+    }
+    private List<Destination> destinations(Page target) {
+        var entries = new ArrayList<Destination>();
+        for (var section : sections(target)) {
+            entries.add(new Destination(section.id(), text(section.kind().label), Component.empty(), true));
+            for (var item : items(section)) {
+                if (item instanceof SettingsCatalog.Fix fix) entries.add(new Destination(item.id(), featureName(fix.feature()), Component.translatable(SettingsCatalog.entry(fix.feature()).summaryKey())));
+                else if (item instanceof SettingsCatalog.Preference preference && preferencesAvailable()) entries.add(new Destination(item.id(),
+                        Component.translatable("skyweave_compat.journal." + preference.key()), Component.translatable("skyweave_compat.journal." + preference.key() + "_description")));
+                else if (item instanceof SettingsCatalog.File file) {
+                    var definition = file.entry();
+                    var inline = toml.get(definition.filename());
+                    if (inline == null || inline.fields().size() != 1)
+                        entries.add(new Destination(item.id(), Component.translatable(definition.labelKey()), Component.translatable(definition.summaryKey())));
+                    var edits = json.get(definition.filename());
+                    if (edits != null) for (String key : edits.keys()) entries.add(new Destination("field/" + definition.filename() + "/" + key,
+                            fieldName(edits, key), text("field." + edits.definition().help() + "." + key + ".help")));
+                    var nativeEdits = toml.get(definition.filename());
+                    if (nativeEdits != null) for (var field : nativeEdits.fields()) entries.add(new Destination("field/" + definition.filename() + "/" + field.key(),
+                            registeredName(definition.filename(), field), Component.literal(field.spec().getComment() == null ? field.key() : field.spec().getComment())));
+                } else if (item instanceof SettingsCatalog.ShaderWorkspace) entries.add(new Destination(item.id(), text("shaders.rebuild"), text("shaders.rebuild_help")));
+            }
+        }
+        return entries;
+    }
+    private List<Destination> visibleDestinations(Page target) {
+        var all = destinations(target);
+        if (query.isBlank()) return all;
+        var visible = new ArrayList<Destination>();
+        for (int start = 0; start < all.size();) {
+            int end = start + 1;
+            while (end < all.size() && !all.get(end).section()) end++;
+            var header = all.get(start);
+            var children = all.subList(start + 1, end).stream().filter(entry -> matches(target, entry)).toList();
+            if (matches(target, header) || !children.isEmpty()) { visible.add(header); visible.addAll(children); }
+            start = end;
+        }
+        return visible;
+    }
+    private void buildNavigation() {
+        links.clear(); boolean searching = !query.isBlank(); int count = 0;
         for (Category category : Category.values()) {
-            content.section("category/" + category.name(), category(category));
-            for (Group group : SettingsCatalog.groups(category)) buildGroup(group);
+            var pages = pages(category).stream().filter(target -> !searching || matches(target, null)
+                    || destinations(target).stream().anyMatch(entry -> matches(target, entry))).toList();
+            if (pages.isEmpty()) continue;
+            var header = SettingsPanel.navigationButton(Component.literal(searching || expanded.contains(category) ? "− " : "+ ").append(category(category)), navigationWidth() - 20, true, false, () -> {
+                remember(); if (!expanded.remove(category)) expanded.add(category); rebuildWidgets();
+            });
+            navigation.row("category/" + category, header.getMessage(), Component.empty(), header);
+            if (!searching && !expanded.contains(category)) continue;
+            for (var target : pages) {
+                var link = SettingsPanel.navigationButton(text("mod." + target.label()), navigationWidth() - 20, false, false, () -> navigate(target, null));
+                navigation.row(target.id(), link.getMessage(), Component.empty(), link); links.put(target.id(), link); count++;
+                if (searching || detail == null && target.equals(page)) for (var entry : visibleDestinations(target)) {
+                    var anchor = entry.section() ? SettingsPanel.sectionButton(entry.label(), navigationWidth() - 20, () -> navigate(target, entry.id()))
+                            : SettingsPanel.subsectionButton(entry.label(), navigationWidth() - 20, () -> navigate(target, entry.id()));
+                    navigation.row(entry.id(), entry.label(), Component.empty(), anchor); links.put(entry.id(), anchor);
+                }
+            }
         }
-        buildStatus();
+        if (searching && count == 0) navigation.row(text("no_results"), Component.empty());
+        if (!searching) {
+            var status = SettingsPanel.navigationButton(text("status_files"), navigationWidth() - 20, false, false, () -> navigate(null, null));
+            navigation.row("files", status.getMessage(), Component.empty(), status); links.put("files", status);
+        }
     }
-    private void buildGroup(Group group) {
-        content.section(section(group), modName(group));
-        if (group == Group.JOURNAL) {
-            if (OptionalIntegrations.enabled(Feature.QUESTLOG_INTERFACE) || OptionalIntegrations.enabled(Feature.QUESTLOG_NOTIFICATIONS)) buildPreferences();
-            else content.row(text("preferences"), text("unavailable"));
+    private boolean matches(Page target, Destination entry) {
+        return SettingsSearch.matches(query, category(target.category()).getString(), text("mod." + target.label()).getString(),
+                entry == null ? "" : entry.label().getString(), entry == null ? "" : entry.summary().getString(), entry == null ? target.id() : entry.id());
+    }
+    private static Component fieldName(JsonEdits edits, String key) { return text("field." + edits.definition().help() + "." + key); }
+    private void buildPage(Page page) {
+        for (var section : sections(page)) {
+            content.beginGroup(section.id(), text(section.kind().label));
+            for (var item : items(section)) {
+                if (item instanceof SettingsCatalog.Fix fix) addFeature(fix.feature());
+                else if (item instanceof SettingsCatalog.Preference preference) buildPreference(preference.key());
+                else if (item instanceof SettingsCatalog.File file) addFile(file.entry());
+                else if (item instanceof SettingsCatalog.ShaderWorkspace) buildShaders();
+            }
+            if (items(section).stream().anyMatch(item -> item instanceof SettingsCatalog.Preference)) content.row(text("automatic"), Component.empty());
+            content.endGroup();
         }
-        if (group == Group.IRIS && OptionalIntegrations.enabled(Feature.SHADER_PATCHES)) buildShaders();
-        var features = SettingsCatalog.features(group);
-        if (!features.isEmpty()) content.heading(text("fixes"));
-        for (Feature feature : features) addFeature(feature);
-        var files = SettingsCatalog.FILES.stream().filter(file -> file.group() == group).toList();
-        if (!files.isEmpty()) content.heading(text("tuning"));
-        for (var file : files) addFile(file);
-        if (files.stream().anyMatch(file -> !Files.isRegularFile(FMLPaths.CONFIGDIR.get().resolve(file.filename())))) folder();
     }
     private void buildShaders() {
-        content.heading(text("shaders.title"));
         for (var status : ShaderAssembly.states())
             content.row(Component.literal(status.id()), text("shaders." + status.state()).append(status.detail().isEmpty() ? "" : "\n" + status.detail()));
-        content.row(text("shaders.rebuild"), text("shaders.rebuild_help"), button(text("shaders.rebuild"), 85, () -> {
+        content.anchorRow("shaders/rebuild", text("shaders.rebuild"), text("shaders.rebuild_help"), button(text("shaders.rebuild"), 85, () -> {
             ShaderAssembly.requestRebuild();
             try { net.irisshaders.iris.Iris.reload(); }
             catch (Exception failure) { feedback = text("change_failed").append(" ").append(String.valueOf(failure.getMessage())); }
             remember(); rebuildWidgets();
         }));
     }
-    private void buildPreferences() {
-        content.heading(text("preferences"));
-        preference("images", on(JournalPreferences.ITEM_IMAGES.get()), JournalPreferences::toggleImages);
-        preference("symbols", on(JournalPreferences.CONDITION_SYMBOLS.get()), JournalPreferences::toggleSymbols);
-        preference("notifications", JournalPreferences.NOTIFICATIONS.get().getTranslatedName(), JournalPreferences::cycleNotifications);
-        content.row(text("automatic"), Component.empty());
+    private void buildPreference(String key) {
+        switch (key) {
+            case "images" -> preference(key, on(JournalPreferences.ITEM_IMAGES.get()), JournalPreferences::toggleImages);
+            case "symbols" -> preference(key, on(JournalPreferences.CONDITION_SYMBOLS.get()), JournalPreferences::toggleSymbols);
+            case "notifications" -> preference(key, JournalPreferences.NOTIFICATIONS.get().getTranslatedName(), JournalPreferences::cycleNotifications);
+            default -> throw new IllegalArgumentException("Unknown journal preference: " + key);
+        }
     }
     private void preference(String key, Component value, Runnable action) {
         var control = valueButton(value, Component.translatable("skyweave_compat.journal." + key), Math.max(65, Math.min(135, (width - navigationWidth()) / 2)), () -> {
@@ -174,12 +306,12 @@ public final class ConfigurationOverview extends Screen {
             try { action.run(); feedback = Component.empty(); } catch (RuntimeException failure) { feedback = text("change_failed"); }
             rebuildWidgets();
         });
-        content.row("preference/" + key, Component.translatable("skyweave_compat.journal." + key),
+        content.anchorRow("preference/" + key, Component.translatable("skyweave_compat.journal." + key),
                 Component.translatable("skyweave_compat.journal." + key + "_description"), control);
     }
     private int navigationWidth() { return Math.clamp(width / 4, 102, 170); }
     private void addFeature(Feature feature) {
-        var inspect = valueButton(text("details"), featureName(feature), 52, () -> inspect(feature));
+        var inspect = new SettingsInformationButton(featureName(feature), () -> inspect(feature));
         Component summary = Component.translatable(SettingsCatalog.entry(feature).summaryKey());
         if (!OptionalIntegrations.enabled(feature)) summary = summary.copy().append("\n").append(text("running", state(feature)));
         if (draft != null && draft.saved().enabled(feature) != OptionalIntegrations.configured(feature)) summary = summary.copy().append("\n").append(text("saved_next")).append(": ").append(on(draft.saved().enabled(feature)));
@@ -189,7 +321,7 @@ public final class ConfigurationOverview extends Screen {
         });
         toggle.active = draft != null;
         toggle.setTooltip(Tooltip.create(featureName(feature).copy().append(". ").append(text("restart"))));
-        content.row("feature/" + feature.key, featureName(feature), summary, toggle, inspect);
+        content.anchorRow("feature/" + feature.key, featureName(feature), summary, toggle, inspect);
     }
     private Component state(Feature feature) {
         var selection = OptionalIntegrations.selection();
@@ -218,7 +350,7 @@ public final class ConfigurationOverview extends Screen {
         });
     }
     private void buildDetails(Feature feature) {
-        content.heading(featureName(feature));
+        content.section("feature/" + feature.key, featureName(feature));
         content.row(Component.translatable(SettingsCatalog.entry(feature).summaryKey()), text("running", state(feature)));
         content.row(text("current_setting", on(OptionalIntegrations.configured(feature))), text(OptionalIntegrations.defaulted(feature) ? "omitted" : "explicit"));
         if (draft != null) {
@@ -240,41 +372,177 @@ public final class ConfigurationOverview extends Screen {
     private void buildStatus() {
         content.section("files", text("status_files"));
         content.row(text("status_intro"), Component.empty());
+        content.row(text("reload"), text("reload_summary"), button(text("reload"), 95, this::reload));
         folder();
         for (var file : SettingsCatalog.FILES) {
             if (file.group() == null) addFile(file);
             else content.row("file-link/" + file.filename(), Component.literal(file.filename()),
                     text("section_title", category(file.group().category), modName(file.group())),
-                    valueButton(text("view_section"), Component.literal(file.filename()), 95, () -> navigate(section(file.group()))));
+                    valueButton(text("view_section"), Component.literal(file.filename()), 90, () -> navigate(SettingsCatalog.page(file.group()), fileAnchor(file))), fileButton(file));
         }
+    }
+    private String fileAnchor(SettingsCatalog.FileEntry file) {
+        if (!file.help().equals("journal")) {
+            var edits = toml.get(file.filename());
+            return edits != null && edits.fields().size() == 1 ? "field/" + file.filename() + "/" + edits.fields().getFirst().key() : "file/" + file.filename();
+        }
+        var owner = SettingsCatalog.page(file.group());
+        return sections(owner).stream().filter(section -> section.kind() == SettingsCatalog.SectionKind.PREFERENCES)
+                .map(SettingsCatalog.Section::id).findFirst().orElse(owner.id());
+    }
+    private Button fileButton(SettingsCatalog.FileEntry file) {
+        var path = FMLPaths.CONFIGDIR.get().resolve(file.filename());
+        var open = valueButton(text("open_file"), Component.literal(file.filename()), 70, () -> Util.getPlatform().openFile(path.toFile()));
+        open.active = Files.isRegularFile(path); return open;
     }
     private void addFile(SettingsCatalog.FileEntry file) {
         var path = FMLPaths.CONFIGDIR.get().resolve(file.filename()); boolean exists = Files.isRegularFile(path);
-        var open = valueButton(text("open_file"), Component.literal(file.filename()), 78, () -> Util.getPlatform().openFile(path.toFile())); open.active = exists;
-        Component help = Component.translatable(file.summaryKey());
+        var open = fileButton(file);
+        Component help = Component.translatable(file.summaryKey()).copy().append("\n").append(text("timing." + file.timing().name().toLowerCase(Locale.ROOT)));
         if (!exists) help = help.copy().append("\n").append(text("not_created"));
         Component label = file.group() == null || detail != null ? Component.literal(file.filename()) : Component.translatable(file.labelKey());
-        content.row("file/" + file.filename(), label, help, open);
-        if (file.filename().equals("skyweave_compat-common.toml") && exists) {
-            ModConfig config = ModConfigs.getConfigSet(ModConfig.Type.COMMON).stream().filter(c -> c.getModId().equals(container.getModId()) && c.getFileName().equals(file.filename())).findFirst().orElse(null);
-            if (config != null) content.row(text("mod.sky_villages"), Component.empty(), valueButton(text("edit"), modName(Group.VILLAGES), 95, () -> {
-                remember(); minecraft.setScreen(new ConfigurationScreen.ConfigurationSectionScreen(this, config.getType(), config, modName(Group.VILLAGES)) {
-                    @Override public void onClose() {
-                        if (!NeighborConfig.validSavedRange()) {
-                            minecraft.setScreen(new net.minecraft.client.gui.screens.AlertScreen(() -> minecraft.setScreen(this), text("village_range"), Component.empty())); return;
-                        }
-                        try { super.onClose(); }
-                        catch (RuntimeException failure) { minecraft.setScreen(new net.minecraft.client.gui.screens.AlertScreen(() -> minecraft.setScreen(this), text("save_failed"), Component.literal(String.valueOf(failure.getMessage())))); }
-                    }
-                });
-            }));
+        var edits = json.get(file.filename());
+        if (JsonSettings.find(file.filename()) != null && detail == null) {
+            content.anchorRow("file/" + file.filename(), label, help);
+            if (unavailable.containsKey(file.filename())) {
+                content.row(text("load_failed"), Component.literal(unavailable.get(file.filename())).append(edits == null ? Component.empty() : text("retained_snapshot")));
+                if (edits == null) return;
+            }
+            if (edits != null) buildJson(edits);
+        } else if (file.filename().endsWith(".toml") && detail == null) {
+            var nativeEdits = toml.get(file.filename());
+            if (nativeEdits == null || nativeEdits.fields().size() != 1)
+                content.anchorRow("file/" + file.filename(), label, Component.translatable(file.summaryKey()));
+            if (unavailable.containsKey(file.filename())) content.row(text("load_failed"), Component.literal(unavailable.get(file.filename())));
+            if (nativeEdits != null) buildRegistered(nativeEdits);
+        } else content.anchorRow("file/" + file.filename(), label, help, open);
+    }
+    private static ModConfig registered(String filename) {
+        return java.util.stream.Stream.of(ModConfig.Type.CLIENT, ModConfig.Type.COMMON).flatMap(type -> ModConfigs.getConfigSet(type).stream())
+                .filter(config -> config.getFileName().equals(filename) && config.getLoadedConfig() != null
+                        && config.getSpec() instanceof net.neoforged.neoforge.common.ModConfigSpec
+                        && config.getFullPath().toAbsolutePath().normalize().equals(FMLPaths.CONFIGDIR.get().resolve(filename).toAbsolutePath().normalize()))
+                .findFirst().orElse(null);
+    }
+    private static Component registeredName(String filename, RegisteredEdits.Field field) {
+        String translation = field.spec().getTranslationKey();
+        if (translation == null) {
+            var config = registered(filename);
+            if (config == null) return Component.literal(field.key());
+            translation = config.getModId() + ".configuration." + field.key();
         }
+        return Component.translatableWithFallback(translation, field.key());
+    }
+    private Component registeredValue(RegisteredEdits.Field field, String value) {
+        if (field.defaultValue() instanceof Boolean) return on(Boolean.parseBoolean(value));
+        if (field.defaultValue() instanceof net.neoforged.neoforge.common.TranslatableEnum) {
+            for (Object choice : ((Enum<?>) field.defaultValue()).getDeclaringClass().getEnumConstants())
+                if (((Enum<?>) choice).name().equals(value)) return ((net.neoforged.neoforge.common.TranslatableEnum) choice).getTranslatedName();
+        }
+        return Component.literal(value);
+    }
+    private void buildRegistered(RegisteredEdits edits) {
+        String file = edits.filename();
+        content.row("validation/" + file, Component.empty(), validation(edits));
+        for (var field : edits.fields()) {
+            String key = field.key(), id = "field/" + file + "/" + key;
+            Component label = registeredName(file, field);
+            String description = field.spec().getComment();
+            var timing = switch (field.spec().restartType()) {
+                case NONE -> SettingsCatalog.Timing.IMMEDIATE;
+                case WORLD -> SettingsCatalog.Timing.SERVER_START;
+                case GAME -> SettingsCatalog.Timing.GAME_RESTART;
+            };
+            Component help = Component.literal(description == null ? "" : description.lines().findFirst().orElse(""))
+                    .append("\n").append(text("after_save." + timing.name().toLowerCase(Locale.ROOT)));
+            if (field.spec().getRange() != null) help = help.copy().append("\n").append(text("bounds", field.spec().getRange().toString()));
+            var reset = valueButton(text("reset"), label, 42, () -> { remember(); edits.reset(key); rebuildWidgets(); });
+            reset.setTooltip(Tooltip.create(text("default", edits.defaultValue(key))));
+            if (field.choices().isEmpty()) {
+                var input = new EditBox(font, 0, 0, 100, 20, label); input.setMaxLength(field.defaultValue() instanceof String ? 256 : 64); input.setValue(edits.value(key));
+                if (description != null) input.setTooltip(Tooltip.create(Component.literal(description)));
+                input.setResponder(value -> {
+                    if (edits.value(key).equals(value)) return;
+                    edits.set(key, value);
+                    try { edits.candidate(); input.setTextColor(SettingsPanel.TITLE_TEXT); }
+                    catch (Exception invalid) { input.setTextColor(net.minecraft.ChatFormatting.RED.getColor()); }
+                    content.summary("validation/" + file, validation(edits));
+                });
+                content.field(id, label, help, input, reset);
+            } else {
+                var control = valueButton(registeredValue(field, edits.value(key)), label, Math.clamp(font.width(registeredValue(field, edits.value(key))) + 12, 65, 130), () -> {
+                    remember(); int current = field.choices().indexOf(edits.value(key));
+                    edits.set(key, field.choices().get((current + 1) % field.choices().size())); rebuildWidgets();
+                });
+                if (description != null) control.setTooltip(Tooltip.create(Component.literal(description)));
+                content.field(id, label, help, control, reset);
+            }
+        }
+    }
+    private Component validation(RegisteredEdits edits) {
+        try { edits.candidate(); return Component.empty(); }
+        catch (Exception invalid) { return failure("invalid", invalid).withStyle(net.minecraft.ChatFormatting.RED); }
+    }
+    private void buildJson(JsonEdits edits) {
+        String file = edits.definition().filename();
+        content.row("validation/" + file, Component.empty(), validation(edits));
+        for (String key : edits.keys()) {
+            String id = "field/" + file + "/" + key;
+            Component label = fieldName(edits, key);
+            Component help = text("field." + edits.definition().help() + "." + key + ".help");
+            switch (edits.kind(key)) {
+                case NUMBER -> {
+                    var input = new EditBox(font, 0, 0, 100, 20, label); input.setMaxLength(64); input.setValue(edits.value(key));
+                    input.setResponder(value -> {
+                        if (edits.value(key).equals(value)) return;
+                        edits.set(key, value);
+                        try { edits.candidate(); input.setTextColor(0xe0e0e0); input.setTooltip(null); }
+                        catch (Exception invalid) { input.setTextColor(0xff7777); input.setTooltip(Tooltip.create(failure("invalid", invalid))); }
+                        content.summary("validation/" + file, validation(edits));
+                    });
+                    var reset = valueButton(text("reset"), label, 42, () -> { edits.reset(key); input.setValue(edits.value(key)); });
+                    reset.setTooltip(Tooltip.create(text("default", edits.defaultValue(key))));
+                    content.field(id, label, help, input, reset);
+                }
+                case BOOLEAN -> content.field(id, label, help, valueButton(on(Boolean.parseBoolean(edits.value(key))), label, 65, () -> {
+                    remember(); edits.set(key, Boolean.toString(!Boolean.parseBoolean(edits.value(key)))); rebuildWidgets();
+                }), valueButton(text("reset"), label, 42, () -> { remember(); edits.reset(key); rebuildWidgets(); }));
+                case STRINGS -> {
+                    content.section(id, label); content.row(help, Component.empty());
+                    var values = new ArrayList<>(edits.strings(key));
+                    for (int i = 0; i < values.size(); i++) {
+                        final int index = i;
+                        var input = new EditBox(font, 0, 0, Math.max(90, Math.min(200, width - navigationWidth() - 100)), 20, text("map_id"));
+                        input.setMaxLength(256); input.setValue(values.get(i)); input.setResponder(value -> {
+                            if (values.get(index).equals(value)) return;
+                            values.set(index, value); edits.strings(key, values); content.summary("validation/" + file, validation(edits));
+                        });
+                        content.row(id + "/" + i, text("map_id"), Component.empty(), input, valueButton(text("remove"), label, 55, () -> {
+                            remember(); values.remove(index); edits.strings(key, values); rebuildWidgets();
+                        }));
+                    }
+                    var add = valueButton(text("add"), label, 65, () -> { remember(); values.add(""); edits.strings(key, values); rebuildWidgets(); });
+                    add.active = values.size() < 128;
+                    content.row(Component.empty(), Component.empty(), add, valueButton(text("reset"), label, 42, () -> {
+                        remember(); edits.reset(key); rebuildWidgets();
+                    }));
+                }
+            }
+        }
+    }
+    private Component validation(JsonEdits edits) {
+        try { edits.candidate(); return Component.empty(); }
+        catch (Exception failure) { return failure("invalid", failure).withStyle(net.minecraft.ChatFormatting.RED); }
+    }
+    private static net.minecraft.network.chat.MutableComponent failure(String key, Exception failure) {
+        return text(key).append(" ").append(Component.literal(String.valueOf(failure.getMessage())));
     }
     private void folder() { content.row(Component.empty(), Component.empty(), button(text("open_folder"), 115, () -> Util.getPlatform().openFile(FMLPaths.CONFIGDIR.get().toFile()))); }
 
     private void saveDraft() {
-        if (draft == null || !draft.dirty()) return;
-        boolean generation = draft.changes().keySet().stream().anyMatch(feature -> SettingsCatalog.group(feature).category == Category.WORLD);
+        if (!dirty()) return;
+        boolean generation = draft != null && draft.changes().keySet().stream().anyMatch(feature -> SettingsCatalog.group(feature).category == Category.WORLD)
+                || json.values().stream().anyMatch(edits -> edits.dirty() && !edits.definition().help().equals("bluemap"));
         if (generation) {
             remember(); minecraft.setScreen(new ConfirmScreen(answer -> { minecraft.setScreen(this); if (answer) writeDraft(); }, text("generation_title"), text("generation_message")));
         } else writeDraft();
@@ -282,24 +550,49 @@ public final class ConfigurationOverview extends Screen {
     private void writeDraft() {
         remember();
         try {
-            var proposed = new java.util.EnumMap<Feature, Boolean>(Feature.class); proposed.putAll(draft.saved().values()); proposed.putAll(draft.changes());
-            var versions = new java.util.LinkedHashMap<String, String>();
-            net.neoforged.fml.loading.LoadingModList.get().getMods().forEach(mod -> versions.put(mod.getModId(), mod.getVersion().toString()));
-            FeatureSelection.select(new FeatureSettings(proposed), versions, true);
-            draft.save(); feedback = text("saved");
-        } catch (StartupEdits.ChangedOnDisk stale) { feedback = text("stale"); }
-        catch (Exception failure) { feedback = text("save_failed").append(" ").append(Component.literal(String.valueOf(failure.getMessage()))); }
+            if (draft != null && draft.dirty()) {
+                var proposed = new java.util.EnumMap<Feature, Boolean>(Feature.class); proposed.putAll(draft.saved().values()); proposed.putAll(draft.changes());
+                var versions = new LinkedHashMap<String, String>();
+                net.neoforged.fml.loading.LoadingModList.get().getMods().forEach(mod -> versions.put(mod.getModId(), mod.getVersion().toString()));
+                FeatureSelection.select(new FeatureSettings(proposed), versions, true);
+            }
+            var writes = new ArrayList<SettingsCommit.Write>();
+            if (draft != null && draft.dirty()) writes.add(new SettingsCommit.Write(FeatureSettings.FILE, draft::check, draft::save));
+            for (var edits : json.values()) if (edits.dirty()) writes.add(new SettingsCommit.Write(edits.definition().filename(), edits::check, edits::save));
+            for (var edits : toml.values()) if (edits.dirty()) writes.add(new SettingsCommit.Write(edits.filename(), edits::check, edits::save));
+            var result = SettingsCommit.save(writes);
+            if (result.success()) {
+                feedback = text("saved_files", String.join(", ", result.written()));
+                for (var edits : toml.values()) if (edits.warning() != null) feedback = feedback.copy().append("\n").append(Component.literal(edits.warning()));
+            }
+            else feedback = text("save_partial", result.written().isEmpty() ? text("none") : String.join(", ", result.written()), result.failed())
+                    .append("\n").append(Component.literal(String.valueOf(result.failure().getMessage())));
+        } catch (Exception failure) { feedback = failure("save_failed", failure); }
         rebuildWidgets();
     }
     private void reload() {
-        remember(); Runnable reload = () -> { load(); rebuildWidgets(); };
-        if (draft != null && draft.dirty()) minecraft.setScreen(new ConfirmScreen(answer -> { minecraft.setScreen(this); if (answer) reload.run(); }, text("reload_title"), text("reload_message"), text("reload"), text("keep_editing")));
+        remember(); Runnable reload = () -> { load(); loadJson(); loadRegistered(); rebuildWidgets(); };
+        if (dirty()) minecraft.setScreen(new ConfirmScreen(answer -> { minecraft.setScreen(this); if (answer) reload.run(); }, text("reload_title"), text("reload_message"), text("reload"), text("keep_editing")));
         else reload.run();
     }
     @Override public void tick() {
+        if (searchPending) {
+            searchPending = false;
+            // Filtering replaces only the result tree. Native caret/selection/clipboard state stays in EditBox.
+            var previous = navigation;
+            navigation = new SettingsPanel(minecraft, 10, search.getY() + 24, search.getWidth(),
+                    Math.max(20, height - search.getY() - 62), true);
+            removeWidget(previous); buildNavigation(); navigation.finish(0); addRenderableWidget(navigation);
+            children().sort(java.util.Comparator.comparingInt(child -> child == search ? 0 : child == navigation ? 1 : child == content ? 2 : 3));
+            if (getFocused() == previous) { setFocused(navigation); navigation.focusVisibleControl(); }
+            updateSelection();
+        }
         if (language != net.minecraft.locale.Language.getInstance() || resourceRevision != ClientResourceRevision.revision()) {
             remember(); rebuildWidgets();
         }
+    }
+    @Override protected void setInitialFocus() {
+        if (getFocused() == null || !children().contains(getFocused())) super.setInitialFocus();
     }
     @Override public void resize(Minecraft client, int width, int height) { remember(); super.resize(client, width, height); }
     @Override public boolean mouseClicked(double x, double y, int button) {
@@ -309,7 +602,7 @@ public final class ConfigurationOverview extends Screen {
         if (minecraft.screen == this && focused != null && !children().contains(focused)) {
             if (focused instanceof SettingsPanel previous) {
                 String key = previous.focusKey();
-                if (detail != null && !previous.isNavigation() && previous.activeSection() != null) documentFocus = key;
+                if (detail != null && !previous.isNavigation()) this.focused.put(page == null ? "files" : page.id(), key);
                 var replacement = previous.isNavigation() ? navigation : content;
                 setFocused(replacement); replacement.restoreFocus(key);
             } else if (focused instanceof net.minecraft.client.gui.components.AbstractWidget previous) {
@@ -326,21 +619,21 @@ public final class ConfigurationOverview extends Screen {
     }
     @Override public void onClose() {
         if (detail != null) {
-            remember(); detail = null; contentFocus = documentFocus; rebuildWidgets(); return;
+            remember(); detail = null; contentFocus = focused.get(route()); rebuildWidgets(); return;
         }
         remember();
-        if (draft != null && draft.dirty()) minecraft.setScreen(new ConfirmScreen(answer -> { if (answer) { draft.discard(); minecraft.setScreen(parent); } else minecraft.setScreen(this); }, text("discard_title"), text("discard_message"), text("discard"), text("keep_editing")));
+        if (dirty()) minecraft.setScreen(new ConfirmScreen(answer -> { if (answer) { if (draft != null) draft.discard(); json.values().forEach(JsonEdits::discard); toml.values().forEach(RegisteredEdits::discard); minecraft.setScreen(parent); } else minecraft.setScreen(this); }, text("discard_title"), text("discard_message"), text("discard"), text("keep_editing")));
         else minecraft.setScreen(parent);
     }
     @Override public void render(GuiGraphics graphics, int mx, int my, float tick) {
         updateSelection();
-        renderBackground(graphics, mx, my, tick); save.active = draft != null && draft.dirty(); super.render(graphics, mx, my, tick);
+        renderBackground(graphics, mx, my, tick); save.active = dirty(); super.render(graphics, mx, my, tick);
         graphics.drawString(font, title, 12, 10, 0xffffff);
         graphics.drawWordWrap(font, text("local"), 12, 24, Math.max(100, width - 24), 0xc0c0c0);
         if (!notice.getString().isEmpty()) graphics.drawWordWrap(font, notice, 12, noticeY + 2, noticeWidth, 0xffffff);
         int available = Math.max(0, width - save.getWidth() - 112);
         if (available > 90) {
-            Component hint = text(draft != null && draft.dirty() ? "modified" : "restart");
+            Component hint = text(dirty() ? "save_scope" : "restart");
             int textHeight = font.split(hint, available).size() * font.lineHeight;
             int textY = save.getY() + (save.getHeight() - textHeight) / 2 + 1;
             graphics.drawWordWrap(font, hint, 100, textY, available, 0xc0c0c0);

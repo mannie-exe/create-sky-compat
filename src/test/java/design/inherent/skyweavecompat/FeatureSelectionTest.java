@@ -45,7 +45,9 @@ class FeatureSelectionTest {
     }
 
     @Test void glassBackfacesAreIndependentDefaultOnClientAdapters() {
-        for (var feature : java.util.List.of(Feature.CREATE_BACKFACES, Feature.FUSION_BACKFACES)) {
+        for (var feature : java.util.List.of(Feature.CREATE_BACKFACES, Feature.FUSION_BACKFACES,
+                Feature.CONFECTIONERY_BACKFACES, Feature.BUBBLE_GUM_BACKFACES,
+                Feature.ORNATE_GRATE_BACKFACES, Feature.INDUSTRIAL_GRATING_BACKFACES)) {
             assertTrue(feature.defaultEnabled);
             var supported = FeatureSelection.dependencies(feature);
             assertTrue(FeatureSelection.select(only(feature), supported, true).enabled(feature));
@@ -210,13 +212,44 @@ class FeatureSelectionTest {
         versions.remove("linearbearingsfix");
         assertThrows(IllegalStateException.class, () -> FeatureSelection.select(settings, versions, false));
     }
+    @Test void constructAdaptersRespectIndependentDependenciesDisableAndPhysicalSide() {
+        var both = only(Feature.CONSTRUCT_DISTANCE, Feature.CONSTRUCT_OCCLUSION);
+        var versions = new HashMap<>(SUPPORTED);
+        assertEquals(2, FeatureSelection.select(both, versions, true).active().size());
+        versions.remove("distanthorizons");
+        var noDh = FeatureSelection.select(both, versions, true);
+        assertTrue(noDh.enabled(Feature.CONSTRUCT_DISTANCE));
+        assertFalse(noDh.enabled(Feature.CONSTRUCT_OCCLUSION));
+        assertFalse(noDh.mixins(true).contains("client.ConstructShaderMixin"));
+        for (String id : java.util.List.of("ssrd", "sable", "iris")) {
+            var absent = new HashMap<>(SUPPORTED); absent.remove(id);
+            assertTrue(FeatureSelection.select(both, absent, true).active().isEmpty());
+        }
+        versions.put("ssrd", "future");
+        assertTrue(FeatureSelection.select(only(), versions, true).active().isEmpty());
+        assertTrue(FeatureSelection.select(both, versions, false).mixins(false).isEmpty());
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(both, versions, true));
+        assertTrue(FeatureSelection.select(only(Feature.CONSTRUCT_OCCLUSION), SUPPORTED, true)
+                .enabled(Feature.CONSTRUCT_OCCLUSION));
+    }
+
+    @Test void mosaicGlassNeedsOnlyItsOptionalClientTarget() {
+        var selected = only(Feature.MACAW_GLASS);
+        assertTrue(FeatureSelection.select(selected, Map.of("mcwwindows", "2.4.2"), true).enabled(Feature.MACAW_GLASS));
+        assertTrue(FeatureSelection.select(selected, Map.of(), true).active().isEmpty());
+        assertTrue(FeatureSelection.select(selected, Map.of("mcwwindows", "future"), false).active().isEmpty());
+        assertTrue(FeatureSelection.select(only(), Map.of("mcwwindows", "future"), true).active().isEmpty());
+        assertThrows(IllegalStateException.class, () -> FeatureSelection.select(selected, Map.of("mcwwindows", "future"), true));
+    }
+
     private static final Map<String, String> SUPPORTED = Map.ofEntries(
             Map.entry("sky_archipelago", "1.3.6"), Map.entry("skyvillages", "1.0.6"),
             Map.entry("architectury", "13.0.11"), Map.entry("sable", "2.0.6"),
             Map.entry("aeronautics_delivery_quests", "1.1.1"), Map.entry("distanthorizons", "3.3.3"),
             Map.entry("bluemap", "5.7"), Map.entry("analogaudio", "0.1.5-hotfix.1"),
             Map.entry("create", "6.0.10"), Map.entry("veil", "4.3.2"),
-            Map.entry("iris", "1.8.14-beta.1+mc1.21.1"), Map.entry("sodium", "0.8.13+mc1.21.1"),
+            Map.entry("create_confectionery", "1.1.3."), Map.entry("dndecor", "2.2b"), Map.entry("bits_n_bobs", "2.3.5"),
+            Map.entry("mcwwindows", "2.4.2"), Map.entry("ssrd", "1.8.8"), Map.entry("iris", "1.8.14-beta.1+mc1.21.1"), Map.entry("sodium", "0.8.13+mc1.21.1"),
             Map.entry("sabledynlights", "2.0.1"), Map.entry("lambdynlights", "4.8.11+1.21.1"),
             Map.entry("flywheel", "1.0.6"), Map.entry("colorwheel", "1.3.2+mc1.21.1"),
             Map.entry("aeronautics", "1.3.2"), Map.entry("questlog", "3.5.0"));

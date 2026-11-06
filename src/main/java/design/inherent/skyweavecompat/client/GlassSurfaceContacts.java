@@ -37,9 +37,13 @@ public record GlassSurfaceContacts(List<List<Rect>> sides) {
                 var regions = new ArrayList<Rect>();
                 BlockPos neighborPos = pos.relative(side);
                 BlockState neighbor = view.getBlockState(neighborPos);
-                // Static glass is the admitted scope, not arbitrary block-entity model data.
-                if (!neighbor.isAir() && !neighbor.hasBlockEntity()) {
+                // Admit static wrappers such as bubble gum, never arbitrary block-entity model data.
+                if (!neighbor.isAir()) {
                     var model = Minecraft.getInstance().getBlockRenderer().getBlockModel(neighbor);
+                    if (neighbor.hasBlockEntity() && !(model instanceof PlainGlassModels)) {
+                        sides.add(List.of());
+                        continue;
+                    }
                     var data = model.getModelData(view, neighborPos, neighbor, ModelData.EMPTY);
                     long seed = neighbor.getSeed(neighborPos);
                     var random = RandomSource.create(seed);

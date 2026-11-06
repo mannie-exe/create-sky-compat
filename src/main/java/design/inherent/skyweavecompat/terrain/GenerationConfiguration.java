@@ -3,9 +3,6 @@ package design.inherent.skyweavecompat.terrain;
 import com.google.gson.*;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import org.sathrek.sky_archipelago.config.settings.TerrainSettings;
 
@@ -49,18 +46,6 @@ public final class GenerationConfiguration {
     }
 
     public static GenerationProfile parse(String text) {
-        var object = JsonParser.parseString(text).getAsJsonObject();
-        Set<String> fields = Arrays.stream(GenerationProfile.class.getRecordComponents())
-                .map(component -> component.getName()).collect(Collectors.toSet());
-        if (!object.keySet().equals(fields)) {
-            throw new IllegalArgumentException("Generation profile must contain exactly these fields: " + fields);
-        }
-        for (var entry : object.entrySet()) {
-            if (!entry.getValue().isJsonPrimitive() || !entry.getValue().getAsJsonPrimitive().isNumber()) {
-                throw new IllegalArgumentException("Expected a number for " + entry.getKey());
-            }
-            if (!entry.getKey().equals("activation")) entry.getValue().getAsBigDecimal().intValueExact();
-        }
-        return JSON.fromJson(object, GenerationProfile.class);
+        return design.inherent.skyweavecompat.configuration.ProfileJson.generation(text);
     }
 }

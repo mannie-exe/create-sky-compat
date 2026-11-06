@@ -15,8 +15,15 @@ import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 public final class ClientConfiguration {
     public ClientConfiguration(ModContainer container, IEventBus modBus) {
         modBus.addListener(ClientResourceRevision::register);
-        if (OptionalIntegrations.enabled(Feature.CREATE_BACKFACES))
-            modBus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, PlainGlassModels::wrap);
+        if (OptionalIntegrations.enabled(Feature.CONSTRUCT_OCCLUSION))
+            modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) ->
+                    event.enqueueWork(ConstructOcclusion::register));
+        var glassFeatures = PlainGlassModels.FEATURES.stream().filter(OptionalIntegrations::enabled)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
+        if (!glassFeatures.isEmpty())
+            modBus.addListener(net.neoforged.bus.api.EventPriority.LOWEST,
+                    (net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult event) ->
+                            PlainGlassModels.wrap(event, id -> PlainGlassModels.target(id, glassFeatures)));
         container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationOverview::new);
         if (OptionalIntegrations.enabled(Feature.REDSTONE_RENDERING))
             modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent event) -> event.enqueueWork(() ->

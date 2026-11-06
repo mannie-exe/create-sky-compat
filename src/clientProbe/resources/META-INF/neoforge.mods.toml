@@ -5,3 +5,5 @@ license="MIT"
 modId="skyweave_client_probe"
 version="1.0.0"
 displayName="Skyweave client test fixture"
+[[mixins]]
+config="skyweave_distance_probe.mixins.json"

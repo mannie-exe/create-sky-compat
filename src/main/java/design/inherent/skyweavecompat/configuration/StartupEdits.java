@@ -4,12 +4,7 @@ import design.inherent.skyweavecompat.Feature;
 import design.inherent.skyweavecompat.FeatureSettings;
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.PosixFileAttributeView;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -21,20 +16,18 @@ public final class StartupEdits {
     public static final class ChangedOnDisk extends IOException {
         public ChangedOnDisk() { super("The startup file changed outside this editor"); }
     }
-    private final Path path;
+    private final ConfigFile file;
     private String baseline;
     private FeatureSettings saved;
     private final Map<Feature, Boolean> edits = new EnumMap<>(Feature.class);
 
-    private StartupEdits(Path path) throws IOException { this.path = path; reload(); }
+    private StartupEdits(Path directory) throws IOException { this.file = new ConfigFile(directory, FeatureSettings.FILE); reload(); }
     public static StartupEdits open(Path configDirectory) throws IOException {
-        return new StartupEdits(configDirectory.resolve(FeatureSettings.FILE));
+        return new StartupEdits(configDirectory);
     }
-    private String read() throws IOException {
-        if (!Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(path))
-            throw new IOException("Startup settings must be a regular local file");
-        if (Files.size(path) > 131072) throw new IOException("Startup settings exceed 128 KiB");
-        return Files.readString(path, StandardCharsets.UTF_8);
+    private String read() throws IOException { return file.read(); }
+    public void check() throws IOException {
+        try { file.check(baseline); } catch (ConfigFile.ChangedOnDisk conflict) { throw new ChangedOnDisk(); }
     }
     public void reload() throws IOException {
         String text = read();
@@ -53,20 +46,12 @@ public final class StartupEdits {
 
     public void save() throws IOException {
         if (!dirty()) return;
-        if (!read().equals(baseline)) throw new ChangedOnDisk();
-        if (!Files.isWritable(path)) throw new IOException("Startup settings are not writable");
+        check();
         String candidate = replace(baseline, edits);
         FeatureSettings parsed = FeatureSettings.read(new StringReader(candidate));
-        if (candidate.getBytes(StandardCharsets.UTF_8).length > 131072) throw new IOException("Startup settings exceed 128 KiB");
-        Path temporary = Files.createTempFile(path.getParent(), ".compat-settings-", ".tmp");
-        try {
-            var attributes = Files.getFileAttributeView(path, PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
-            if (attributes != null) Files.setPosixFilePermissions(temporary, attributes.readAttributes().permissions());
-            Files.writeString(temporary, candidate, StandardCharsets.UTF_8);
-            if (!read().equals(baseline)) throw new ChangedOnDisk();
-            Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            baseline = candidate; saved = parsed; edits.clear();
-        } finally { Files.deleteIfExists(temporary); }
+        try { baseline = file.write(baseline, candidate); }
+        catch (ConfigFile.ChangedOnDisk conflict) { throw new ChangedOnDisk(); }
+        saved = parsed; edits.clear();
     }
 
     private static String replace(String original, Map<Feature, Boolean> edits) throws IOException {

@@ -1,14 +1,24 @@
 # Bridge lanterns
 
-`macaw.bridge_lantern_shape` matches Macaw’s Bridges stair-lantern selection to a short-chain hanging resource model. It defaults off and requires Macaw’s Bridges 3.1.2. Enable it on client and server with the matching resource pack. Flat lanterns keep their native shape and model. Collision remains empty.
+`macaw.bridge_lantern_shape` matches the standing flat-bridge and short-chain
+stair-lantern selection outlines to the pack's resource models. It defaults on and
+requires Macaw’s Bridges 3.1.2. Use matching resources and enable the feature on
+client and server. Both variants retain their native empty physical collision.
 
 ## Ownership
 
 The resource pack owns the visible model. Skyweave: Compatibility Patches owns the outline and selection correction; it includes no Macaw or Better Lanterns assets. `LanternLayout` records the approved model envelope in pixels. The canonical east-facing bounds rotate around the block center using the native blockstate rotations. Update this layout and the pack recipe together.
 
-The lantern body extends below the owning cell and slightly past one horizontal face. Changing `getShape` alone leaves rays that never visit the owner unable to select it. A native shape-only check confirmed that a direct outline intersection can coexist with a world-ray miss.
+Both lantern models extend below the owning cell and slightly past one horizontal face. Changing `getShape` alone leaves rays that never visit the owner unable to select it. A native shape-only check confirmed that a direct outline intersection can coexist with a world-ray miss.
 
-`LanternRayMixin` supplements only OUTLINE queries in real levels. It traverses the requested segment up to the existing native hit, checking loaded neighboring owners whose stair outlines can enter each visited cell. A candidate must intersect inside that cell and precede the native obstruction. The returned hit identifies the real lantern owner. It does not extend reach, load chunks, replace fluid/collision queries or change physical collision. Ordinary block getters and unrelated blocks retain their native results.
+`LanternRayMixin` supplements only OUTLINE queries in real levels. It traverses the requested segment up to the existing native hit, checking loaded neighboring owners whose lantern outlines can enter each visited cell. A candidate must intersect inside that cell and precede the native obstruction. The returned hit identifies the real lantern owner. It does not extend reach, load chunks, replace fluid/collision queries or change physical collision. Ordinary block getters and unrelated blocks retain their native results.
+
+Flat lanterns occupy x=5.5..10.5, y=-1..7 and z=-1..4 pixels before the native
+quarter-turn. The old outline omitted the one-pixel bottom/front overhang.
+The stair envelope remains unchanged. The native lantern has only `bridge` and
+`stair` light states and four facings; regular, rope and stair support families
+choose those states. Materials and bridge connection variants do not introduce
+additional lantern geometry.
 
 The outline is a bounding envelope, like the upstream lantern outline, rather than a voxel copy of every chain opening. Bridge rail geometry can legitimately obstruct low rays. Do not make the lantern selectable through its support to compensate.
 

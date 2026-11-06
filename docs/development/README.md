@@ -267,6 +267,22 @@ baseline; returning to baseline removes review treatments. Remove stale control
 files before another launch. Shutdown explicitly halts the integrated server.
 These controls are test instrumentation, not a production authoring interface.
 
+For SSRD/Sable/Iris/DH distance investigations, also set
+`-Dskyweave_compat.probe.distance=true`. The marked integrated resource fixture
+accepts the `distance` operation: `capture: true` records the next opaque construct
+and LOD draw; a later request reads the observations. `chunks` changes the isolated
+SSRD client request and sends its native server packet. `dh` toggles the disposable
+DH renderer. These controls are not production repairs.
+`nestedFailure` checks the production draw scope's cleanup using one caught,
+probe-only nested exception. Server ship snapshots run on the server thread and
+include physics validity and velocities. Resource `command` acknowledgement
+means queued execution; confirm coordinates, bounds or a subsequent server-thread
+snapshot before accepting a capture. The marked resource fixture can `rejoin`
+in-process without the optional world-text fixture.
+Keep the native terrain distance, shader presets, paused physics, camera and
+static/assembled controls recorded with captures. Inspect both unobstructed and
+occluded views; seeing a distant ship alone does not establish depth correctness.
+
 With DH 3.3.3 installed, JVM flags select these checks:
 
 | Flag | Behavior and output |

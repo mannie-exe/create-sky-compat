@@ -1,5 +1,226 @@
 # Verification
 
+## Release 0.22.0
+
+The release candidate SHA-256 is `b80c619a7058dc621eafec6ee6814300c23d332616497a8c340e15cb0fad58b8`. Its only archive-entry
+difference from the reviewed configuration-composition candidate below is the
+version in `META-INF/neoforge.mods.toml`; all production classes and other resources
+are identical. `./gradlew --no-daemon check build clientProbeJar` passes again
+with 161 Java tests and the tooling, generated-resource, upstream and packaging
+checks. Native evidence below applies to the same implementation.
+
+## Configuration composition
+
+Verified 2026-11-06 on Minecraft 1.21.1, NeoForge 21.1.265 and Temurin 21.0.13,
+from the working tree based on `f6c091e`. Candidate SHA-256:
+`be7ad1ea73355e53b07342fc4eb2d27ba86669187d037eea0d92bd4951c133c6`.
+`./gradlew --no-daemon check build clientProbeJar` passes 161 Java tests and the
+tooling, generated-resource, upstream and packaging checks. `git diff --check` passes.
+
+Full and minimum native clients opened the configuration screen. Probe observations
+matched sidebar destinations to measured content anchors in order, with no duplicate
+groups. Unavailable preferences disappear in the minimum installation; journal file
+links still return to the owning page. Native labels, compact single-field forms,
+Status & files diagnostics, outlined groups and the text-only information action
+were inspected. Only the information glyph uses Minecraft's bundled `uniform` font.
+Narrow/wide reflow retains the end anchor.
+
+Staged native fields left files unchanged until Save. Invalid village bounds blocked
+the whole save; valid fields wrote through NeoForge. Read-only files produced partial
+save feedback with the remaining draft retained; retry succeeded. External edits
+were preserved until explicit reload. A native atomic-write failure left the draft
+intact and restored the previous live value; restoring write access allowed retry.
+That failure check used the preceding candidate with byte-identical writer code;
+the final candidate repeated a native save and live readback.
+
+Native reload-callback failure handling was inspected, not artificially injected.
+Unsupported non-scalar registered values remain unavailable rather than receiving
+a guessed editor. Dedicated startup, audible narration and Windows/Linux shortcuts
+were not repeated for this client-UI extraction. Earlier evidence retains its own
+version scope. See [configuration boundaries](configuration.md) for ownership and
+optimistic conflict guarantees.
+
+## Configuration input and selection polish
+
+Verified 2026-11-06 on Minecraft 1.21.1, NeoForge 21.1.265 and Temurin 21.0.13.
+Candidate SHA-256:
+`d2b9c6810e44c10cf5c2efe9560e7392d56566b5c25f20b566c496f4df77c448`.
+`./gradlew --no-daemon check build clientProbeJar` passes 157 Java tests, tooling,
+generated resources, upstream hashes and packaging checks. `git diff --check` passes.
+
+The preceding candidate reproduced a failed Command+A selection in the full
+native client. Minecraft EditBox notifies its responder on cursor movement, even
+when text is unchanged; the old filter rebuilt the input and collapsed selection.
+The retained native widget now passes actual macOS Command+A/C/X/V, Unicode
+copy/paste, word movement, Shift selection and selection surviving resize. Probe
+observations confirm the same input instance across filtering and replacement.
+The final build repeated native selection/replacement and Tab ownership checks.
+
+Native full/minimum clients render the information sprite and explicit selected
+title. Selecting another destination replaces the old highlight; measured section
+jumps and the information-action return work without optional dependencies.
+The final full-client capture records the vanilla yellow/white/gray hierarchy and
+unfilled information action. Windows/Linux shortcut execution and audible narration
+were not tested; native EditBox/Button platform and narration contracts remain
+in use. Dedicated startup was not repeated for these client-only changes; no
+selection, persistence, optional-dependency or server implementation changed.
+
+## Configuration pages and safe editors
+
+Verified 2026-11-06 on Minecraft 1.21.1, NeoForge 21.1.265 and Temurin 21.0.13,
+from the working tree based on `f6c091e`. Candidate SHA-256:
+`639a0e0bfc71d035b76670814875cd33a87eda87cac4885f74bcc80a8003cb04`.
+
+`./gradlew --no-daemon check build clientProbeJar` passes 157 Java tests, six
+Python tooling tests, generated Ponder/upstream/package checks. Focused additions
+exercise canonical pages/search, end bookmarks after column reflow, typed JSON
+and cross-field validation, stale drafts, temporary-file failure, registered-owner
+readback failure and partial save reporting. Existing properties-preservation
+and sidedness tests remain passing.
+
+Native checks during this pass exercised system/mod pages, localized search into JSON
+fields and registered TOML editors, first/last anchors, wheel/scrollbar input,
+keyboard focus, narrow/wide layouts and one/two-column end retention. Native GUI
+sizes included 427×240, 640×360 and 1680×1000. An invalid JSON draft survived
+navigation and a French resource reload. All five owned JSON families saved with
+validated disk readback; feature writes left the running selection unchanged.
+Village bounds rejected an inverted range. External JSON and TOML changes were
+preserved, with drafts retained or explicitly reloaded. Link GUI's native enum and
+common range controls wrote their owning TOMLs. Global preflight/partial failure
+outcomes and filesystem failure cases have focused automated coverage.
+
+The final artifact repeated navigation, reflow and invalid-draft checks after
+the last UI-only adjustments; save/conflict checks exercised the same writer
+implementation before those adjustments. It also opened configuration and Iris's unavailable page in a
+minimum client with no optional adapters. Disposable standalone/full dedicated
+servers started and shut down normally, with zero client-only hooks selected.
+Personal server/world/LOD data was not used as a test fixture. Native narration
+keeps the existing widget contracts; audible output was not assessed. Filesystem
+race guarantees remain optimistic, and native Windows/Linux GUI checks were not
+performed. See [configuration boundaries](configuration.md).
+
+## Decorative block backfaces
+
+The approved decorative families were checked on 2026-11-05 with Java 21.0.13,
+Minecraft 1.21.1, NeoForge 21.1.265, Create Confectionery 1.1.3b (mod metadata
+`1.1.3.`), Linear Bearing 1.3.5, Design n’ Decor 2.2b and Bits ’n’ Bobs 2.3.5.
+Candidate SHA-256:
+`c1fcfe24eef7eabce64ce4c937b7756d480f3a7bd483f9d07f616e7b35c0fc85`.
+`./gradlew --no-daemon check build clientProbeJar` passes 146 Java tests and the
+resource, artifact and upstream checks. Selection tests cover independent
+defaults, missing/disabled/unsupported targets and physical-server exclusion.
+A fresh client with only Compat and its test probe loads a vanilla world with no
+active adaptations; native glass remains an unwrapped six-quad model. It saves
+and exits normally, and the disposable minimum runtime is removed.
+
+In the full isolated client, caramel bricks, bubble gum and industrial grating
+change from six to twelve quads; ornate grate changes from twelve to twenty-four.
+Every original surface sample retains its positions, UVs, sprite, tint and
+shading attributes, including the grates' processed CT output. Matching interior
+captures show the restored surfaces. Representative bottom-slab and straight
+stair states retain their original output and receive reverse faces; every
+possible stair arrangement was not individually captured.
+
+Shader-off captures cover all four families; BSL/Colorwheel captures additionally
+cover bubble gum and industrial grating. Native glass beside the bubble-gum block
+entity receives the shared-face 1/256 inset, and removing that neighbor restores
+the original exposed plane. These are rendering checks, not new physics or
+adhesion tests. Scaffolding remains excluded; its existing inward geometry was
+reviewed against vanilla source models rather than altered.
+
+Local evidence is in `.git/glass-approved-native/`. Dedicated-server execution
+was not repeated; these new adapters have no server hooks or foreign Java-class
+references. The preceding implementation's dedicated checks retain their own
+recorded artifact and version scope.
+
+## Static glass and bridge lantern coverage
+
+The 2026-11-05 follow-up uses Minecraft 1.21.1, NeoForge 21.1.265,
+Macaw’s Windows 2.4.2 and Bridges 3.1.2. Candidate JAR SHA-256:
+`fd3016507f02ccfff6b82319f6f2d3f1d4a4382c3d9f053b2d9e093d4e3fc670`.
+`./gradlew --no-daemon check build clientProbeJar` passes 145 Java tests and
+the required resource, package and upstream checks.
+
+Native full-pack observations compare the preceding unpublished build with this
+candidate. Mosaic block/pane output increases from 6/10 to 12/20 quads; tinted
+glass increases from 18 to 36. Original vertices, UVs, sprites, tint and shading
+attributes remain unchanged. Interior captures with BSL show the restored
+backfaces. Shader-off inspection also selects the wrapper. Ordinary, barred and
+Gothic windows keep their existing two-sided geometry and original quad counts.
+The sixteen mosaic colors and four vertical states are admitted by the static
+target policy; native captures use representative red blocks and panes rather
+than every color/state combination.
+
+A fresh minimum client with only Compat, its test probe and Macaw’s Windows
+loads, selects only `MACAW_GLASS`, renders twelve mosaic quads and saves/exits.
+This verifies that the glass adapter does not require Create, Fusion or Iris.
+
+Flat-lantern overhang rays change from misses to hits for all four facings;
+the four stair directions remain selectable. Additional rope and stone flat/stair
+supports return the correct lantern owner. All retain empty physical collision.
+Material and connection variants share the two native lantern model states;
+this is source coverage, not a claim that every bridge was placed interactively.
+
+Evidence is retained locally in `.git/glass-macaw-native/`. Dedicated probes were
+not rerun for this follow-up: the personal server has NeoForge 21.1.264 and the
+runner requires 21.1.265. Its libraries and installation were left untouched.
+The previous dedicated checks below apply to their recorded artifact.
+
+## SSRD shader adaptations
+
+The unpublished implementation was checked on 2026-11-05 with Java 21.0.13,
+Apple Silicon, Minecraft 1.21.1, NeoForge 21.1.265, Sable 2.0.6, SSRD 1.8.8,
+Iris 1.8.14-beta.1, Sodium 0.8.13 and DH 3.3.3. Main JAR SHA-256:
+`44536fd4f154ac2095f936f5f82ff9908ae579c46758efed210dc003a401f1c3`.
+Earlier chunked-path controls used
+`1fb5447e09382b7c23897f06b2f785ba7fccd9ff399370e888c8325d52042957`;
+the final build adds the verified immediate-uploader correction. Final native
+checks repeat both shaderpacks' opaque controls, scoped restoration, single-block
+visibility/occlusion, the DH-absent client and minimum client. The final build and
+standalone/full/unsupported-disabled server probes also pass.
+It retains the 0.21.1 version identifier for local verification; it is not the
+published 0.21.1 binary.
+
+`./gradlew --no-daemon check build clientProbeJar` passes 143 Java tests, six
+release-tool tests, upstream hash checks, transformed targets and artifact-boundary
+checks.
+
+The owned fixture uses native distance eight chunks and SSRD 128, with the server
+request confirmed. A red/gold assembled hull is displaced from its original
+terrain location; a separate blue static cube controls terrain visibility. DH
+uses pre-existing chunks only. Personal instances and caches were not changed.
+
+| Check | Observed result |
+| --- | --- |
+| Published baseline | Ship visible nearby and shader-off at 256/512 blocks; missing at distance with BSL or Complementary. SSRD 1.8.7 reproduces it. |
+| Both adaptations | BSL 10.1.8/Colorwheel 1.0.5 and Complementary 5.9.3/Euphoria 1.10.5/Skyweave 0.1.0 hide the hull behind an opaque DH wall and reveal its clear portion from an offset camera. |
+| Distance alone | BSL restores the distant hull but it shows through the DH wall, confirming the independent occlusion switch. |
+| Single block | A gold single-block construct renders beyond native distance after the uploader correction, disappears behind the DH wall and remains visible in front of it. Its renderer type is confirmed in telemetry. |
+| Draw state | GPU `far` rises from 128 to effective SSRD 2048 during the draw; the occlusion flag is scoped. Both restore afterwards, including a deliberately nested exception. |
+| Moving body | Native impulses produce nonzero linear/angular velocity on a valid physics handle; a short recording shows the hull emerging beside the occluder. |
+| Materials | Leaf cutouts, lime glass and opaque panels remain visible near and far. Near-view chest, shaft and cogwheel controls render; this does not establish distant block-entity/Flywheel coverage. |
+| Water | Contained native water retains shader absorption; distant water is not promoted to an opaque blocker. DH's water approximation differs from the native tank, so this is not proof of identical translucent composition. |
+| Lifecycle | Shader switching/off/on, viewport resize and Nether/Overworld transitions complete. A distance-only client also saves and reopens the fixture in-process. |
+| DH rendering off | BSL keeps the hull visible and the occlusion guard off. Complementary's final deferred fog hides its opaque hull; omitting only that fog in a disposable shader restores it. The adapter preserves that shader policy. |
+| Disabled switches | A restarted full client with both switches false retains native shader range and omits both adaptations. |
+| DH absent | Full client with DH and its polygon patch removed loads the world and settings; default distance correction renders the BSL hull, while occlusion is not selected. |
+| Minimum client | Compat and probe load a fresh vanilla world and configuration with no optional adaptations active. |
+| Dedicated server | Standalone, full-pack and unsupported-but-disabled startup probes pass on NeoForge 21.1.265; client features are excluded. |
+
+Source inspection separates Sable's buffered block-entity rendering and
+Flywheel/Colorwheel embedded programs from the terrain draw scope. Arbitrary
+entity renderers, other shaderpacks, dedicated multiplayer visuals, reduced
+shader render scales, custom fragment depth, alternate depth conventions and
+performance are not qualified.
+Do not infer them from an unobstructed hull capture.
+
+Retained baseline media is in the local harness's
+`images/2026-11-05-ssrd-shaders/`; candidate media and JSON observations are in
+Compat's `.git/ssrd-native/`. Keep exact shader presets with reproduction inputs.
+A shader-disabled fallback after a compile failure is invalid visual evidence.
+[Rendering](rendering.md#distant-constructs-with-shaders) owns implementation and
+update contracts.
+
 ## 0.21.1 dependency qualification
 
 Verified on 2026-11-05 with Java 21.0.13, Apple Silicon, Minecraft 1.21.1,
@@ -139,7 +360,7 @@ shader, performance or exact-RGB guarantee is claimed. Later exposure, grading a
 compositing remain shader-owned; custom nametag renderers bypassing the base method
 and Photon on this Apple GPU are untested.
 
-## Configuration navigation and world-text shadows, 2026-11-04
+## World-text shadows, 2026-11-04
 
 Source based on `09fedc1`, Minecraft 1.21.1, NeoForge 21.1.264 and Iris
 1.8.14-beta.1+mc1.21.1. The final candidate SHA-256 is
@@ -155,16 +376,6 @@ transformer applies both shadow guards to the pinned Minecraft targets. Extracte
 handlers cancel only the shadow pass. The nametag test includes Iris's actual
 material mixin and proves cancellation precedes its setup; item/block display
 renderers and entity-body rendering retain their boundaries.
-
-Native configuration checks cover section links, first/end navigation, wheel
-scrolling, scrollbar dragging, details and registered-editor return, narrow
-layout, resize with a draft, language/resource reload and keyboard focus. Saving
-retains position. An external file edit refuses the stale save and retains its
-draft; explicit reload/discard succeeds. Feedback stays visible above the panels.
-Running, saved and draft values remain distinct. A pointer-triggered rebuild
-initially left the screen focused on a detached panel; the final artifact keeps
-the input owner attached after toggles and saves, including pointer-to-keyboard
-navigation in the minimum client.
 
 The final minimum client loads with only Compat and the test probe. Both new
 switches are configured on, yet no optional hooks activate without Iris. Final

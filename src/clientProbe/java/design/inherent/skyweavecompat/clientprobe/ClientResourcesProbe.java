@@ -119,7 +119,7 @@ final class ClientResourcesProbe {
                             net.irisshaders.iris.Iris.getIrisConfig().save(); net.irisshaders.iris.Iris.reload();
                         }
                         case "rejoin" -> {
-                            if (worldText == null) throw new IllegalStateException("Expected world-text review fixture");
+                            if (world == null) throw new IllegalStateException("Expected a marked review world");
                             var server = mc.getSingleplayerServer();
                             if (server != null) server.halt(false);
                             mc.disconnect(new TitleScreen());
@@ -140,6 +140,7 @@ final class ClientResourcesProbe {
                             modelReport = worldText.snapshot(command.has("remember") && command.get("remember").getAsBoolean());
                         }
                         case "snapshot" -> {}
+                        case "distance" -> modelReport = ClientDistanceProbe.observe(command);
                         case "ray" -> {
                             var pos = new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt());
                             var a = command.getAsJsonArray("from"); var b = command.getAsJsonArray("to");

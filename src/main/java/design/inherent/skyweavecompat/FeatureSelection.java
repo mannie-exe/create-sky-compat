@@ -88,7 +88,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
 
     public static boolean clientOnly(Feature feature) {
         return switch (feature) {
-            case SHADER_PATCHES, TEXT_DISPLAY_LIGHTING, NAMETAG_LIGHTING, TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW, CREATE_BACKFACES, FUSION_BACKFACES, CREATE_WINDOWS, RECHISELED_GLASS, REDSTONE_RENDERING, AUDIO_TIMELINE, LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
+            case CONFECTIONERY_BACKFACES, BUBBLE_GUM_BACKFACES, ORNATE_GRATE_BACKFACES, INDUSTRIAL_GRATING_BACKFACES, MACAW_GLASS, CONSTRUCT_DISTANCE, CONSTRUCT_OCCLUSION, SHADER_PATCHES, TEXT_DISPLAY_LIGHTING, NAMETAG_LIGHTING, TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW, CREATE_BACKFACES, FUSION_BACKFACES, CREATE_WINDOWS, RECHISELED_GLASS, REDSTONE_RENDERING, AUDIO_TIMELINE, LINEAR_PONDER, COLORWHEEL_SAMPLERS, COLORWHEEL_MATERIALS, LIGHTING_LIFECYCLE, SODIUM_LIGHTING, DH_HANDOFF, FRAMEBUFFER, BALLOON, MATERIAL_IDS, MODEL_DATA, SINGLE_BLOCK_PASSES,
                     QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS -> true;
             default -> false;
         };
@@ -96,7 +96,14 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
 
     public static Map<String, String> dependencies(Feature feature) {
         return switch (feature) {
+            case CONSTRUCT_DISTANCE -> Map.of("ssrd", "1.8.8", "sable", "2.0.6", "iris", "1.8.14-beta.1+mc1.21.1");
+            case CONSTRUCT_OCCLUSION -> Map.of("ssrd", "1.8.8", "sable", "2.0.6", "iris", "1.8.14-beta.1+mc1.21.1", "distanthorizons", "3.3.3");
             case MACAW_LANTERN -> Map.of("mcwbridges", "3.1.2");
+            case MACAW_GLASS -> Map.of("mcwwindows", "2.4.2");
+            case CONFECTIONERY_BACKFACES -> Map.of("create_confectionery", "1.1.3.");
+            case BUBBLE_GUM_BACKFACES -> Map.of("linearbearing", "1.3.5");
+            case ORNATE_GRATE_BACKFACES -> Map.of("dndecor", "2.2b");
+            case INDUSTRIAL_GRATING_BACKFACES -> Map.of("bits_n_bobs", "2.3.5");
             case SHADER_PATCHES -> Map.of("iris", "1.8.14-beta.1+mc1.21.1");
             case CREATE_BACKFACES -> Map.of("create", "6.0.10");
             case FUSION_BACKFACES -> Map.of("fusion", "1.3.16");
@@ -190,6 +197,9 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case NAMETAG_SHADOW -> List.of("client.NametagShadowMixin");
                 case TEXT_DISPLAY_LIGHTING -> List.of("client.TextDisplayLightingMixin");
                 case NAMETAG_LIGHTING -> List.of("client.NametagLightingMixin");
+                case CONSTRUCT_DISTANCE, MACAW_GLASS, CONFECTIONERY_BACKFACES, BUBBLE_GUM_BACKFACES,
+                        ORNATE_GRATE_BACKFACES, INDUSTRIAL_GRATING_BACKFACES -> List.of();
+                case CONSTRUCT_OCCLUSION -> List.of("client.ConstructShaderMixin", "client.ConstructDepthLifecycleMixin", "client.ConstructSamplerBudgetAccessor");
                 case MATERIAL_IDS -> List.of("client.ConstructMaterialMixin");
                 case COLORWHEEL_SAMPLERS -> List.of("client.ColorwheelSamplerMixin");
                 case COLORWHEEL_MATERIALS -> List.of("client.ColorwheelMaterialMixin");
@@ -210,6 +220,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case QUESTLOG_REWARD_VALIDATION -> List.of("questlog.RewardClaimMixin");
             });
         }
+        if (client && (enabled(Feature.CONSTRUCT_DISTANCE) || enabled(Feature.CONSTRUCT_OCCLUSION)))
+            result.addAll(List.of("client.ConstructDrawMixin", "client.ConstructBufferMixin", "client.ConstructProgramMixin"));
         if (client && enabled(Feature.CLIMATE)) result.add("client.WeatherClimateMixin");
         if (client && (enabled(Feature.TEXT_DISPLAY_LIGHTING) || enabled(Feature.NAMETAG_LIGHTING)))
             result.addAll(List.of("client.WorldTextPipelineMixin", "client.WorldTextShaderMixin"));

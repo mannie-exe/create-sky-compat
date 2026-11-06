@@ -1,134 +1,178 @@
 # Configuration interface
 
-[Operator configuration](../configuration.md) owns controls, supported targets,
-file names, and application timing. This reference owns the editor and UI boundaries.
+[Operator configuration](../configuration.md#configuration-interface) owns the
+navigation, controls, filenames and application timing. This guide owns the
+implementation boundaries and update checks.
 
-## Ownership
+## Navigation and layout
 
-`SettingsCatalog` assigns each feature to one category and mod group, supplies its
-text keys and startup-file owner, and indexes the registered and file-owned tuning.
-It contains no optional mod APIs. Its catalogue test covers all features and owned
-files. Extend the catalogue and English text when introducing a feature; do not
-create another activation switch solely for navigation.
+`SettingsCatalog` assigns each feature to one gameplay system and mod group.
+`Page` merges groups sharing a system and mod; the same mod can have a separate
+page in another system. Features and files retain one data owner. Each page declares one ordered list of purpose sections and typed items: fixes,
+preferences, file settings and shader actions. Navigation/search and content walk
+that same composition, so section count, anchors and ordering cannot drift through
+independent page builders. Old physical-side groups supply metadata only. A section
+is not necessarily file-backed. Purpose and application timing are separate; omit
+empty/unavailable sections rather than inventing headings for every page.
+The catalog contains no optional API classes. Add catalog metadata and English strings when
+introducing a setting; navigation must not introduce another activation switch.
 
-`FeatureSelection` remains the dependency, side, prerequisite, and supported-version
-authority. Structured inactive reasons are recorded where it decides selection;
-the configuration interface translates them without repeating that decision tree.
-The existing inactive debug strings are retained for diagnostics.
+`FeatureSelection` remains authoritative for dependencies, versions, sides and
+prerequisites. The interface translates its inactive reasons without repeating
+the selection logic. Physical side appears in Details, not as the primary tree.
 
-`ConfigurationOverview` owns one category/mod document, auxiliary feature details
-and startup drafts. `SettingsPanel` measures rows once per rebuild and shares
-their bounds across rendering, widget placement, clipping, focus and section
-anchors. Native widgets retain their keyboard actions and narration.
+`ConfigurationOverview` owns page routes, expanded groups, localized search,
+per-page bookmarks/focus, explicit selected destinations, and the staged save set. `SettingsSearch` matches resolved
+strings with case and diacritic normalization; IDs are secondary matches. JSON
+field descriptions and registered specs participate without searching file
+contents or values. Localized mod names determine page order inside each system;
+authored section order and owning schemas determine setting order. JSON field
+order comes from the owned definition, independent of saved key formatting.
+Registered scalar fields are real inline destinations. Journal controls keep their
+existing shared preference helpers; their file does not produce duplicate controls.
 
-`SectionNavigation` stores only measured anchor positions and scroll policy. It
-retains an explicitly selected clamped destination until scrolling moves, then
-tracks the section at the viewport's top; manually reaching the bottom selects
-the final section. Bookmarks preserve section-relative offsets across reflow.
-Stable row/control keys restore focus. The sidebar keeps its own scroll; changing
-the document section does not rebuild either panel.
+Search uses Minecraft's `EditBox`, retained across result filtering and layout
+rebuilds. Its responder also runs on cursor/selection movement; ignore unchanged
+text and replace only the navigation results when filtering. Recreating the input
+here loses selection, horizontal scrolling and clipboard-editing state. Respect
+native Command shortcuts on macOS and Control elsewhere; do not add another
+string editor or global key interception. Preserve a restored focus owner instead
+of advancing it again through initial Tab navigation after a rebuild.
+
+A clicked destination uses vanilla `ChatFormatting.YELLOW` in the navigation and
+its content title. It remains the sole explicit content highlight until another
+destination is chosen; scroll/bookmark tracking remains separate. Ordinary titles
+use WHITE and descriptions/category text use GRAY. Feature details use a plain
+lowercase `i`, with `minecraft:uniform` applied only to that glyph. Its transparent
+button has a normal hit target, yellow hover/focus text, underline, localized
+tooltip and explicit narration. Other labels keep the ordinary Minecraft font.
+
+`SettingsPanel` measures rows and optional two-column field pairs. Those same
+bounds drive drawing, clipping, hit testing, focus scrolling and section anchors.
+Ordinary native widgets retain keyboard behavior and narration. Columns appear
+only when both meet the minimum measured width; complex list rows span the pane.
+Purpose groups use unfilled, clipped DARK_GRAY outlines interrupted by their
+measured eyebrow headings. Group padding participates in the same column/anchor
+measurements; borders do not create another input or scroll owner.
+
+`SectionNavigation` keeps an explicitly chosen clamped destination until scrolling
+moves. Bookmarks preserve section-relative offsets; an end bookmark stays at the
+end when columns or wrapped text change the document height. Stable route/control
+keys restore page focus after rebuilds and auxiliary screens.
 
 Native pointer dispatch assigns focus after invoking a button callback. A callback
-that rebuilds the screen can therefore leave focus on a detached panel or footer
-button. The overview repairs that focus after dispatch through the stable control
-key or corresponding footer action. If an action disappears, focus returns to a
-visible content control so Tab does not jump to the document's beginning. Preserve this boundary when changing rebuilds;
-a widget's focused flag alone does not establish that the screen routes keys to it.
-
-Details and registered editors retain the document bookmark and useful focus.
-Save feedback remains outside the scrolling panels. The file index links to
-owning groups; only the ungrouped startup file is edited from the index.
-`ClientResourceRevision` is shared with journal screens/toasts and invalidates
+can rebuild the widgets, leaving focus on a detached control. The overview repairs
+that root ownership after dispatch. Preserve this distinction: a widget's focused
+flag alone does not establish keyboard routing. `ClientResourceRevision` invalidates
 measurements after resource/font reloads without changing gameplay state.
 
-The journal bookmark keeps its native skin and parent screen. Both entrances use
-`JournalPreferences` and the same localized labels. Its save helpers restore the
-previous in-memory value and propagate a reported failure. No second preference
-file, network administration API, or live mixin reload is introduced.
+## File ownership
 
-## Startup editing
+| Owner | Files and authority |
+| --- | --- |
+| `StartupEdits` | Feature properties; immutable running selection plus next-start delta |
+| `JsonEdits` / `JsonSettings` | Five cataloged strict JSON files; actual profile/settings parsers validate every candidate |
+| `RegisteredEdits` | Staged scalar fields in loaded local NeoForge CLIENT/COMMON TOMLs; native specs, serializer and reload events |
+| `JournalPreferences` | Immediate journal values shared with the journal bookmark |
+| `ShaderAssembly` | Existing recipe/rebuild workflow; not a general file editor |
 
-`StartupEdits` retains the last successfully read file and a small delta of intended
-changes. The loader's running snapshot stays immutable. A saved next-start value
-can therefore differ from both the running selection and the current unsaved draft.
+`JsonSettings` uses only pure profile types and parsers. The generation JSON parser
+is separated into `ProfileJson` because the generator adapter's API signatures
+reference optional Sky Archipelago classes. Do not introduce such signatures into
+classes loaded by minimum installations.
 
-The editor reads only the known feature file, requires a regular non-symlink file,
-and bounds input to 128 KiB. It uses `FeatureSettings` for strict validation. An
-edit replaces the matching logical property, including Java properties escapes
-and continuations, or appends an omitted changed key. Other comments, ordering,
-line endings, and omitted defaults remain intact where possible.
+Owned JSON currently requires flat numbers/booleans and BlueMap's map-ID string
+list. Numeric drafts retain exact text, including invalid values. Full profile
+constructors enforce integer types, bounds and cross-field invariants. The bounded
+JSON reader rejects duplicate keys and trailing documents. Owned strict files are
+pretty-printed on save; comments and unknown fields are not supported by their
+runtime schema. Missing or malformed files are distinct from defaults. Opening a
+screen never manufactures configuration.
 
-Saving compares the baseline before preparing output and again before replacement.
-A detected external edit refuses the save and retains the draft. Explicit reload
-requires discarding a dirty draft. Candidate output is validated, written to a
-same-directory temporary file, and atomically replaces the original. POSIX file
-permissions are retained where supported. Unsupported atomic replacement or I/O
-failure leaves the original in place and reports failure; there is no in-place
-truncation fallback. The optimistic comparisons do not claim a cross-process
-compare-and-swap against non-cooperating editors.
+`ConfigFile` provides bounded UTF-8 snapshots and trusted catalog filenames under
+the local config directory. It rejects traversal, symlinks, nonregular files and
+input above 128 KiB. There are no persistent handles, locks or watchers and no
+per-frame file parsing. Read at open, explicit reload, registered readback and save.
 
-Before saving, the UI checks the proposed values with the existing selector and
-installed metadata. Missing targets may remain configured on but inactive; an
-unsupported active combination is rejected with its existing explanation.
-Generation-category edits require confirmation and retain all saved-world identity
-checks. Saving never selects a world preset or converts a save.
+Owned-file saves compare the captured baseline, validate output, write a same-dir
+temporary file, preserve POSIX permissions where supported, recheck the baseline,
+and atomically replace. Unsupported atomic moves fail without an in-place
+truncation fallback. Readback must match and validate before the draft clears.
+Writers from this implementation serialize briefly per canonical path. These
+comparisons cannot provide cross-process compare-and-swap against noncooperating
+external writers; a narrow final-check/rename race remains.
 
-## Registered and file-owned settings
+Properties serialization replaces only edited logical properties, preserving
+unrelated comments, escapes, continuations, ordering and line endings where
+possible. Explicit false values and omitted defaults keep their loader semantics.
 
-Village tuning uses NeoForge's registered section editor. Its existing restart
-restrictions remain in effect. The section also checks raw minimum/maximum values
-before closing, so an individually valid but inverted range cannot be written.
-The active village rule is still captured when a local server starts.
+`SettingsCommit` preflights the complete pending set before the first write. It
+then reports committed files and the first failure. Each successful owner clears
+its own draft; failed/unattempted drafts remain. It does not promise a multi-file
+transaction or roll files back over possible external edits.
 
-Generation, interiors, water, oceans, and BlueMap use known file paths and their
-existing loaders. File access does not manufacture missing configs or resolve
-foreign classes. A local common file does not configure a remote server. Unsupported
-config formats, full JSON editors, and remote administration remain outside this UI.
+## Registered scalar forms
 
-## Bounded verification
+Only cataloged, actually loaded CLIENT/COMMON files whose resolved local path
+matches the config root qualify. Remote SERVER config caches are never targets.
+`RegisteredEdits` discovers scalar bindings through `ModConfigSpec`; field labels
+reuse explicit spec translations or NeoForge's mod-ID/configuration fallback.
+Native validators/defaults/ranges and restart types remain authoritative.
+Single-field files render as their field rather than adding another file heading
+and sidebar destination. File inspection remains in Status & files. Village
+cross-field validation reuses the runtime `NeighborRule.Settings` invariant.
+Unsupported shapes are reported, not silently flattened or guessed.
 
-Run `./gradlew --no-daemon check build clientProbeJar`. Writer tests cover actual
-file edits, omitted defaults, continuations, stale/invalid files, removal, and
-read-only/symlink refusal. Do not replace native input checks with authored-value
-or screenshot-coordinate assertions.
+Edits remain local drafts without mutating native values or writing per keystroke.
+They join the existing Save/Discard/Reload scope. A save validates the candidate,
+compares bounded disk and registered-value snapshots, then briefly applies changed
+bindings and calls the owning spec's `save()`. NeoForge keeps its serializer,
+comments, reload events, watcher and restart-cache contracts. These files are not
+serialized by the JSON writer. Readback must validate and match intended values.
 
-The existing client-probe JAR has an opt-in mode:
+If writing fails while the file remains at its baseline, restore only edited
+native bindings that still match this attempt; retain the draft. If disk contains
+the intended values but a later reload callback failed, report a written-file
+warning and keep those saved values rather than rolling them back. Unexpected
+external readback retains the draft for review. This is optimistic coordination,
+not a lock over native watchers or arbitrary external processes.
 
-```text
--Dskyweave_compat.probe.configuration=true
-```
+Registered immediate values apply after Save; world/game-restart values retain
+their native timing. Journal preferences still save immediately through their
+shared helpers. This difference is shown explicitly; putting a field under
+Preferences does not itself choose its persistence or restart policy.
 
-Use only an isolated instance with `config-review-fixture.json` in its game directory.
-It opens the real config screen at the title screen. Numbered commands in
-`config-review-control.json` operate native screen clicks, keys, wheel input,
-window/GUI sizing, and native numeric edit boxes. `config-review-state.json` records
-screen, widget, draft/saved, and active-selection observations; failures remain
-visible until the next command. Control files are bounded and contain no executable
-scripts. Clear control and state files before relaunching a fixture to avoid
-replaying an old command. Neither probe nor fixture files are distributed with the mod.
+The catalog's current generic TOML forms are embedded rather than redirecting to
+screens constructed solely for them. A genuine upstream screen can be a future
+explicit destination when needed; use an honest Edit label and preserve its owner.
+Do not create another generic modal merely to host a single field.
 
-The same probe accepts native scrollbar `drag` coordinates and a `language` code
-to exercise resource reload. Its state includes panel scroll, maximum scroll,
-active section and stable focus keys. These are observations of the real screen,
-not a substitute layout implementation.
-`screenFocusAttached` checks the root input owner after pointer-driven rebuilds.
-The resource fixture can enable this same probe alongside
-`skyweave_compat.probe.resources`; it then opens settings only on command rather
-than competing with automatic world loading.
+## Verification and updates
 
-For journal return checks, also enable
-`skyweave_compat.probe.configuration.journal=true` and stage the existing
-`tools/fixtures/questlog` definitions/resources in the disposable client. It reuses
-the journal fixture. Verify the bookmark, shared values, selected view, and scroll
-before and after returning. Use the desktop harness for visual review and actual
-pointer checks after confirming availability.
+Run `./gradlew --no-daemon check build clientProbeJar`. Focused tests cover page
+ownership/search, anchor reflow, strict JSON, integer/cross-field validation,
+properties preservation, conflict retention, bounded/symlink/read-only refusal
+and partial multi-file outcomes. Source checks do not replace native execution.
 
-When updating Minecraft or NeoForge, review `ScrollPanel` clipping, pointer bounds,
-focus traversal, narration, registered section saving/restart behavior, and raw
-`ConfigValue` access. Recheck atomic replacement on supported CI platforms and
-minimum client loading without optional APIs. For preference or Questlog updates,
-check both entrances and the parent-screen return contract.
+The existing client probe enables `-Dskyweave_compat.probe.configuration=true`
+only in a disposable directory with `config-review-fixture.json`. Numbered commands
+in `config-review-control.json` operate real screen clicks, keys, fields, wheel,
+scrollbar dragging, GUI/window sizing and language reload. State records native
+widgets, routes, bookmarks, JSON/startup drafts and feedback. Clear control/state
+files between launches. The probe is not distributed with the mod.
 
-For a dedicated-side exclusion check, the existing startup fixture accepts
-`--enable create.glass_backfaces --enable fusion.glass_backfaces`. Explicit client
-switches must still select no client hooks on a dedicated server.
+Verify minimum/full client loading and dedicated-side exclusion; first/last
+anchors and reflow; empty/localized search and inline registered fields; keyboard/scrollbar
+input and narration structure; drafts across details/dialogs; real properties,
+JSON and TOML saves/readback; external conflicts and invalid input. Confirm desktop
+availability before focus/captures and retry interrupted attempts. Keep playing
+worlds, configs, servers and LODs outside fixtures.
+
+For Minecraft/NeoForge updates, recheck `ScrollPanel` clipping/focus/narration,
+`EditBox` responder/caret/clipboard behavior, focus restoration, the uniform font resource for the information glyph, named palette colors,
+registered value/spec save/reload events, TOML
+parsing, watcher behavior and restart caches. For parser/profile updates, update
+JSON catalog forms/strings and shared validators together. Check atomic replacement
+on supported platforms, optional classloading, inline field ownership and journal
+preferences through both entrances. Keep startup selection immutable and generation
+identity checks authoritative; this UI is local configuration, not remote admin.

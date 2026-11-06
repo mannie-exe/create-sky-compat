@@ -72,3 +72,30 @@ A temporary font pack with a licensed local TTF provider can exercise the
 provider loaded, then remove the temporary pack. The Unicode option alone does not
 establish which native shader key a glyph uses. Never distribute a system font
 with the fixture or infer all-font coverage from one resource reload.
+
+## Distant construct rendering
+
+The `distant_materials` function replaces x=0..23, y=80..96, z=0..15 with
+a glass shell, leaf/cutout and solid panels, and three block-entity controls.
+Visit `12 88 64` and inspect the static result before running `distant_assemble`
+once. This requires Create, Sable and SSRD; the latter's force-load cap must
+permit the new construct. Confirm the assembled ID, bounds and actual tracking.
+
+`distant_occluder` replaces x=-64..-16, y=64..112, z=95..101 with an opaque
+wall. `distant_water` uses the same bounded area for a contained water barrier;
+its invisible barrier-block shell prevents fluid spread. Visit the area before
+invoking either function, and verify the resulting DH capture rather than
+assuming command acknowledgement proves that its LOD has updated.
+
+Use native terrain distance eight chunks and a recorded SSRD range for a
+controlled comparison. View beyond native distance, near the subjects, and
+across the chunk/LOD transition. Include an opaque construct in front of and
+behind the wall, plus partial overlap and an unobstructed camera. Compare
+shader-off, disabled adaptations, distance-only and both adaptations. Keep
+shader option files paired with their shader archives. Disable unrelated
+background world generation in this disposable fixture.
+
+The opt-in client distance probe records actual draw uniforms and their restored
+values; its `nestedFailure` control exercises restoration after a bounded nested
+exception without aborting SSRD's own outer render cleanup. Never install this
+instrumentation or these fixtures into a personal instance.

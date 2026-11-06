@@ -73,13 +73,20 @@ inactive selections.
 | `rendering.nametag_shadow_pass` | Exclude base-renderer entity names from shader shadows; default on | Client, Iris version above |
 | `rendering.text_display_lighting` | Neutral text-display lighting; later shader color processing remains | Client, Iris version above; default on |
 | `rendering.nametag_lighting` | Neutral base-renderer nametag lighting; later shader color processing remains | Client, Iris version above; default on |
+| `rendering.construct_distance` | Use SSRD's effective range during construct shader draws; default on | Client, SSRD 1.8.8, Sable 2.0.6, Iris version above; DH not required |
+| `rendering.construct_occlusion` | Hide construct fragments behind opaque DH terrain; default on | Client, dependencies above and DH 3.3.3; independent of the distance switch |
 | `rendering.construct_material_ids` | Annotate construct shader materials | Client, Sable 2.0.6, Iris version above, Sodium 0.8.13+mc1.21.1 |
 | `rendering.colorwheel_samplers` | Release unused OIT sampler slots when Colorwheel disables OIT | Client, Colorwheel 1.3.2+mc1.21.1, Iris version above, Flywheel 1.0.6; independent of Sable |
 | `rendering.colorwheel_materials` | Colorwheel terrain/emission metadata on direct construct draws | Client, active `rendering.construct_material_ids`, Colorwheel 1.3.2+mc1.21.1 |
 | `rendering.single_block_model_data` | Match model data used for layer selection and tessellation | Client, Sable 2.0.6 |
 | `rendering.single_block_passes` | Draw single-block geometry in its current Iris terrain pass | Client, Sable 2.0.6, Iris 1.8.14-beta.1+mc1.21.1, Sodium 0.8.13+mc1.21.1 |
-| `macaw.bridge_lantern_shape` | Hanging stair-lantern outline and selection; matching resource model required, default on | Shared, Macaw’s Bridges 3.1.2 |
+| `macaw.bridge_lantern_shape` | Flat/stair lantern outlines and selection; matching resource models required, default on | Shared, Macaw’s Bridges 3.1.2 |
 | `create.glass_backfaces` | Show exposed Create glass from behind, retaining final connected textures | Client, Create 6.0.10; default on, independent of terrain and renderers |
+| `macaw.glass_backfaces` | Two-sided mosaic blocks/panes, retaining native states and material boundaries | Client, Macaw’s Windows 2.4.2; default on, independent of Create/Fusion |
+| `confectionery.block_backfaces` | Two-sided caramel bricks, slabs and stairs | Client, Create Confectionery 1.1.3b (metadata `1.1.3.`); default on |
+| `linear_bearing.bubble_gum_backfaces` | Two-sided bubble-gum block; physical behavior unchanged | Client, Linear Bearing 1.3.5; default on |
+| `dndecor.grate_backfaces` | Two-sided ornate grate, retaining processed connected textures | Client, Design n’ Decor 2.2b; default on |
+| `bits_n_bobs.grating_backfaces` | Two-sided industrial grating, retaining processed connected textures | Client, Bits ’n’ Bobs 2.3.5; default on |
 | `fusion.glass_backfaces` | Show exposed vanilla/Rechiseled glass from behind after Fusion processing | Client, Fusion 1.3.16; default on, no required Rechiseled installation |
 | `create.window_culling` | Keep window faces visible across different window materials | Client, Create 6.0.10; independent of Fusion, Rechiseled and shaders |
 | `rechiseled.glass_culling` | Keep differently oriented glass faces visible | Client, Rechiseled 1.2.6; independent of Create and Fusion APIs |
@@ -336,7 +343,7 @@ See [DH implementation](development/lod.md) for boundaries and update checks.
 
 `config/skyweave_compat-journal-client.toml` is registered when either client
 journal feature is active. The Settings bookmark opens grouped Display and
-Notifications preferences. Mods → Skyweave: Compatibility Patches → Config → Client → Questlog
+Notifications preferences. Mods → Skyweave: Compatibility Patches → Config → Interface and accessibility → Questlog
 edits the same values. Changes save locally and apply without restart.
 The three startup switches remain independent.
 
@@ -367,42 +374,71 @@ though its NeoForge metadata does not declare that prerequisite.
 
 ## Configuration interface
 
-Open **Mods → Skyweave: Compatibility Patches → Config**. The sidebar groups local settings by
-Client, Server / shared, and World generation, then by mod. Shared entries identify
-which sides need the fix; these categories do not change loader requirements.
+Open **Mods → Skyweave: Compatibility Patches → Config**. Collapsible gameplay
+systems contain mod pages. A mod can appear under more than one system when it
+owns different mechanics. Selecting a page collapses unrelated groups; its
+setting links snap-scroll inside that page. Search above the sidebar matches
+translated names and descriptions across pages. Clearing search restores the
+navigation groups while keeping the selected page accessible.
 
-All groups share one scrollable page. Sidebar links jump to headings; ordinary
-scrolling remains free. Details and registered editors return to the previous
-position. The final section can remain below the top when the page has reached
-its end. Sidebar selection follows scrolling and retains an explicitly chosen
-destination when that jump is clamped.
+The selected menu destination and its setting title are yellow. Selecting another
+entry clears the previous title highlight. Descriptions use Minecraft's gray;
+setting titles remain white. The text-only `i` opens feature details,
+with a Details tooltip and a Unicode font applied only to that glyph. Search retains native text selection and clipboard
+shortcuts: Command on macOS, Control on other platforms.
 
-Journal preferences save immediately. Fix switches edit the next-start file and
-use **Save changes**. Current activation, saved values, and unsaved edits remain
-separate. A configured-on fix can remain unavailable because its targets or
-prerequisites are missing. Restart Minecraft or the server to apply startup changes.
+Each page has one ordered set of purpose groups: Preferences, Fixes, Tuning and
+Shader workspace where applicable. The sidebar and content follow the same order;
+empty groups are omitted. Thin outlines group related controls without filled cards.
+Mod pages are sorted by their localized names within each system.
 
-Rows show inactive reasons and pending changes; **Details** shows dependencies,
-defaults and technical keys. **Status & files** indexes owning files and links
-back to their settings instead of repeating all controls.
-File buttons open existing local files; they do not generate missing configuration
-or administer a connected server. Terrain and BlueMap keep their owning loaders
-and reload/restart requirements.
+Forms use one or two columns according to available width. Setting links use
+measured positions, including the last section when it cannot reach the top.
+Page position and drafts survive navigation, resizing, details and editor returns.
+**Status & files** links to the owning pages and provides explicit Reload files.
 
-A changed file refuses stale saves; reload explicitly to discard the draft and
-read it again. Save feedback and Reload stay outside the scrolling page. Leaving with unsaved startup edits offers discard or continued
-editing. Generation edits require confirmation and retain saved-world identity
-checks. Disabling terrain does not convert a marked save.
+Journal preferences save immediately through their existing helpers. Startup
+switches, owned JSON files and embedded TOML fields use **Save changes**, which covers all
+staged files, including other pages. Reset changes a draft; it does not immediately
+write. Invalid input remains editable and cannot be saved. Current activation,
+saved values, and unsaved changes remain distinct; a configured-on adaptation can
+stay inactive when its dependencies are absent.
 
-The [implementation reference](development/configuration.md) owns editor safety,
-optional loading, native UI fixtures, and dependency-update checks.
+| Destination | Editor | Application |
+| --- | --- | --- |
+| Adaptation switches | Staged switches and Details | Full game/server restart |
+| Journal preferences | Shared immediate controls | Immediate |
+| Village distances | Embedded staged fields | Next local server start |
+| Island geometry, interiors, water, oceans | Typed numeric/boolean forms | Game/server restart and a new world |
+| BlueMap adaptation | Typed fields and map-ID list | Owning server's BlueMap reload |
+| Redstone Link GUI client/common | Embedded staged enum/range fields | Native timing, after Save |
+
+Small registered forms are embedded in their owning page. Native specs still
+validate, serialize and apply them; editing alone does not change runtime values.
+Application timing is shown per field. Preferences is a navigation purpose, not a
+promise of immediate saving. Journal preferences keep their existing immediate
+behavior and are not undone by discarding other drafts. Raw file access lives in Status & files, and opening a page never creates missing
+configuration. Single-field files do not add a redundant file heading or menu item.
+
+External edits refuse a stale save and retain the draft. Reload requires explicit
+discard of pending edits. All staged files are validated before saving begins;
+independent files are not one transaction. If a later write fails, feedback lists
+committed files and the failed file, keeping unapplied drafts. A failed read keeps
+any previously captured snapshot available with a warning.
+
+This interface edits local installation files. A local common config does not
+administer a connected server. Terrain changes retain saved-world identity checks:
+saving never converts or regenerates a world. Shader assembly keeps its existing
+rebuild control under Rendering → Iris.
+
+The [implementation reference](development/configuration.md) owns persistence
+safety, optional loading, native fixtures and dependency-update checks.
 
 ## Iris world text
 
-Under **Client → Iris**, the two shadow-exclusion switches independently omit
+Under **Rendering → Iris**, the two shadow-exclusion switches independently omit
 text displays (including backgrounds) and ordinary entity nametags from Iris's
-shadow map. Both are off by default because casting shadows is a presentation
-choice. Restart Minecraft to change either policy. Neither requires the island
+shadow map. Both default on when Iris is available; explicit false settings retain shadows. Restart Minecraft to change either policy. Neither requires the island
 preset, Sable, Veil or Colorwheel.
 
 Ordinary text rendering and entity-body shadows are retained. Item/block
@@ -416,8 +452,8 @@ full-bright text does not itself stop a display casting a shader shadow.
 
 ## Redstone Link GUI
 
-The catalogue links its native client click-mode file and common relocation-range
-file under their owning mod groups. These are upstream settings, separate from
+Under **Machines and signals → Redstone Link GUI**, inline fields
+provide the client click mode and common relocation range. These are upstream settings, separate from
 Skyweave: Compatibility Patches startup switches. Default `clickMode="SHIFT_SLOT"` requires an empty hand
 and Shift + right-click on a frequency slot; default `moveRange=24` applies to
 the relocation tool. Keep the common value consistent on both sides. Client

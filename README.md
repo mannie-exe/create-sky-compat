@@ -36,7 +36,9 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Sable + You're in Grave Danger | 2.0.6 + 2.0.13 | Construct-relative graves, bounded loss fallback and moving location tracking |
 | Sable Dynamic Lights + Lamb + Create | 2.0.1 + 4.8.11+1.21.1 + 6.0.10 | Client-world source cleanup; separate Sodium 0.8.13 lookup repair |
 | Distant Horizons | 3.3.3 | Client handoff, island shutdown, and selectable cache isolation |
-| Macaw’s Bridges | 3.1.2 | Opt-in selection for the matching hanging stair-lantern resource model; enable on both sides |
+| Macaw’s Windows | 2.4.2 | Client mosaic block/pane backfaces; retains native vertical patterns |
+| Decorative block backfaces | Create Confectionery 1.1.3b, Linear Bearing 1.3.5, Design n’ Decor 2.2b or Bits ’n’ Bobs 2.3.5 | Independent client switches for caramel bricks, bubble gum, ornate grate and industrial grating |
+| Macaw’s Bridges | 3.1.2 | Standing/stair lantern selection matching pack models; enable on both sides |
 | Questlog | 3.5.0, 3.5.3 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
 | BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
 | Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |
@@ -44,6 +46,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Aeronautics + Iris | 1.3.2 + the Iris version above | Exclude the balloon hot-air overlay from shadow rendering |
 | Colorwheel | 1.3.2+mc1.21.1 | Separate non-OIT sampler allocation and direct Sable material metadata repairs |
 | Sable + Iris + Sodium | 2.0.6 + the Iris version above + 0.8.13+mc1.21.1 | Shader block IDs and single-block render passes |
+| SSRD + Sable + Iris | 1.8.8 + 2.0.6 + the Iris version above | Distant construct shader range; separate opaque-terrain occlusion with DH 3.3.3 |
 
 Remove Veil Iris Fix when enabling the incorporated framebuffer adaptation.
 Remove Sky Village Neighbors when enabling Skyweave: Compatibility Patches' village adaptations.
@@ -106,8 +109,9 @@ repairs, not another lighting engine or a general cabin-occlusion fix. See
 
 DH generates and renders distant terrain through its ordinary pipeline. Skyweave: Compatibility Patches
 adds focused lifecycle fixes and optional per-save cache isolation; it does not
-provide a separate terrain predictor. Existing DH cache keys
-remain unchanged by default. See [DH configuration](docs/configuration.md#distant-horizons)
+provide a separate terrain predictor. For supported Sky Archipelago saves, cache isolation defaults on. It selects a
+per-save namespace without moving or deleting older cached terrain; explicit false
+retains upstream keys. See [DH configuration](docs/configuration.md#distant-horizons)
 and [integration boundaries](docs/development/lod.md).
 
 ## Journal
@@ -170,9 +174,10 @@ predictions do not include later structures or player-built blocks.
 
 ## Configuration
 
-Open **Mods → Skyweave: Compatibility Patches → Config** for one scrollable page of categories,
-mod-specific settings and fix status. Sidebar links jump to sections. Journal preferences apply immediately; fix changes save for the
-next startup. The menu edits local files, not a connected server.
+Open **Mods → Skyweave: Compatibility Patches → Config** for searchable gameplay
+systems and mod pages. Setting links jump within the selected page; owned JSON
+files and registered scalar TOML settings have inline forms.
+Journal preferences apply immediately; fix changes save for the next startup. The menu edits local files, not a connected server.
 
 Feature switches remain in `config/skyweave_compat-features.properties`.
 Village tuning uses `config/skyweave_compat-common.toml`. Island geometry lives in

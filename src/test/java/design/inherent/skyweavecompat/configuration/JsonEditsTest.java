@@ -1,0 +1,78 @@
+package design.inherent.skyweavecompat.configuration;
+
+import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import static org.junit.jupiter.api.Assertions.*;
+
+class JsonEditsTest {
+    @TempDir Path directory;
+    private JsonEdits create(String help) throws IOException {
+        var definition = JsonSettings.FILES.stream().filter(file -> file.help().equals(help)).findFirst().orElseThrow();
+        Files.writeString(directory.resolve(definition.filename()), definition.defaults());
+        return new JsonEdits(directory, definition);
+    }
+    @Test void stagedValuesDoNotChangeRuntimeOrDiskAndRoundTripThroughTheOwningParser() throws IOException {
+        var edits = create("generation");
+        var path = directory.resolve(edits.definition().filename());
+        String baseline = Files.readString(path);
+        edits.set("spacing", "2600");
+        assertTrue(edits.dirty()); assertEquals(baseline, Files.readString(path));
+        assertEquals(2600, ProfileJson.generation(edits.candidate()).spacing());
+        edits.save(); assertFalse(edits.dirty()); assertEquals("2600", edits.value("spacing"));
+        assertEquals(2600, ProfileJson.generation(Files.readString(path)).spacing());
+    }
+    @Test void invalidDraftRetainsItsTextAndCannotOverwriteDisk() throws IOException {
+        var edits = create("water"); Path path = directory.resolve(edits.definition().filename());
+        String original = Files.readString(path);
+        edits.set("minRadius", "9.5");
+        assertThrows(RuntimeException.class, edits::save); assertEquals("9.5", edits.value("minRadius"));
+        assertEquals(original, Files.readString(path));
+        edits.set("minRadius", "95");
+        assertThrows(RuntimeException.class, edits::save); // Individual type is valid, linked maximum is not.
+        edits.set("maxRadius", "96"); edits.save(); assertFalse(edits.dirty());
+    }
+    @Test void conflictRetainsDraftAndExternalBytesWhileFailedReloadKeepsTheBaseline() throws IOException {
+        var edits = create("interiors"); Path path = directory.resolve(edits.definition().filename());
+        edits.set("shellThickness", "16");
+        String external = Files.readString(path).replace("12", "14"); Files.writeString(path, external);
+        assertThrows(ConfigFile.ChangedOnDisk.class, edits::save); assertEquals(external, Files.readString(path));
+        Files.writeString(path, "{"); assertThrows(IOException.class, edits::reload);
+        assertTrue(edits.dirty()); assertEquals("16", edits.value("shellThickness"));
+        Files.writeString(path, external); edits.reload(); assertFalse(edits.dirty());
+        assertEquals("14", edits.value("shellThickness"));
+    }
+    @Test void arraysBooleansAndDefaultsRemainTyped() throws IOException {
+        var maps = create("bluemap"); maps.strings("maps", List.of("overworld", "island-map")); maps.save();
+        assertEquals(List.of("overworld", "island-map"), maps.strings("maps"));
+        maps.strings("maps", List.of("same", "same")); assertThrows(IllegalArgumentException.class, maps::save);
+        maps.discard(); assertFalse(maps.dirty());
+        var oceans = create("oceans"); oceans.set("enabled", "true"); oceans.save();
+        assertTrue(JsonParser.parseString(Files.readString(directory.resolve(oceans.definition().filename())))
+                .getAsJsonObject().get("enabled").getAsBoolean());
+        oceans.reset("enabled"); assertTrue(oceans.dirty()); oceans.save(); assertEquals("false", oceans.value("enabled"));
+    }
+    @Test void missingDuplicateUnknownAndOversizedInputsAreNotRepairedOrMaterialized() throws IOException {
+        var definition = JsonSettings.FILES.getFirst(); Path path = directory.resolve(definition.filename());
+        assertThrows(IOException.class, () -> new JsonEdits(directory, definition)); assertFalse(Files.exists(path));
+        assertThrows(IOException.class, () -> JsonEdits.object("{\"spacing\":1,\"spacing\":2}"));
+        Files.writeString(path, definition.defaults().replace("{", "{\"unknown\":1,"));
+        assertThrows(IllegalArgumentException.class, () -> new JsonEdits(directory, definition));
+        Files.writeString(path, " ".repeat(ConfigFile.LIMIT + 1));
+        assertThrows(IOException.class, () -> new JsonEdits(directory, definition));
+        assertThrows(IOException.class, () -> new ConfigFile(directory, "../outside.json"));
+    }
+    @Test void fieldOrderComesFromTheOwnedSchemaRatherThanFileFormatting() throws Exception {
+        var definition = JsonSettings.find("skyweave_compat-generation.json");
+        var original = JsonParser.parseString(definition.defaults()).getAsJsonObject();
+        var keys = new java.util.ArrayList<>(original.keySet()); var reversed = new com.google.gson.JsonObject();
+        for (int i = keys.size() - 1; i >= 0; i--) reversed.add(keys.get(i), original.get(keys.get(i)));
+        Files.writeString(directory.resolve(definition.filename()), reversed.toString());
+        var edits = new JsonEdits(directory, definition); assertEquals(keys, edits.keys());
+        assertEquals("2400", edits.value("spacing"));
+    }
+}
