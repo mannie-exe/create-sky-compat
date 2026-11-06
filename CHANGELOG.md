@@ -2,6 +2,12 @@
 
 Generated from Git history. Player-facing release summaries are in [release notes](RELEASE_NOTES.md).
 
+## v0.22.0 · 2026-11-06
+
+### Features
+
+- Improve configuration and rendering integrations ([a0d102b](https://github.com/mannie-exe/skyweave-compat/commit/a0d102b56336f692f55d684bdc89f5aa4d222827))
+
 ## v0.21.1 · 2026-11-05
 
 ### Build and verification
