@@ -2,6 +2,12 @@
 
 Generated from Git history. Player-facing release summaries are in [release notes](RELEASE_NOTES.md).
 
+## v0.22.1 · 2026-11-06
+
+### Fixes
+
+- **test:** Scope directory permissions to POSIX filesystems ([a7f1d0b](https://github.com/mannie-exe/skyweave-compat/commit/a7f1d0b27f0fdc68f8c24d491a3776c5bc04875d))
+
 ## v0.22.0 · 2026-11-06
 
 ### Features
