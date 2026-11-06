@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class ConfigFileTest {
     @TempDir Path directory;
@@ -26,6 +27,8 @@ class ConfigFileTest {
     @Test void failedTemporaryFileCreationLeavesTheOriginalAndNoResidue() throws Exception {
         Path path = directory.resolve("owned.json"); Files.writeString(path, "{}\n");
         var file = new ConfigFile(directory, "owned.json");
+        assumeTrue(Files.getFileStore(directory).supportsFileAttributeView("posix"),
+                "Directory-mode failure fixture requires POSIX permissions");
         var original = Files.getPosixFilePermissions(directory);
         try {
             Files.setPosixFilePermissions(directory, PosixFilePermissions.fromString("r-x------"));

@@ -1,13 +1,14 @@
 # Verification
 
-## Release 0.22.0
+## Release 0.22.1
 
-The release candidate SHA-256 is `b80c619a7058dc621eafec6ee6814300c23d332616497a8c340e15cb0fad58b8`. Its only archive-entry
+The release candidate SHA-256 is `da95628b57af390f5736a6b7838a73299a33847689c359f84a5c1d758f67384f`. Its only archive-entry
 difference from the reviewed configuration-composition candidate below is the
 version in `META-INF/neoforge.mods.toml`; all production classes and other resources
 are identical. `./gradlew --no-daemon check build clientProbeJar` passes again
 with 161 Java tests and the tooling, generated-resource, upstream and packaging
-checks. Native evidence below applies to the same implementation.
+checks. Native evidence below applies to the same implementation. The POSIX directory-mode
+failure fixture is explicitly conditional on filesystem support; Windows skips it.
 
 ## Configuration composition
 

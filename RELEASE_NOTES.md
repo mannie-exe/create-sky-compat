@@ -1,4 +1,4 @@
-# Skyweave: Compatibility Patches 0.22.0
+# Skyweave: Compatibility Patches 0.22.1
 
 Configuration now groups mod pages by gameplay system, with localized search and
 measured section navigation. One ordered definition drives the sidebar and page
@@ -17,8 +17,8 @@ Terrain placement and generation identity are unchanged. These integrations reta
 independent startup switches, dependency checks and physical-side exclusions.
 
 `./gradlew --no-daemon check build clientProbeJar` passes 161 Java tests and the
-tooling, resource, upstream and packaging checks. Native full/minimum clients
-verified configuration behavior; native rendering and collision checks retain
+tooling, resource, upstream and packaging checks. The POSIX directory-permission fixture runs only on supported filesystems;
+Windows skips that fixture. Native full/minimum clients verified configuration behavior; native rendering and collision checks retain
 their documented scope. See [verification](docs/development/verification.md) for
 versions and remaining limits, and [configuration](docs/configuration.md) for
 ownership and application timing. Previous release: [0.21.1](docs/releases/0.21.1.md).
