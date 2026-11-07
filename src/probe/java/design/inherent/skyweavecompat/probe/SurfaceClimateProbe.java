@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.climate.IslandClimate;
 import design.inherent.skyweavecompat.terrain.*;
@@ -26,7 +27,7 @@ final class SurfaceClimateProbe {
         var field = ((GeologicalGenerator)(Object)generator).skyweave$field(random);
         var sites = new LinkedHashMap<String, BlockPos>();
         var anchors = field.collectIslandPreviewsInRadius(0, 0, 20000, settings).stream()
-                .filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+                .filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                 .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).toList();
         outer: for (var anchor : anchors) for (int dx = -2; dx <= 2; dx++) for (int dz = -2; dz <= 2; dz++) {
             int x = anchor.x() + dx * anchor.radius() / 3, z = anchor.z() + dz * anchor.radius() / 3;

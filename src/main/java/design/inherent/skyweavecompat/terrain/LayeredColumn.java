@@ -5,8 +5,8 @@ import java.util.List;
 
 /** Exterior intervals survive internal carving; the native segments contain actual baseline solid. */
 public interface LayeredColumn {
+    boolean skyweave$hasExterior();
+    boolean skyweave$requiresExactInterior();
     List<TerrainColumn> skyweave$exterior();
-    void skyweave$exterior(List<TerrainColumn> exterior);
-    WaterColumn skyweave$water();
-    void skyweave$water(WaterColumn water);
+    void skyweave$exterior(List<TerrainColumn> exterior, boolean exactInterior);
 }

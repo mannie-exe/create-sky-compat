@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandDescriptor;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.*;
 import net.minecraft.core.registries.Registries;
@@ -26,19 +27,20 @@ final class InteriorProbe {
         var otherGenerator = new SkyIslandChunkGenerator(generator.getBiomeSource(), generator.generatorSettings(), generator.embeddedSettings());
         var other = ((GeologicalGenerator)(Object)otherGenerator).skyweave$field(otherRandom);
         if (field == other) throw new AssertionError("Order check requires independent fields");
-        var candidates = new ArrayList<IslandField.IslandDescriptor>();
+        var candidates = new ArrayList<IslandDescriptor>();
         for (int cx = -5; cx <= 5; cx++) for (int cz = -5; cz <= 5; cz++) {
             var members = ((ClusterField)(Object)field).skyweave$members(cx, cz, settings);
             if (!members.isEmpty()) candidates.add(members.getFirst());
         }
         candidates.sort(Comparator.comparingDouble(p -> Math.hypot(p.centerX(), p.centerZ())));
-        var selected = new LinkedHashMap<IslandInteriors.Kind, IslandField.IslandDescriptor>();
+        var selected = new LinkedHashMap<IslandInteriors.Kind, IslandDescriptor>();
         for (var island : candidates) selected.putIfAbsent(IslandInteriors.kind(island, InteriorConfiguration.profile()), island);
         var rows = new JsonArray();
         long started = System.nanoTime(); long agreementChecks = 0;
         for (var entry : selected.entrySet()) {
             var island = entry.getValue();
             long exteriorVolume = 0, interiorVolume = 0, solidVolume = 0, waterVolume = 0, caveColumns = 0;
+            long completedAdded = 0, completedRemoved = 0;
             int largestInteriorGap = 0;
             var sections = new JsonArray();
             int reach = island.maxRadius();
@@ -50,15 +52,27 @@ final class InteriorProbe {
                     var solid = field.sampleSolidSegments(x, z, settings);
                     long before = exterior.stream().mapToInt(TerrainColumn::thickness).sum();
                     long after = solid.stream().mapToInt(TerrainColumn::thickness).sum();
-                    if (after > before) throw new AssertionError("Cavity added solid");
-                    for (var segment : solid) for (int y = segment.bottomY(); y <= segment.topY(); y++) {
+                    long carved = interior.stream().mapToInt(TerrainColumn::thickness).sum();
+                    if (carved > before) throw new AssertionError("Interior subtraction added solid at " + x + "," + z);
+                    for (var segment : interior) for (int y = segment.bottomY(); y <= segment.topY(); y++) {
                         final int sy = y;
                         if (exterior.stream().noneMatch(s -> s.contains(sy))) throw new AssertionError("Solid outside exterior");
                     }
-                    if (after < before) caveColumns++;
+                    if (carved < before) caveColumns++;
+                    // Native interpolation, shoreline sealing and weathered lips belong to COMPLETE,
+                    // not to the cavity subtraction stage. Account for their changes explicitly.
+                    for (int y = GenerationProfile.MIN_Y; y < GenerationProfile.MAX_Y; y++) {
+                        final int sy = y;
+                        boolean rawSolid = interior.stream().anyMatch(segment -> segment.contains(sy));
+                        boolean finalSolid = solid.stream().anyMatch(segment -> segment.contains(sy));
+                        if (finalSolid && !rawSolid && exterior.stream().anyMatch(segment -> segment.contains(sy)))
+                            throw new AssertionError("Completed stage refilled an authored cavity at " + x + "," + y + "," + z);
+                        if (finalSolid && !rawSolid) completedAdded++;
+                        if (rawSolid && !finalSolid) completedRemoved++;
+                    }
                     exteriorVolume += before; solidVolume += after;
                     interiorVolume += interior.stream().mapToInt(TerrainColumn::thickness).sum();
-                    waterVolume += planning.skyweave$waterAt(x, z, settings).sources().stream().mapToInt(TerrainColumn::thickness).sum();
+                    waterVolume += WaterProbe.columns(field, x, z, settings).stream().mapToInt(TerrainColumn::thickness).sum();
                     // Sample the independent field through snapshot first, then direct column.
                     if ((x - island.centerX() + reach) % 128 == 0 && (z - island.centerZ() + reach) % 128 == 0) {
                         if (!planning.skyweave$planningColumn(x, z, settings, TerrainStage.EXTERIOR).segments().equals(exterior)
@@ -73,7 +87,7 @@ final class InteriorProbe {
                         int gap = 0;
                         for (int y = outer.bottomY(); y <= outer.topY(); y++) {
                             final int sy = y;
-                            if (solid.stream().anyMatch(s -> s.contains(sy))) gap = 0;
+                            if (interior.stream().anyMatch(s -> s.contains(sy))) gap = 0;
                             else largestInteriorGap = Math.max(largestInteriorGap, ++gap);
                         }
                     }
@@ -84,13 +98,14 @@ final class InteriorProbe {
                 section.add("interior", new Gson().toJsonTree(((InteriorField)(Object)field)
                         .skyweave$planningColumn(x, island.centerZ(), settings, TerrainStage.INTERIOR).segments()));
                 section.add("solid", new Gson().toJsonTree(field.sampleSolidSegments(x, island.centerZ(), settings)));
-                section.add("water", new Gson().toJsonTree(((InteriorField)(Object)field).skyweave$waterAt(x, island.centerZ(), settings).sources()));
+                section.add("water", new Gson().toJsonTree(WaterProbe.columns(field, x, island.centerZ(), settings)));
                 sections.add(section);
             }
             var row = new JsonObject(); row.addProperty("kind", entry.getKey().name());
             row.add("island", new Gson().toJsonTree(island)); row.addProperty("sampleStep", 16);
             row.addProperty("exteriorSampledBlocks", exteriorVolume); row.addProperty("solidSampledBlocks", solidVolume);
             row.addProperty("interiorSampledBlocks", interiorVolume); row.addProperty("waterSampledBlocks", waterVolume);
+            row.addProperty("completedNativeAddedBlocks", completedAdded); row.addProperty("completedNativeRemovedBlocks", completedRemoved);
             row.addProperty("cavityColumns", caveColumns); row.addProperty("largestInteriorGap", largestInteriorGap);
             row.add("section", sections); rows.add(row);
         }

@@ -140,6 +140,9 @@ final class ClientResourcesProbe {
                             modelReport = worldText.snapshot(command.has("remember") && command.get("remember").getAsBoolean());
                         }
                         case "snapshot" -> {}
+                        case "structure_records" -> modelReport = ClientStructureRecordsProbe.observe(mc,
+                                command.get("chunkX").getAsInt(), command.get("chunkZ").getAsInt(),
+                                command.get("structure").getAsString());
                         case "distance" -> modelReport = ClientDistanceProbe.observe(command);
                         case "ray" -> {
                             var pos = new BlockPos(command.get("x").getAsInt(), command.get("y").getAsInt(), command.get("z").getAsInt());

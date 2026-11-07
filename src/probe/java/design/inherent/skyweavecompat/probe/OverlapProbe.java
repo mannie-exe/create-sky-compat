@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import com.mojang.serialization.JsonOps;
 import design.inherent.skyweavecompat.terrain.*;
@@ -42,7 +43,7 @@ final class OverlapProbe {
             var voidSettings = mode(settings, "void");
             var overlapSettings = mode(settings, "overlap");
             var anchors = field.collectIslandPreviewsInRadius(0, 0, 12000, settings).stream()
-                    .filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+                    .filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                     .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).limit(2).toList();
             for (var anchor : anchors) {
                 long columns = 0, occupied = 0, stacked = 0, voidVolume = 0, overlapVolume = 0;

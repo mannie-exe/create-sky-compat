@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.*;
 import net.minecraft.core.BlockPos;
@@ -32,7 +33,7 @@ final class VeinProbe {
         var ironChunks = new LinkedHashSet<ChunkPos>();
         long sampledBlocks = 0, began = System.nanoTime();
         var anchors = field.collectIslandPreviewsInRadius(0, 0, 24000, settings).stream()
-                .filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+                .filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                 .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).limit(32).toList();
         search: for (var anchor : anchors)
             for (int x = anchor.x() - anchor.radius(); x <= anchor.x() + anchor.radius(); x += 32)

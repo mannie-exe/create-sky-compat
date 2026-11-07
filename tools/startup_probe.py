@@ -46,7 +46,7 @@ def main():
             # Disabled adapters must neither reject their versions nor resolve their APIs.
             metadata = 'modLoader="lowcodefml"\nloaderVersion="[1,)"\nlicense="MIT"\n'
             for target in ['sky_archipelago', 'skyvillages', 'architectury', 'sable', 'aeronautics_delivery_quests',
-                           'distanthorizons', 'bluemap', 'analogaudio', 'analoglib', 'yigd', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog', 'sabledynlights', 'lambdynlights', 'colorwheel', 'flywheel', 'linearbearing', 'linearbearingsfix', 'simulated', 'aeronautics_utility_objects', 'fusion', 'rechiseled', 'mcwbridges', 'ssrd']:
+                           'distanthorizons', 'bluemap', 'surveyor', 'analogaudio', 'analoglib', 'yigd', 'create', 'veil', 'iris', 'sodium', 'aeronautics', 'questlog', 'sabledynlights', 'lambdynlights', 'colorwheel', 'flywheel', 'linearbearing', 'linearbearingsfix', 'simulated', 'aeronautics_utility_objects', 'fusion', 'rechiseled', 'mcwbridges', 'ssrd']:
                 metadata += f'[[mods]]\nmodId="{target}"\nversion="999.0.0"\ndisplayName="Fixture {target}"\n'
             with zipfile.ZipFile(run / 'mods/future-targets-fixture.jar', 'w') as fixture:
                 fixture.writestr('META-INF/neoforge.mods.toml', metadata)
@@ -123,7 +123,7 @@ def main():
         report['passed'] = (done and process.returncode == 0 and bool(report['active_lines'])
                             and (not inactive or (not references and any('adaptations: []' in line for line in report['active_lines']))))
         if args.scenario == 'unsupported-enabled':
-            report['passed'] = not done and 'terrain.preset requires sky_archipelago 1.3.6; found 999.0.0' in text
+            report['passed'] = not done and 'terrain.preset requires sky_archipelago 1.4; found 999.0.0' in text
         (output / f'startup-{args.scenario}.json').write_text(json.dumps(report, indent=2) + '\n')
         print(json.dumps({key: report[key] for key in ['scenario', 'sha256', 'startup', 'exit_code', 'seconds', 'active_lines', 'passed']}, indent=2), flush=True)
         if not report['passed']:

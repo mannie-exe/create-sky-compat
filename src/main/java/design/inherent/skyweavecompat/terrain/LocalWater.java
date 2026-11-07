@@ -15,13 +15,11 @@ public final class LocalWater {
         if (!(level.getChunkSource().getGenerator() instanceof SkyIslandChunkGenerator generator)) return fallback;
         var geology = (GeologicalGenerator)(Object)generator;
         if (!geology.skyweave$isEnabled()) return fallback;
-        var field = (InteriorField)(Object)geology.skyweave$field(level.getChunkSource().randomState());
-        var water = field.skyweave$waterAt(position.getX(), position.getZ(), generator.resolvedSkyIslandSettings());
-        if (!water.contains(position.getY())) return fallback;
-        for (var region : water.regions()) {
-            if (region.basin(position.getX(), position.getZ()) && position.getY() > region.bed(position.getX(), position.getZ())
-                    && position.getY() <= region.level()) return region.level();
-        }
-        return fallback;
+        var field = geology.skyweave$field(level.getChunkSource().randomState());
+        var settings = generator.resolvedSkyIslandSettings();
+        var water = field.sampleWaterArchetypeColumnProfile(position.getX(), position.getZ(), settings);
+        if (water.containsWaterAt(position.getY())) return water.fluidSurfaceY();
+        var river = field.sampleHydrologyColumn(position.getX(), position.getZ(), settings);
+        return river.containsFluidAt(position.getY()) ? river.fluidSurfaceY() : fallback;
     }
 }

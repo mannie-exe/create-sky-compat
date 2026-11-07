@@ -31,7 +31,7 @@ final class MaterialProbe {
                 if (!predictedBiome.is(BiomeMaterials.MUD)) continue;
                 candidates++;
                 var profile = field.sampleColumnProfile(x, z, settings);
-                if (!profile.exists() || ((InteriorField)(Object)field).skyweave$waterAt(x, z, settings).contains(profile.topY())) continue;
+                if (!profile.exists() || WaterProbe.columns(field, x, z, settings).stream().anyMatch(water -> water.contains(profile.topY()))) continue;
                 var chunk = level.getChunk(x >> 4, z >> 4);
                 int mud = 0, mudBiomes = 0;
                 var pos = new BlockPos.MutableBlockPos();

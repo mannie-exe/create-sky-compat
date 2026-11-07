@@ -2,7 +2,7 @@ package design.inherent.skyweavecompat.mixin;
 
 import design.inherent.skyweavecompat.terrain.*;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
-import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField.ClusterDescriptor;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.ClusterDescriptor;
 import org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandClusterSampler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -18,7 +18,7 @@ public abstract class ClusterSamplerMixin implements ProfiledTerrain {
 
     @Inject(method = "sampleClusterDescriptor", at = @At("RETURN"), cancellable = true)
     private void cluster(int cellX, int cellZ, long seed, int spacing, SkyIslandSettings settings,
-            int salt, CallbackInfoReturnable<ClusterDescriptor> result) {
+            int salt, boolean oceanBiome, CallbackInfoReturnable<ClusterDescriptor> result) {
         if (skyweave$profile != null) result.setReturnValue(IslandGeometry.cluster(result.getReturnValue(), skyweave$profile));
     }
 }

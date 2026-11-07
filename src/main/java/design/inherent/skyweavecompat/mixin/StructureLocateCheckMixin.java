@@ -8,7 +8,6 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureCheck;
 import org.sathrek.sky_archipelago.worldgen.generator.core.SkyIslandChunkGenerator;
-import org.sathrek.sky_archipelago.worldgen.structure.StructurePlacementCategory;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,7 +29,8 @@ public abstract class StructureLocateCheckMixin {
         var policy = settings.advanced().structurePlacementPolicy();
         // checkStart has already consulted loaded/saved starts and placement restrictions.
         // Returning true requests STRUCTURE_STARTS, not a successful start or a FULL chunk.
-        result.setReturnValue(!policy.denylistedStructures().contains(id)
-                && (policy.categoryFor(id) != StructurePlacementCategory.WATER || settings.terrain().ocean().oceanEnabled()));
+        // Native 1.4 also admits floating wet hosts without a global ocean layer.
+        // This requests canonical start resolution; it does not assert a valid start.
+        result.setReturnValue(!policy.denylistedStructures().contains(id));
     }
 }

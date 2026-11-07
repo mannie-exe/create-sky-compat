@@ -71,7 +71,7 @@ measurements after resource/font reloads without changing gameplay state.
 | Owner | Files and authority |
 | --- | --- |
 | `StartupEdits` | Feature properties; immutable running selection plus next-start delta |
-| `JsonEdits` / `JsonSettings` | Five cataloged strict JSON files; actual profile/settings parsers validate every candidate |
+| `JsonEdits` / `JsonSettings` | Cataloged strict JSON files; actual profile/settings parsers validate every candidate |
 | `RegisteredEdits` | Staged scalar fields in loaded local NeoForge CLIENT/COMMON TOMLs; native specs, serializer and reload events |
 | `JournalPreferences` | Immediate journal values shared with the journal bookmark |
 | `ShaderAssembly` | Existing recipe/rebuild workflow; not a general file editor |
@@ -81,13 +81,17 @@ is separated into `ProfileJson` because the generator adapter's API signatures
 reference optional Sky Archipelago classes. Do not introduce such signatures into
 classes loaded by minimum installations.
 
-Owned JSON currently requires flat numbers/booleans and BlueMap's map-ID string
-list. Numeric drafts retain exact text, including invalid values. Full profile
+Owned JSON supports nested groups, scalar numbers/booleans/strings and string lists. Native river/lake settings register their codec only after the optional terrain integration is admitted; minimum installation classes never reference foreign signatures. Dotted field paths identify nested values without introducing a second file owner. Numeric drafts retain exact text, including invalid values. Full profile
 constructors enforce integer types, bounds and cross-field invariants. The bounded
-JSON reader rejects duplicate keys and trailing documents. Owned strict files are
+JSON reader rejects duplicate keys, nesting beyond 16 levels and trailing documents. Owned strict files are
 pretty-printed on save; comments and unknown fields are not supported by their
 runtime schema. Missing or malformed files are distinct from defaults. Opening a
 screen never manufactures configuration.
+
+Generation, interior and ocean startup readers use `ProfileJson.object`, which
+delegates to that same strict reader before validating their profile fields.
+Do not replace it with Gson's permissive object parsing: duplicate keys would
+then have different meanings at startup and in the editor.
 
 `ConfigFile` provides bounded UTF-8 snapshots and trusted catalog filenames under
 the local config directory. It rejects traversal, symlinks, nonregular files and
@@ -176,3 +180,5 @@ JSON catalog forms/strings and shared validators together. Check atomic replacem
 on supported platforms, optional classloading, inline field ownership and journal
 preferences through both entrances. Keep startup selection immutable and generation
 identity checks authoritative; this UI is local configuration, not remote admin.
+
+Native river codecs own values and validation; `RiverConfiguration` supplies an explicit presentation order for the file and shared form. Recheck that ordered field set when upstream adds or removes codec fields, including anchor/companion groups and optional defaults.

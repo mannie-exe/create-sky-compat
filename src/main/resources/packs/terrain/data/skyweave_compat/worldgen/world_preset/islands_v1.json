@@ -68,7 +68,6 @@
               "sky_whale_ship:whalelight",
               "sky_whale_ship:whaleship"
             ],
-            "disable_islands_over_ocean_biomes": true,
             "deepslate_start_y": 0
           },
           "terrain": {
@@ -89,7 +88,7 @@
             "very_high_band_weight": 0.1,
             "low_band_center_offset": -18,
             "very_high_band_center_offset": 12,
-            "min_island_y": 470,
+            "min_island_y": 200,
             "max_island_y": 490,
             "max_island_thickness_blocks": 400,
             "low_band_weight": 0.15,
@@ -131,6 +130,38 @@
             "top_offset": 1,
             "support_threshold": 0.42,
             "footprint_inset_ratio": 0.18
+          },
+          "rivers": {
+            "temperate_biome": "minecraft:river",
+            "cold_biome": "minecraft:frozen_river",
+            "ecological_bank_width": 4,
+            "headwater_lake_chance": 0.35,
+            "fluid_block": "minecraft:water",
+            "satellites": {
+              "maximum_width": 6,
+              "minimum_lake_radius": 7,
+              "maximum_lake_radius": 14,
+              "maximum_tributaries": 0,
+              "frequency": 0.25,
+              "minimum_radius": 32,
+              "minimum_width": 3
+            },
+            "minimum_depth": 2,
+            "maximum_depth": 4,
+            "meander_strength": 0.65,
+            "enabled": true,
+            "lakes_enabled": true,
+            "anchors": {
+              "maximum_width": 12,
+              "minimum_lake_radius": 16,
+              "maximum_lake_radius": 30,
+              "maximum_tributaries": 2,
+              "frequency": 0.6,
+              "minimum_radius": 52,
+              "minimum_width": 6
+            },
+            "standalone_lake_chance": 0.35,
+            "excluded_biomes": []
           }
         }
       }

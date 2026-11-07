@@ -73,6 +73,12 @@ def main():
             (config / 'maps/world.conf').write_text('world: "world"\ndimension: "minecraft:overworld"\n')
             (run / 'bluemap').mkdir()
             shutil.copy2(server / 'bluemap/minecraft-client-1.21.1.jar', run / 'bluemap/minecraft-client-1.21.1.jar')
+            # Reuse the source server's already accepted Minecraft resources. The
+            # general full-pack stage disables downloads for unrelated probes;
+            # that policy is not a valid BlueMap resource-loading fixture.
+            core = config / 'core.conf'
+            import re
+            core.write_text(re.sub(r'accept-download:\s*(?:true|false)', 'accept-download: true', core.read_text()))
             policy = run / 'config/skyweave_compat-bluemap.json'
             settings = dict(maps=['world'], detailDistance=4000, tileRadius=31, concurrentRequests=4, geometryMiB=256)
             policy.write_text(json.dumps(settings))
@@ -88,15 +94,26 @@ def main():
                         value = json.loads(manifest.read_text())
                         return value if value.get('schema') == 2 and value.get('maps') == (['world'] if expected else []) else None
                     value = wait_for(process, selected_manifest)
+                    def reload_plugin():
+                        offset = len(log_path.read_text(errors='replace'))
+                        process.stdin.write('bluemap reload\n'); process.stdin.flush()
+                        def completed():
+                            text = log_path.read_text(errors='replace')[offset:]
+                            if 'Could not load BlueMap!' in text or 'There was an error reloading BlueMap!' in text:
+                                raise RuntimeError('BlueMap reload failed; inspect ' + str(log_path))
+                            return 'BlueMap reloaded!' in text
+                        # The adapter clears its manifest at disable, before the
+                        # native reload finishes. Never overlap two reloads.
+                        wait_for(process, completed)
                     if expected:
                         assert value['bounds']['world'] == dict(minY=expected[0], maxY=expected[1]), value
                         settings['maps'] = []
                         policy.write_text(json.dumps(settings))
-                        process.stdin.write('bluemap reload\n'); process.stdin.flush()
+                        reload_plugin()
                         wait_for(process, lambda: json.loads(manifest.read_text()).get('maps') == [])
                         settings['maps'] = ['world']
                         policy.write_text(json.dumps(settings))
-                        process.stdin.write('bluemap reload\n'); process.stdin.flush()
+                        reload_plugin()
                         wait_for(process, selected_manifest)
                     process.stdin.write('stop\n'); process.stdin.flush()
                     assert process.wait(timeout=90) == 0

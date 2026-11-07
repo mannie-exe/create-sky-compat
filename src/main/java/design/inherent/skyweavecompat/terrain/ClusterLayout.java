@@ -5,7 +5,12 @@ import java.util.List;
 /** Local priority thinning of immutable candidates; never queries accepted neighbors. */
 public final class ClusterLayout {
     public record Cell(int x, int z) {}
-    public record Support(int x, int z, int radius) {}
+    public record Support(int x, int z, int halfWidth, int halfDepth) {
+        public Support(int x, int z, int radius) { this(x, z, radius, radius); }
+        public Support {
+            if (halfWidth < 0 || halfDepth < 0) throw new IllegalArgumentException("Negative support extent");
+        }
+    }
     public record Candidate(Cell cell, long priority, List<Support> supports) {
         public Candidate { supports = List.copyOf(supports); }
     }
@@ -26,9 +31,11 @@ public final class ClusterLayout {
 
     public static boolean conflicts(Candidate a, Candidate b, int gap) {
         for (Support left : a.supports()) for (Support right : b.supports()) {
-            long dx = (long)left.x() - right.x(), dz = (long)left.z() - right.z();
-            long distance = (long)left.radius() + right.radius() + gap;
-            if (dx * dx + dz * dz < distance * distance) return true;
+            long dx = Math.abs((long)left.x() - right.x()) - left.halfWidth() - right.halfWidth();
+            long dz = Math.abs((long)left.z() - right.z()) - left.halfDepth() - right.halfDepth();
+            if (dx < 0 && dz < 0) return true;
+            dx = Math.max(0, dx); dz = Math.max(0, dz);
+            if (dx * dx + dz * dz < (long)gap * gap) return true;
         }
         return false;
     }

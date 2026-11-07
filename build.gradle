@@ -70,6 +70,7 @@ dependencies {
     compileOnly('maven.modrinth:questlog:qnCcrOl2') { transitive = false }
     compileOnly('maven.modrinth:distanthorizons:9w34y8ai') { transitive = false }
     compileOnly('maven.modrinth:bluemap:8iJcPOHJ') { transitive = false }
+    compileOnly('maven.modrinth:surveyor:egJBsDTn') { transitive = false }
     sodiumSource('maven.modrinth:sodium:uMOpc5uV') { transitive = false }
     aeronauticsSource('maven.modrinth:create-aeronautics:44pLdPGg') { transitive = false }
     veilSource('maven.modrinth:sable:fg9dTRz9') { transitive = false }
@@ -81,8 +82,8 @@ dependencies {
     testRuntimeOnly 'io.github.llamalad7:mixinextras-neoforge:0.5.5'
     compileOnly('maven.modrinth:sable:fg9dTRz9') { transitive = false }
     localRuntime('maven.modrinth:sable:fg9dTRz9') { transitive = false }
-    compileOnly('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
-    localRuntime('maven.modrinth:sky-archipelago:RwLz4CJb') { transitive = false }
+    compileOnly('maven.modrinth:sky-archipelago:XPc17YJD') { transitive = false }
+    localRuntime('maven.modrinth:sky-archipelago:XPc17YJD') { transitive = false }
     localRuntime('maven.modrinth:sky-villages:3InSHTOp') { transitive = false }
     localRuntime('dev.architectury:architectury-neoforge:13.0.11') { transitive = false }
     testImplementation platform('org.junit:junit-bom:5.11.4')
@@ -114,7 +115,7 @@ tasks.register('verifyUpstream') {
     doLast {
         def pins = [
             'sable': '9c199157843bf953a47dff625fc5bb41c01a90538d35ad18e6996bbcb8a617c2',
-            'sky-archipelago': '6bc4deeb1bc2be716d29e76837b179104009a73e9a32d6d097a415b08ac174e1',
+            'sky-archipelago': '4aa55186f8c49c4143cc0d9fd8e11acad103edaf0cc8dcee7845ac10c80ccc20',
             'sky-villages': '5ef7b63c6f1999a632085975afa14f00146369c142fd72980d760cbb617dd52f'
         ]
         pins.each { name, expected ->
@@ -126,7 +127,8 @@ tasks.register('verifyUpstream') {
             if (actual != expected) throw new GradleException("Unexpected ${name}: ${actual}")
         }
 
-        ['macaws-bridges': '070b817d3282760d9789b22ce13779613c8b558e02012fd5884d343175d88fd9',
+        ['surveyor': '4c4534517021e5b7212346e25510123944558e5b0fcf1d605189548b6811a6a0',
+         'macaws-bridges': '070b817d3282760d9789b22ce13779613c8b558e02012fd5884d343175d88fd9',
          'fusion-connected-textures': '29920a6838f4f942947d208349480d7f5737f9fac6411c6eac5f3e824a438048',
          'rechiseled': 'cd638bb122d7e1afce4f38b1c7da3af99be7b9f523869cfbc15e5347db5f8d9a',
          'yigd': 'dd2142a3c6a9d5b990ab36220be482f7aa9f528755f93b8fef8996f509ddcda2',

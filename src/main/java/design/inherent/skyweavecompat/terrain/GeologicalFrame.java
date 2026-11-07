@@ -8,6 +8,13 @@ public record GeologicalFrame(int bottom, int topExclusive) {
     public GeologicalFrame {
         if (topExclusive <= bottom + 1) throw new IllegalArgumentException("Empty geological frame");
     }
+    /** Stable nominal body datum; neither a cavity floor nor a conservative search envelope. */
+    public static GeologicalFrame nativeBody(int centerY, int plateau, int cliff, int hang, boolean wet) {
+        int height = wet ? plateau + cliff + hang
+                : (int)Math.round(1.18 * (plateau + .97 * cliff) + .2 * Math.min(hang, 16));
+        int top = centerY + plateau + 1;
+        return new GeologicalFrame(top - height, top);
+    }
     public boolean containsReference(int y) { return y >= REFERENCE_BOTTOM && y < 320; }
     public int toWorld(int referenceY) {
         if (referenceY >= REFERENCE_SURFACE) return surface() + referenceY - REFERENCE_SURFACE;

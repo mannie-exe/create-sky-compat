@@ -39,6 +39,7 @@ public enum Feature {
     DH_SHUTDOWN("distant_horizons.shutdown"),
     DH_CACHE("distant_horizons.world_cache"),
     BLUEMAP("bluemap.viewer"),
+    SURVEYOR_STRUCTURES("surveyor.structure_starts"),
     FRAMEBUFFER("rendering.veil_framebuffer"),
     BALLOON("rendering.balloon_shadow_pass"),
     TEXT_DISPLAY_SHADOW("rendering.text_display_shadow_pass"),

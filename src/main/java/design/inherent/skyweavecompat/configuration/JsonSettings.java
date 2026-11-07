@@ -10,12 +10,21 @@ import java.util.function.Consumer;
 public final class JsonSettings {
     public record Definition(String filename, String help, String defaults, Consumer<String> validate) {}
     private static String json(Object value) { return new GsonBuilder().setPrettyPrinting().create().toJson(value) + "\n"; }
-    public static final List<Definition> FILES = List.of(
+    private static final List<Definition> DEFINITIONS = new java.util.concurrent.CopyOnWriteArrayList<>(List.of(
             new Definition("skyweave_compat-generation.json", "generation", json(GenerationProfile.INITIAL), ProfileJson::generation),
             new Definition("skyweave_compat-interiors.json", "interiors", json(InteriorProfile.INITIAL), InteriorConfiguration::parse),
-            new Definition("skyweave_compat-water.json", "water", json(WaterProfile.INITIAL), WaterConfiguration::parse),
             new Definition("skyweave_compat-oceans.json", "oceans", json(OceanProfile.INITIAL), OceanConfiguration::parse),
-            new Definition(BlueMapSettings.FILE, "bluemap", json(BlueMapSettings.DEFAULT), BlueMapSettings::parse));
+            new Definition(design.inherent.skyweavecompat.terrain.city.CityConfiguration.FILE, "ancient_cities",
+                    json(design.inherent.skyweavecompat.terrain.city.CityConfiguration.DEFAULT),
+                    design.inherent.skyweavecompat.terrain.city.CityConfiguration::parse),
+            new Definition(BlueMapSettings.FILE, "bluemap", json(BlueMapSettings.DEFAULT), BlueMapSettings::parse)));
+    public static final List<Definition> FILES = java.util.Collections.unmodifiableList(DEFINITIONS);
+
+    /** Register an optional native codec only after its integration is admitted. */
+    public static synchronized void register(Definition definition) {
+        if (find(definition.filename()) != null) throw new IllegalStateException("Duplicate configuration: " + definition.filename());
+        DEFINITIONS.add(definition);
+    }
 
     public static Definition find(String filename) {
         return FILES.stream().filter(file -> file.filename().equals(filename)).findFirst().orElse(null);

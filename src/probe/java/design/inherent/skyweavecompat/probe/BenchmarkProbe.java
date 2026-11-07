@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.GeologicalGenerator;
 import java.nio.file.*;
@@ -18,7 +19,7 @@ final class BenchmarkProbe {
         var settings = generator.resolvedSkyIslandSettings();
         long started = System.nanoTime();
         var anchors = field.collectIslandPreviewsInRadius(0, 0, 16000, settings).stream()
-                .filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+                .filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                 .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).toList();
         long columns = 0, solidSamples = 0;
         for (var anchor : anchors.stream().limit(12).toList()) {

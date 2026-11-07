@@ -34,7 +34,7 @@ public final class SkyweaveCompat {
             NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> {
                 var root = event.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
                 if (java.nio.file.Files.exists(root.resolve(design.inherent.skyweavecompat.terrain.GenerationIdentity.FILE)))
-                    throw new IllegalStateException("This save requires Skyweave: Compatibility Patches terrain.preset and Sky Archipelago 1.3.6. "
+                    throw new IllegalStateException("This save requires Skyweave: Compatibility Patches terrain.preset and Sky Archipelago 1.4. "
                             + "Restore its recorded configuration; automatic world conversion is unsupported.");
             });
         }

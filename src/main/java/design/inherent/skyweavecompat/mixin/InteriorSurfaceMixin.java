@@ -1,33 +1,37 @@
 package design.inherent.skyweavecompat.mixin;
 
+import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.llamalad7.mixinextras.sugar.Local;
-import design.inherent.skyweavecompat.terrain.ProfiledTerrain;
-import design.inherent.skyweavecompat.terrain.BiomeMaterials;
-import org.sathrek.sky_archipelago.config.SkyIslandSettings;
+import design.inherent.skyweavecompat.terrain.IslandSurfaceScope;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField;
+import org.sathrek.sky_archipelago.worldgen.generator.surface.IslandSurfaceRules;
 import org.sathrek.sky_archipelago.worldgen.generator.surface.SkyIslandSurfacePass;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(value = SkyIslandSurfacePass.class, remap = false)
 public abstract class InteriorSurfaceMixin {
-    @WrapOperation(method = "buildSurface", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/world/level/chunk/ChunkAccess;setBlockState(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;"))
-    private static BlockState preserveOpenings(ChunkAccess chunk, BlockPos pos, BlockState material, boolean moved,
-            Operation<BlockState> original, @Local(argsOnly = true) IslandField field,
-            @Local(argsOnly = true) SkyIslandSettings settings) {
-        if (((ProfiledTerrain)(Object)field).skyweave$profile() != null) {
-            var current = chunk.getBlockState(pos);
-            if (current.isAir() || !current.getFluidState().isEmpty()) return current;
-            int surfaceY = field.sampleColumnProfile(pos.getX(), pos.getZ(), settings).topY();
-            var biome = chunk.getNoiseBiome(pos.getX() >> 2, surfaceY >> 2, pos.getZ() >> 2);
-            material = BiomeMaterials.surface(material, biome, surfaceY - pos.getY());
-        }
-        return original.call(chunk, pos, material, moved);
+    @WrapMethod(method = "buildSurface")
+    private static void context(WorldGenRegion level, StructureManager structures, ChunkAccess chunk,
+            SkyIslandSettings settings, IslandField field, SkyIslandSurfacePass.HostBiomeSampler hostBiomes,
+            IslandSurfaceRules rules, Operation<Void> original) {
+        IslandSurfaceScope.run(field, settings,
+                () -> original.call(level, structures, chunk, settings, field, hostBiomes, rules));
+    }
+
+    // Do not intercept structure foundation writes: those intentionally fill air.
+    @WrapOperation(method = {"buildSurface", "paintOverlaySurface(Lnet/minecraft/world/level/WorldGenLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;IILorg/sathrek/sky_archipelago/worldgen/generator/field/TerrainColumn;Lnet/minecraft/core/BlockPos$MutableBlockPos;Lorg/sathrek/sky_archipelago/worldgen/generator/field/WaterArchetypeColumnProfile;JIZLorg/sathrek/sky_archipelago/worldgen/generator/terrain/SkyIslandChunkTerrainSnapshot;Lorg/sathrek/sky_archipelago/worldgen/generator/surface/IslandSurfaceRules;)I", "rewriteExposedStoneSkin"},
+            at = @At(value = "INVOKE", target = "Lorg/sathrek/sky_archipelago/worldgen/generator/surface/SkyIslandSurfacePass;setSurfaceBlock(Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;JI)V"), require = 3)
+    private static void preserveOpenings(ChunkAccess chunk, BlockPos pos, BlockState material,
+            long seed, int deepslateY, Operation<Void> original) {
+        var selected = IslandSurfaceScope.surface(chunk, pos, material);
+        if (selected != null) original.call(chunk, pos, selected, seed, deepslateY);
     }
 }

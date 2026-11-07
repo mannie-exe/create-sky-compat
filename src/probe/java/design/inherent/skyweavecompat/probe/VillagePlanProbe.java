@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.placement.*;
 import net.minecraft.server.level.ServerLevel;
@@ -15,7 +16,7 @@ final class VillagePlanProbe {
     static JsonObject run(ServerLevel level, IslandField field, SkyIslandSettings settings, ArchipelagoVillagePlacement placement) {
         var anchors = new LinkedHashSet<VillagePlan.Anchor>();
         for (var preview : field.collectIslandPreviewsInRadius(0, 0, 12000, settings)) {
-            if (preview.family() != IslandField.IslandFamily.ANCHOR_PLATEAU) continue;
+            if (preview.family() != IslandFamily.ANCHOR_PLATEAU) continue;
             var owner = placement.owner(new VillagePlan.Site(preview.x() >> 4, preview.z() >> 4));
             if (owner != null) anchors.add(owner);
         }

@@ -486,13 +486,19 @@ public final class ConfigurationOverview extends Screen {
     private void buildJson(JsonEdits edits) {
         String file = edits.definition().filename();
         content.row("validation/" + file, Component.empty(), validation(edits));
+        String group = "";
         for (String key : edits.keys()) {
+            String nextGroup = key.contains(".") ? key.substring(0, key.indexOf('.')) : "";
+            if (!nextGroup.equals(group) && !nextGroup.isEmpty())
+                content.section("json-group/" + file + "/" + nextGroup,
+                        text("field." + edits.definition().help() + "." + nextGroup));
+            group = nextGroup;
             String id = "field/" + file + "/" + key;
             Component label = fieldName(edits, key);
             Component help = text("field." + edits.definition().help() + "." + key + ".help");
             switch (edits.kind(key)) {
-                case NUMBER -> {
-                    var input = new EditBox(font, 0, 0, 100, 20, label); input.setMaxLength(64); input.setValue(edits.value(key));
+                case NUMBER, STRING -> {
+                    var input = new EditBox(font, 0, 0, 100, 20, label); input.setMaxLength(edits.kind(key) == JsonEdits.Kind.STRING ? 256 : 64); input.setValue(edits.value(key));
                     input.setResponder(value -> {
                         if (edits.value(key).equals(value)) return;
                         edits.set(key, value);
@@ -512,12 +518,12 @@ public final class ConfigurationOverview extends Screen {
                     var values = new ArrayList<>(edits.strings(key));
                     for (int i = 0; i < values.size(); i++) {
                         final int index = i;
-                        var input = new EditBox(font, 0, 0, Math.max(90, Math.min(200, width - navigationWidth() - 100)), 20, text("map_id"));
+                        var input = new EditBox(font, 0, 0, Math.max(90, Math.min(200, width - navigationWidth() - 100)), 20, text("list_entry"));
                         input.setMaxLength(256); input.setValue(values.get(i)); input.setResponder(value -> {
                             if (values.get(index).equals(value)) return;
                             values.set(index, value); edits.strings(key, values); content.summary("validation/" + file, validation(edits));
                         });
-                        content.row(id + "/" + i, text("map_id"), Component.empty(), input, valueButton(text("remove"), label, 55, () -> {
+                        content.row(id + "/" + i, text("list_entry"), Component.empty(), input, valueButton(text("remove"), label, 55, () -> {
                             remember(); values.remove(index); edits.strings(key, values); rebuildWidgets();
                         }));
                     }

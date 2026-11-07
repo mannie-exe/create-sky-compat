@@ -27,14 +27,14 @@ class JsonEditsTest {
         assertEquals(2600, ProfileJson.generation(Files.readString(path)).spacing());
     }
     @Test void invalidDraftRetainsItsTextAndCannotOverwriteDisk() throws IOException {
-        var edits = create("water"); Path path = directory.resolve(edits.definition().filename());
+        var edits = create("oceans"); Path path = directory.resolve(edits.definition().filename());
         String original = Files.readString(path);
-        edits.set("minRadius", "9.5");
-        assertThrows(RuntimeException.class, edits::save); assertEquals("9.5", edits.value("minRadius"));
+        edits.set("perimeterMinRadius", "9.5");
+        assertThrows(RuntimeException.class, edits::save); assertEquals("9.5", edits.value("perimeterMinRadius"));
         assertEquals(original, Files.readString(path));
-        edits.set("minRadius", "95");
+        edits.set("perimeterMinRadius", "95");
         assertThrows(RuntimeException.class, edits::save); // Individual type is valid, linked maximum is not.
-        edits.set("maxRadius", "96"); edits.save(); assertFalse(edits.dirty());
+        edits.set("perimeterMaxRadius", "96"); edits.save(); assertFalse(edits.dirty());
     }
     @Test void conflictRetainsDraftAndExternalBytesWhileFailedReloadKeepsTheBaseline() throws IOException {
         var edits = create("interiors"); Path path = directory.resolve(edits.definition().filename());
@@ -74,5 +74,16 @@ class JsonEditsTest {
         Files.writeString(directory.resolve(definition.filename()), reversed.toString());
         var edits = new JsonEdits(directory, definition); assertEquals(keys, edits.keys());
         assertEquals("2400", edits.value("spacing"));
+    }
+    @Test void installationParsersRejectTheSameAmbiguousKeysAsTheEditor() {
+        assertAll(JsonSettings.FILES.stream()
+                .filter(file -> List.of("generation", "interiors", "oceans").contains(file.help()))
+                .map(file -> (org.junit.jupiter.api.function.Executable) () -> {
+                    assertDoesNotThrow(() -> file.validate().accept(file.defaults()));
+                    var tree = JsonParser.parseString(file.defaults()).getAsJsonObject();
+                    String key = tree.keySet().iterator().next();
+                    String duplicate = "{\"" + key + "\":" + tree.get(key) + "," + file.defaults().substring(file.defaults().indexOf('{') + 1);
+                    assertThrows(IllegalArgumentException.class, () -> file.validate().accept(duplicate), file.filename());
+                }));
     }
 }

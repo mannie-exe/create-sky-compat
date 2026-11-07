@@ -19,6 +19,17 @@ class ClusterLayoutTest {
         assertTrue(Math.abs(-800 - 800) < 2 * GenerationProfile.INITIAL.clusterReach() + 350);
     }
 
+    @Test void nativeRectangleCornersAndZeroGapAreCheckedWithoutCircleAssumptions() {
+        var a = candidate(0, 0, 1, new ClusterLayout.Support(0, 0, 10, 10));
+        var corner = candidate(1, 1, 2, new ClusterLayout.Support(24, 24, 10, 10));
+        assertFalse(ClusterLayout.conflicts(a, corner, 5));
+        assertTrue(ClusterLayout.conflicts(a, corner, 6));
+        var overlap = candidate(1, 0, 2, new ClusterLayout.Support(19, 0, 10, 10));
+        assertTrue(ClusterLayout.conflicts(a, overlap, 0));
+        var touching = candidate(1, 0, 2, new ClusterLayout.Support(20, 0, 10, 10));
+        assertFalse(ClusterLayout.conflicts(a, touching, 0));
+    }
+
     @Test void priorityTiesAreResolvedWithoutRecursionOrVisitOrder() {
         var a = candidate(-1, 0, 0, new ClusterLayout.Support(-100, 0, 300));
         var b = candidate(0, 0, 0, new ClusterLayout.Support(500, 0, 300));

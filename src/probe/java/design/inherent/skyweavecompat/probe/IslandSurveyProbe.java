@@ -1,5 +1,7 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandDescriptor;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.*;
 import net.minecraft.core.BlockPos;
@@ -22,7 +24,7 @@ final class IslandSurveyProbe {
         var settings = generator.resolvedSkyIslandSettings();
         var spawn = level.getSharedSpawnPos();
         var descriptors = field.collectIslandPreviewsInRadius(spawn.getX(), spawn.getZ(), 10000, settings);
-        var anchors = descriptors.stream().filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+        var anchors = descriptors.stream().filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                 .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x() - spawn.getX(), p.z() - spawn.getZ()))).toList();
         var report = new JsonObject();
         report.addProperty("schema", 1); report.addProperty("kind", "skyweave-island-survey");
@@ -39,9 +41,6 @@ final class IslandSurveyProbe {
         spawnRow.addProperty("supported", level.getBlockState(spawn.below()).isFaceSturdy(level, spawn.below(), net.minecraft.core.Direction.UP));
         report.add("spawn", spawnRow);
         var islands = new JsonArray(); long began = System.nanoTime();
-        var cellDescriptors = IslandField.class.getDeclaredMethod("descriptorsForCell", int.class, int.class,
-                org.sathrek.sky_archipelago.config.SkyIslandSettings.class);
-        cellDescriptors.setAccessible(true);
         var pos = new BlockPos.MutableBlockPos();
         for (var anchor : anchors.stream().limit(3).toList()) {
             var island = new JsonObject(); island.add("descriptor", new Gson().toJsonTree(anchor));
@@ -49,14 +48,12 @@ final class IslandSurveyProbe {
             int cellZ = Math.floorDiv(anchor.z(), ((ProfiledTerrain)(Object)field).skyweave$profile().spacing());
             boolean grouped = false;
             for (int dx = -1; dx <= 1 && !grouped; dx++) for (int dz = -1; dz <= 1 && !grouped; dz++) {
-                @SuppressWarnings("unchecked")
-                var members = (List<IslandField.IslandDescriptor>)cellDescriptors.invoke(field, cellX + dx, cellZ + dz, settings);
+                var members = ((ClusterField)(Object)field).skyweave$members(cellX + dx, cellZ + dz, settings);
                 if (members.isEmpty()) continue;
                 var head = members.getFirst();
                 if (head.centerX() != anchor.x() || head.centerZ() != anchor.z()) continue;
                 island.add("companionDescriptors", new Gson().toJsonTree(members.subList(1, members.size())));
-                island.add("geologicalFrame", new Gson().toJsonTree(new GeologicalFrame(
-                        head.centerY() - head.cliffDepth(), head.centerY() + head.plateauHeight() + 1)));
+                island.add("geologicalFrame", new Gson().toJsonTree(IslandGeometry.geologicalFrame(head)));
                 grouped = true;
             }
             if (!grouped) throw new AssertionError("Missing native companion group");
@@ -103,7 +100,7 @@ final class IslandSurveyProbe {
                 var chunkCounts = new TreeMap<String, Long>(); int columns = 0;
                 for (int x = cx * 16; x < cx * 16 + 16; x++) for (int z = cz * 16; z < cz * 16 + 16; z++) {
                     var owner = field.sampleDominantIslandDescriptor(x, z, settings);
-                    if (owner == null || owner.family() != IslandField.IslandFamily.ANCHOR_PLATEAU
+                    if (owner == null || owner.family() != IslandFamily.ANCHOR_PLATEAU
                             || owner.centerX() != anchor.x() || owner.centerZ() != anchor.z()) continue;
                     columns++; observedColumns++;
                     var frame = ((GeologicalField)(Object)field).skyweave$frameAt(x, z, settings);

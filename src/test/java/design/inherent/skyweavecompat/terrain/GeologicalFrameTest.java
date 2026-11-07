@@ -4,6 +4,20 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GeologicalFrameTest {
+    @Test void nativeBodyMappingUsesTheNominalHeightWithoutChangingTheSurfaceDatum() {
+        for (int height = 250; height <= 400; height++) {
+            var profile = GenerationProfile.INITIAL;
+            var frame = GeologicalFrame.nativeBody(400, 28, profile.cliffDepth(height), 48, false);
+            assertEquals(428, frame.surface());
+            assertEquals(height, frame.topExclusive() - frame.bottom(), 1);
+            assertEquals(frame.bottom(), frame.toWorld(-64));
+            assertEquals(428, frame.toWorld(64));
+            assertEquals(493, frame.toWorld(129));
+        }
+        var wet = GeologicalFrame.nativeBody(400, 28, 300, 48, true);
+        assertEquals(376, wet.topExclusive() - wet.bottom());
+    }
+
     @Test void distinguishesUndergroundSurfaceAndBuildCeiling() {
         var frame = new GeologicalFrame(180, 509);
         assertEquals(180, frame.toWorld(-64));

@@ -12,8 +12,9 @@ public final class TerrainIntegration {
         var directory = FMLPaths.CONFIGDIR.get();
         GenerationConfiguration.load(directory);
         InteriorConfiguration.load(directory);
-        WaterConfiguration.load(directory);
+        RiverConfiguration.load(directory);
         OceanConfiguration.load(directory);
+        design.inherent.skyweavecompat.terrain.city.CityConfiguration.load(directory);
         NeoForge.EVENT_BUS.addListener((ServerAboutToStartEvent event) -> GenerationGuard.verify(event.getServer()));
     }
 }

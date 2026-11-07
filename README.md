@@ -19,7 +19,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 
 | Optional integration | Supported version | Behavior |
 | --- | --- | --- |
-| Sky Archipelago | 1.3.6 | Expanded island preset and separately selectable placement/climate adaptations |
+| Sky Archipelago | 1.4 | Expanded island preset and separately selectable placement/climate adaptations |
 | Create | 6.0.10 | Client window-face culling correction; preserves native connected textures |
 | Glass backfaces | Create 6.0.10 or Fusion 1.3.16 | Independent default-on two-sided glass retaining native connected textures |
 | Rechiseled | 1.2.6 | Client rotated-glass culling correction, including Rechiseled Create windows |
@@ -41,6 +41,7 @@ See [all switches and supported combinations](docs/configuration.md#adaptation-s
 | Macaw’s Bridges | 3.1.2 | Standing/stair lantern selection matching pack models; enable on both sides |
 | Questlog | 3.5.0, 3.5.3 | Readable conditions, reward previews, first-progress/completion notifications and server claim validation |
 | BlueMap | 5.7 | Opt-in island viewer adaptation on dedicated servers |
+| Surveyor + Sky Archipelago | 1.2.4 + 1.4 | Skip rejected structure starts in map records |
 | Veil + Iris | 4.3.2 + 1.8.14-beta.1+mc1.21.1 | Framebuffer restoration, including offscreen scenes |
 | Iris | 1.8.14-beta.1+mc1.21.1 | Independent neutral lighting and shadow exclusions for text displays and entity nametags |
 | Aeronautics + Iris | 1.3.2 + the Iris version above | Exclude the balloon hot-air overlay from shadow rendering |
@@ -138,10 +139,12 @@ targets are 250 to 400 blocks, with placement fitted to leave floor clearance an
 building headroom. Ore placement, large iron/copper veins and classic cave carvers
 use island-relative heights rather than vanilla world altitude. The preset retains
 stacked exterior terrain and offers baseline, noise-cave and hollow interiors with
-separate controls for openings and native carving. Local basins can retain water,
-overflow into channels or feed falls through deliberate underside openings.
-Ancient-city eligibility uses a consistent
-Deep Dark column query, and structure lookup resolves relocated starts instead of
+separate controls for openings and native carving. Sky Archipelago 1.4 supplies
+the exterior shapes, rivers and lakes. Optional floating-ocean settings add coastal
+outlets and falling perimeters to native wet profiles; the global ocean stays off.
+Ancient Cities fit inside Deep Dark hosts, including suitable hollow interiors.
+Normal and noise-cave hosts permit limited peripheral exposure while protecting
+the core. Structure lookup resolves relocated starts instead of
 rejecting them from their original source biome. Vanilla terrain systems are not
 all reproduced; the [coverage limits](docs/development/terrain.md#feature-coverage-and-limits)
 describe ocean content, fluids and native feature behavior.
@@ -182,8 +185,10 @@ Journal preferences apply immediately; fix changes save for the next startup. Th
 Feature switches remain in `config/skyweave_compat-features.properties`.
 Village tuning uses `config/skyweave_compat-common.toml`. Island geometry lives in
 `config/skyweave_compat-generation.json`; cavity and native-carver controls live in
-`config/skyweave_compat-interiors.json`, and local basins use
-`config/skyweave_compat-water.json`. Restart the game/server after changes;
+`config/skyweave_compat-interiors.json`. Native hydrology uses
+`config/skyweave_compat-rivers.json`, optional ocean edges use
+`config/skyweave_compat-oceans.json`, and city burial uses
+`config/skyweave_compat-ancient-cities.json`. Restart the game/server after changes;
 changed generation settings require a fresh world.
 The server's configuration controls multiplayer generation.
 

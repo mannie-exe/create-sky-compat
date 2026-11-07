@@ -14,9 +14,9 @@ class OceanProfileTest {
 
     @Test void rejectOverlappingWeightsAndUnboundedGeometry() {
         var original = JsonParser.parseString(new Gson().toJson(OceanProfile.INITIAL)).getAsJsonObject();
-        var weights = original.deepCopy(); weights.addProperty("basinChance", .8); weights.addProperty("coastalChance", .5);
+        var weights = original.deepCopy(); weights.addProperty("perimeterChance", .8); weights.addProperty("coastalChance", .5);
         assertThrows(RuntimeException.class, () -> OceanConfiguration.parse(weights.toString()));
-        var radius = original.deepCopy(); radius.addProperty("maxRadius", 10000);
+        var radius = original.deepCopy(); radius.addProperty("perimeterMaxRadius", 10000);
         assertThrows(RuntimeException.class, () -> OceanConfiguration.parse(radius.toString()));
         var fraction = original.deepCopy(); fraction.addProperty("perimeterMaxRadius", 48.5);
         assertThrows(ArithmeticException.class, () -> OceanConfiguration.parse(fraction.toString()));

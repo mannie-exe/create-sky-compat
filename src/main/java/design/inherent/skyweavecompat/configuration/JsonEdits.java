@@ -8,12 +8,13 @@ import java.io.StringReader;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /** A typed file draft. Invalid input stays in the draft and cannot reach disk. */
 public final class JsonEdits {
-    public enum Kind { NUMBER, BOOLEAN, STRINGS }
+    public enum Kind { NUMBER, BOOLEAN, STRING, STRINGS }
     private static final Gson JSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
     private final ConfigFile file;
     private final JsonSettings.Definition definition;
@@ -25,25 +26,26 @@ public final class JsonEdits {
     public JsonEdits(Path directory, JsonSettings.Definition definition) throws IOException {
         if (!JsonSettings.FILES.contains(definition)) throw new IllegalArgumentException("Unknown configuration");
         this.definition = definition;
-        keys = List.copyOf(JsonParser.parseString(definition.defaults()).getAsJsonObject().keySet());
+        keys = leafKeys(JsonParser.parseString(definition.defaults()).getAsJsonObject());
         file = new ConfigFile(directory, definition.filename());
         reload();
     }
     public JsonSettings.Definition definition() { return definition; }
     public List<String> keys() { return keys; }
     public Kind kind(String key) {
-        JsonElement value = saved.get(key);
+        JsonElement value = at(saved, key);
         if (value == null) throw new IllegalArgumentException("Unknown setting: " + key);
         if (value.isJsonArray()) return Kind.STRINGS;
         if (!value.isJsonPrimitive()) throw new IllegalArgumentException("Unsupported setting: " + key);
-        return value.getAsJsonPrimitive().isBoolean() ? Kind.BOOLEAN : Kind.NUMBER;
+        var primitive = value.getAsJsonPrimitive();
+        return primitive.isBoolean() ? Kind.BOOLEAN : primitive.isString() ? Kind.STRING : Kind.NUMBER;
     }
     private String display(JsonElement value) { return value.isJsonArray() ? value.toString() : value.getAsString(); }
-    public String value(String key) { kind(key); return edits.getOrDefault(key, display(saved.get(key))); }
-    public String defaultValue(String key) { return display(JsonParser.parseString(definition.defaults()).getAsJsonObject().get(key)); }
+    public String value(String key) { kind(key); return edits.getOrDefault(key, display(at(saved, key))); }
+    public String defaultValue(String key) { return display(at(JsonParser.parseString(definition.defaults()).getAsJsonObject(), key)); }
     public void set(String key, String value) {
         kind(key);
-        if (value.equals(display(saved.get(key)))) edits.remove(key); else edits.put(key, value);
+        if (value.equals(display(at(saved, key)))) edits.remove(key); else edits.put(key, value);
     }
     public void reset(String key) { set(key, defaultValue(key)); }
     public List<String> strings(String key) {
@@ -65,19 +67,22 @@ public final class JsonEdits {
         JsonObject result = saved.deepCopy();
         edits.forEach((key, raw) -> {
             try {
+                var parent = parent(result, key);
+                String leaf = key.substring(key.lastIndexOf('.') + 1);
                 switch (kind(key)) {
-                    case NUMBER -> result.add(key, new JsonPrimitive(new BigDecimal(raw.strip())));
+                    case NUMBER -> parent.add(leaf, new JsonPrimitive(new BigDecimal(raw.strip())));
+                    case STRING -> parent.addProperty(leaf, raw);
                     case BOOLEAN -> {
                         if (!raw.equals("true") && !raw.equals("false")) throw new IllegalArgumentException("Expected true or false");
-                        result.addProperty(key, Boolean.parseBoolean(raw));
+                        parent.addProperty(leaf, Boolean.parseBoolean(raw));
                     }
                     case STRINGS -> {
                         var array = JsonParser.parseString(raw).getAsJsonArray();
                         for (var item : array) if (!item.isJsonPrimitive() || !item.getAsJsonPrimitive().isString())
-                            throw new IllegalArgumentException("Expected map IDs");
+                            throw new IllegalArgumentException("Expected text entries");
                         if (array.size() != array.asList().stream().map(JsonElement::getAsString).distinct().count())
-                            throw new IllegalArgumentException("Map IDs must be unique");
-                        result.add(key, array);
+                            throw new IllegalArgumentException("Text entries must be unique");
+                        parent.add(leaf, array);
                     }
                 }
             } catch (RuntimeException invalid) { throw new IllegalArgumentException(key + ": " + invalid.getMessage(), invalid); }
@@ -95,8 +100,35 @@ public final class JsonEdits {
         saved = object(actual); baseline = actual; edits.clear();
     }
 
+    private static List<String> leafKeys(JsonObject object) {
+        var keys = new ArrayList<String>();
+        leaves(object, "", keys);
+        keys.sort(java.util.Comparator.comparing(key -> key.contains(".") ? key.substring(0, key.indexOf('.')) : ""));
+        return List.copyOf(keys);
+    }
+    private static void leaves(JsonObject object, String prefix, List<String> keys) {
+        for (var entry : object.entrySet()) {
+            if (entry.getKey().contains(".")) throw new IllegalArgumentException("Dots are reserved for setting paths");
+            String key = prefix + entry.getKey();
+            if (entry.getValue().isJsonObject()) leaves(entry.getValue().getAsJsonObject(), key + ".", keys);
+            else keys.add(key);
+        }
+    }
+    private static JsonObject parent(JsonObject object, String key) {
+        String[] parts = key.split("\\.");
+        for (int i = 0; i < parts.length - 1; i++) {
+            var next = object.get(parts[i]);
+            if (next == null || !next.isJsonObject()) throw new IllegalArgumentException("Unknown setting: " + key);
+            object = next.getAsJsonObject();
+        }
+        return object;
+    }
+    private static JsonElement at(JsonObject object, String key) {
+        return parent(object, key).get(key.substring(key.lastIndexOf('.') + 1));
+    }
+
     // Reject duplicate keys rather than letting Gson silently discard one value.
-    static JsonObject object(String text) throws IOException {
+    public static JsonObject object(String text) throws IOException {
         try (var reader = new JsonReader(new StringReader(text))) {
             var value = read(reader, 0);
             if (!value.isJsonObject() || reader.peek() != JsonToken.END_DOCUMENT)

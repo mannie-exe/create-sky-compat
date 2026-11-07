@@ -32,13 +32,25 @@ class GenerationProfileTest {
         json.addProperty("centerMinY", 100);
         json.addProperty("centerMaxY", 700);
         var profile = GenerationConfiguration.parse(json.toString());
-        assertTrue(profile.safeMinimumY() - profile.cliffDepth(profile.anchorMaxHeight()) - 24 >= GenerationProfile.MIN_Y + profile.floorClearance());
+        assertTrue(profile.safeMinimumY() - GenerationProfile.depthBelowCenter(
+                profile.cliffDepth(profile.anchorMaxHeight()), profile.anchorPlateau(), 48)
+                >= GenerationProfile.MIN_Y + profile.floorClearance());
         assertTrue(profile.safeMaximumY() + profile.anchorPlateau() + 48 <= GenerationProfile.MAX_Y - 1 - profile.buildingHeadroom());
         assertTrue(profile.safeMaximumY() > profile.safeMinimumY());
         assertTrue(profile.safeMinimumY(profile.anchorMinHeight()) < profile.safeMinimumY(profile.anchorMaxHeight()));
         for (int height = profile.anchorMinHeight(); height <= profile.anchorMaxHeight(); height++) {
-            assertTrue(profile.safeMinimumY(height) - profile.cliffDepth(height) - 24
+            assertTrue(profile.safeMinimumY(height) - GenerationProfile.depthBelowCenter(profile.cliffDepth(height), profile.anchorPlateau(), 48)
                     >= GenerationProfile.MIN_Y + profile.floorClearance());
         }
+    }
+
+    @Test void nativeShapeParameterTargetsTheNominalBodyInsteadOfOldTaperArithmetic() {
+        var profile = GenerationProfile.INITIAL;
+        for (int height = 250; height <= 400; height++) {
+            double nominal = 1.18 * (profile.anchorPlateau() + .97 * profile.cliffDepth(height)) + 3.2;
+            assertEquals(height, nominal, .58);
+        }
+        assertTrue(profile.safeMinimumY(250) <= 200);
+        assertTrue(profile.safeMinimumY(400) < profile.safeMaximumY());
     }
 }

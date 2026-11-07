@@ -9,8 +9,13 @@ import java.util.stream.Collectors;
 /** Profile parsing is independent of optional generator classes and never applies runtime settings. */
 public final class ProfileJson {
     private static final Gson JSON = new Gson();
+    /** Startup and editor validation must reject the same ambiguous input. */
+    public static JsonObject object(String text) {
+        try { return JsonEdits.object(text); }
+        catch (java.io.IOException invalid) { throw new IllegalArgumentException(invalid.getMessage(), invalid); }
+    }
     public static GenerationProfile generation(String text) {
-        var object = JsonParser.parseString(text).getAsJsonObject();
+        var object = object(text);
         Set<String> fields = Arrays.stream(GenerationProfile.class.getRecordComponents())
                 .map(component -> component.getName()).collect(Collectors.toSet());
         if (!object.keySet().equals(fields)) {

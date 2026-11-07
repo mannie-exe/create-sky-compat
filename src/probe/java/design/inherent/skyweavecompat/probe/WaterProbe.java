@@ -3,30 +3,21 @@ package design.inherent.skyweavecompat.probe;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.*;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Direction;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.chunk.ProtoChunk;
-import net.minecraft.world.level.chunk.UpgradeData;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.level.levelgen.blending.Blender;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.animal.WaterAnimal;
-import net.minecraft.world.level.Level;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.tags.BiomeTags;
-import net.minecraft.tags.BlockTags;
-import net.minecraft.world.entity.MobCategory;
+import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import org.sathrek.sky_archipelago.worldgen.generator.core.SkyIslandChunkGenerator;
+import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField;
+import org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn;
 import java.nio.file.*;
 import java.util.*;
 
-/** Actual material checks and optional native tick observations in an isolated loaded world. */
+/** Bounded native fluid/material and tick checks in disposable probe worlds. */
 final class WaterProbe {
-    private record Site(WaterRegion region, BlockPos outlet) {}
+    private enum Kind { RIVER, LAKE, NATIVE, COASTAL, PERIMETER }
+    private record Site(BlockPos source, BlockPos edge, int bedY, Kind mode) {}
     private static final List<Site> SITES = new ArrayList<>();
     private static JsonObject report;
     private static Path destination;
@@ -34,109 +25,120 @@ final class WaterProbe {
     private static long began;
     private WaterProbe() {}
 
+    static List<TerrainColumn> columns(IslandField field, int x, int z, SkyIslandSettings settings) {
+        var result = new ArrayList<TerrainColumn>();
+        var ocean = field.sampleWaterArchetypeColumnProfile(x, z, settings);
+        if (ocean.water()) result.add(new TerrainColumn(ocean.solidSurfaceY() + 1, ocean.fluidSurfaceY()));
+        var river = field.sampleHydrologyColumn(x, z, settings);
+        if (river.wet()) result.add(new TerrainColumn(river.fluidBottomY(), river.fluidSurfaceY()));
+        return List.copyOf(result);
+    }
+
     static boolean start(MinecraftServer server, Path output, int ticks) throws Exception {
-        began = System.nanoTime(); destination = output;
+        began = System.nanoTime(); destination = output; elapsed = 0; SITES.clear();
         var level = server.overworld();
         var generator = (SkyIslandChunkGenerator)level.getChunkSource().getGenerator();
-        var field = ((GeologicalGenerator)(Object)generator).skyweave$field(level.getChunkSource().randomState());
+        var random = level.getChunkSource().randomState();
+        var field = ((GeologicalGenerator)(Object)generator).skyweave$field(random);
         var settings = generator.resolvedSkyIslandSettings();
-        var waterField = (InteriorField)(Object)field;
-        var selected = new EnumMap<WaterRegion.Kind, WaterRegion>(WaterRegion.Kind.class);
-        var admitted = new EnumMap<WaterRegion.Kind, Integer>(WaterRegion.Kind.class);
-        boolean oceans = Boolean.getBoolean("neighbors.probe.oceans");
-        int candidates = 0, descriptors = 0;
-        boolean surveyComplete = true;
-        search: for (int cx = -10; cx <= 10; cx++) for (int cz = -10; cz <= 10; cz++) {
-            var members = ((ClusterField)(Object)field).skyweave$members(cx, cz, settings);
-            if (members.isEmpty()) continue;
-            candidates++;
-            for (var island : oceans ? members : List.of(members.getFirst())) {
-                descriptors++;
-                var region = waterField.skyweave$waters().region(island, settings);
-                if (region != null && region.ocean() == oceans) {
-                    selected.putIfAbsent(region.kind(), region);
-                    admitted.merge(region.kind(), 1, Integer::sum);
-                }
-            }
-            if (oceans && ticks > 0 && selected.size() == 3) { surveyComplete = false; break search; }
-        }
-        report = new JsonObject(); report.addProperty("seed", Long.toString(level.getSeed()));
-        report.addProperty("evidence", "targeted native water regions; not an unbiased occurrence survey");
-        report.add("waterProfile", new Gson().toJsonTree(WaterConfiguration.profile()));
+        report = new JsonObject(); report.addProperty("seed", level.getSeed());
         report.add("oceanProfile", new Gson().toJsonTree(OceanConfiguration.profile()));
-        report.addProperty("candidateAnchors", candidates); report.addProperty("requestedTicks", ticks);
-        report.addProperty("candidateDescriptors", descriptors); report.addProperty("admissionSurveyComplete", surveyComplete);
-        report.addProperty("surveyCellRadius", 10);
-        report.add("admittedRegionCounts", new Gson().toJsonTree(admitted));
-        report.add("regions", new Gson().toJsonTree(selected.values()));
-        var checks = new JsonArray();
-        long compared = 0;
-        for (var region : selected.values()) {
-            var targets = new LinkedHashSet<ChunkPos>();
-            targets.add(new ChunkPos(region.x() >> 4, region.z() >> 4));
-            targets.add(new ChunkPos((region.x() + region.radius() - 1) >> 4, region.z() >> 4));
-            BlockPos outlet = new BlockPos(region.x(), region.level(), region.z());
-            if (region.kind() == WaterRegion.Kind.OUTLET) {
-                outer: for (int x = region.x() - region.radius(); x <= region.x() + region.radius(); x++)
-                    for (int z = region.z() - region.radius(); z <= region.z() + region.radius(); z++)
-                        if (region.shaft(x, z)) { outlet = new BlockPos(x, region.level(), z); break outer; }
-            } else if (region.kind() == WaterRegion.Kind.OVERFLOW || region.kind() == WaterRegion.Kind.PERIMETER) {
-                for (int step = 0; step <= region.reach(); step++) {
-                    int x = region.x() + (int)Math.round(Math.cos(region.heading()) * step);
-                    int z = region.z() + (int)Math.round(Math.sin(region.heading()) * step);
-                    if (waterField.skyweave$waterAt(x, z, settings).contains(region.level()))
-                        outlet = new BlockPos(x, region.level(), z);
+        report.add("rivers", new Gson().toJsonTree(RiverConfiguration.settings()));
+        var selected = EnumSet.noneOf(Kind.class);
+        int probes = 0;
+        int horizontalSamples = 0;
+        int radius = Integer.getInteger("neighbors.probe.waterRadius", 8192);
+        boolean oceans = Boolean.getBoolean("neighbors.probe.oceans");
+        var samplerField = IslandField.class.getDeclaredField("shapeSampler");
+        samplerField.setAccessible(true);
+        var shapes = (org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandShapeSampler)samplerField.get(field);
+        if (!oceans) {
+            // Native plans provide bounded witnesses; do not scan every void column.
+            riverSearch: for (var preview : field.collectIslandPreviewsInRadius(0,0,radius,settings)) {
+                if (preview.terrainPlan() == null || preview.archetype().waterBased()) continue;
+                var plan = field.hydrologyPlanFor(preview.terrainPlan().descriptor(),settings);
+                var points = new ArrayList<BlockPos>();
+                for (var lake : plan.lakes()) points.add(new BlockPos(lake.centerX(),lake.waterSurfaceY(),lake.centerZ()));
+                for (var reach : plan.reaches()) for (var point : reach.points())
+                    points.add(new BlockPos(point.x(),point.waterSurfaceY(),point.z()));
+                for (var point : points) {
+                    if (++probes > 4096) break riverSearch;
+                    var river = field.sampleHydrologyColumn(point.getX(),point.getZ(),settings);
+                    if (!river.wet()) continue;
+                    var kind = river.lake() ? Kind.LAKE : Kind.RIVER;
+                    if (selected.add(kind)) SITES.add(new Site(point.atY(river.fluidSurfaceY()),null,river.solidSurfaceY(),kind));
+                    if (selected.containsAll(EnumSet.of(Kind.RIVER,Kind.LAKE))) break riverSearch;
                 }
             }
-            targets.add(new ChunkPos(outlet));
-            long sources = 0;
-            var pos = new BlockPos.MutableBlockPos();
-            for (var location : targets) {
-                var chunk = new ProtoChunk(location, UpgradeData.EMPTY, level,
-                        server.registryAccess().registryOrThrow(Registries.BIOME), null);
-                generator.fillFromNoise(Blender.empty(), level.getChunkSource().randomState(), level.structureManager(), chunk).join();
-                for (int x = location.getMinBlockX(); x <= location.getMaxBlockX(); x++)
-                    for (int z = location.getMinBlockZ(); z <= location.getMaxBlockZ(); z++) {
-                        var expected = generator.getBaseColumn(x, z, level, level.getChunkSource().randomState());
-                        int surface = level.getMinBuildHeight(), floor = surface;
-                        for (int y = level.getMinBuildHeight(); y < level.getMaxBuildHeight(); y++) {
-                            var state = chunk.getBlockState(pos.set(x, y, z));
-                            if (state != expected.getBlock(y)) throw new AssertionError("Water fill/query mismatch at " + pos);
-                            compared++;
-                            if (state.is(Blocks.WATER)) sources++;
-                            if (Heightmap.Types.WORLD_SURFACE_WG.isOpaque().test(state)) surface = y + 1;
-                            if (Heightmap.Types.OCEAN_FLOOR_WG.isOpaque().test(state)) floor = y + 1;
-                        }
-                        if (generator.getBaseHeight(x, z, Heightmap.Types.WORLD_SURFACE_WG, level, level.getChunkSource().randomState()) != surface
-                                || generator.getBaseHeight(x, z, Heightmap.Types.OCEAN_FLOOR_WG, level, level.getChunkSource().randomState()) != floor)
-                            throw new AssertionError("Water height predicate mismatch at " + x + "," + z);
-                    }
-            }
-            var check = new JsonObject(); check.addProperty("kind", region.kind().name());
-            check.addProperty("sampledSourceBlocks", sources); check.add("outlet", new Gson().toJsonTree(outlet));
-            checks.add(check); SITES.add(new Site(region, outlet));
-            if (sources == 0) throw new AssertionError("Selected water region has no generated source blocks");
-            if (ticks > 0) {
-                var forced = new LinkedHashSet<ChunkPos>();
-                int reach = region.radius() + 24;
-                for (int cx = (region.x() - reach) >> 4; cx <= (region.x() + reach) >> 4; cx++)
-                    for (int cz = (region.z() - reach) >> 4; cz <= (region.z() + reach) >> 4; cz++) forced.add(new ChunkPos(cx, cz));
-                if (region.kind() == WaterRegion.Kind.OVERFLOW) {
-                    for (int step = 0; step <= region.reach(); step += 8) {
-                        int x = region.x() + (int)Math.round(Math.cos(region.heading()) * step);
-                        int z = region.z() + (int)Math.round(Math.sin(region.heading()) * step);
-                        if (!waterField.skyweave$waterAt(x, z, settings).contains(region.level())) continue;
-                        for (int dx = -1; dx <= 1; dx++) for (int dz = -1; dz <= 1; dz++) forced.add(new ChunkPos((x >> 4) + dx, (z >> 4) + dz));
-                    }
-                }
-                for (var location : forced) { level.setChunkForced(location.x, location.z, true); level.getChunk(location.x, location.z); }
-                check.addProperty("forcedChunks", forced.size());
-            }
+            if (!selected.containsAll(EnumSet.of(Kind.RIVER,Kind.LAKE)))
+                throw new IllegalStateException("Native river/lake witnesses missing in bounded plan search: " + selected);
         }
-        report.add("materialChecks", checks); report.addProperty("comparedBlocks", compared);
-        report.add("observations", new JsonArray());
-        if (ticks == 0 || selected.size() < 3) { finish(selected.size() == 3); return false; }
-        observe(level, 0); remaining = ticks;
+        if (oceans)
+        for (var preview : field.collectIslandPreviewsInRadius(0, 0, radius, settings)) {
+            if (SITES.size() >= 3) break;
+            if (!OceanIslands.wetArchetype(preview.archetype())) continue;
+            var island = preview.terrainPlan() == null ? field.sampleDominantIslandDescriptor(preview.x(), preview.z(), settings)
+                    : preview.terrainPlan().descriptor();
+            if (island == null) continue;
+            var mode = Kind.valueOf(OceanConfiguration.profile().mode(island.seed()).name());
+            if (selected.contains(mode)) continue;
+            int reach = GenerationProfile.supportRadius(island.maxRadius());
+            Site choice = null;
+            // Dense enough to find narrow cuts, with an explicit total query budget.
+            int step = mode == Kind.COASTAL ? 2 : Math.max(2, island.maxRadius() / 20);
+            search: for (int dx = -reach; dx <= reach; dx += step)
+                for (int dz = -reach; dz <= reach; dz += step) {
+                    if (++probes > 100000) break search;
+                    int x = island.centerX() + dx, z = island.centerZ() + dz;
+                    if (mode == Kind.COASTAL && preview.terrainPlan() != null) {
+                        if (++horizontalSamples > 2000000) break search;
+                        var horizontal = shapes.sampleHorizontal(preview.terrainPlan(),x,z);
+                        double angle = OceanProfile.unit(island.seed() ^ 0x179d5b396a1cb874L) * Math.PI * 2;
+                        double along = horizontal.localX()*Math.cos(angle) + horizontal.localZ()*Math.sin(angle);
+                        double across = horizontal.localZ()*Math.cos(angle) - horizontal.localX()*Math.sin(angle);
+                        if (!horizontal.inInfluence() || along <= 0
+                                || Math.abs(across) > OceanConfiguration.profile().outletWidth()*.5) { probes--; continue; }
+                    }
+                    var water = field.sampleWaterArchetypeColumnProfile(x, z, settings);
+                    if (!water.water()) continue;
+                    var source = new BlockPos(x, water.fluidSurfaceY(), z);
+                    if (mode == Kind.NATIVE) { choice = new Site(source, null, water.solidSurfaceY(), mode); break search; }
+                    for (var direction : Direction.Plane.HORIZONTAL) {
+                        var edge = source.relative(direction);
+                        if (columns(field, edge.getX(), edge.getZ(), settings).stream().noneMatch(c -> c.contains(edge.getY()))
+                                && field.sampleSolidSegments(edge.getX(), edge.getZ(), settings).stream()
+                                .noneMatch(c -> c.intersectsInclusive(edge.getY()-16,edge.getY()))) {
+                            choice = new Site(source, edge, water.solidSurfaceY(), mode); break search;
+                        }
+                    }
+                }
+            if (choice != null) { SITES.add(choice); selected.add(mode); }
+            if (probes > 100000) break;
+        }
+        report.addProperty("planningQueries", probes);
+        report.addProperty("horizontalSamples",horizontalSamples);
+        if (oceans) {
+            var profile = OceanConfiguration.profile();
+            var required = EnumSet.noneOf(Kind.class);
+            if (profile.coastalChance() + profile.perimeterChance() < 1) required.add(Kind.NATIVE);
+            if (profile.coastalChance() > 0) required.add(Kind.COASTAL);
+            if (profile.perimeterChance() > 0) required.add(Kind.PERIMETER);
+            if (!selected.containsAll(required)) throw new IllegalStateException("Missing native wet-mode witnesses: " + required + "; found " + selected);
+        }
+        if (SITES.isEmpty()) throw new IllegalStateException("No wet native fixture site within bounded search; select an ocean-biome fixture");
+        var observations = new JsonArray(); report.add("observations", observations);
+        for (var site : SITES) {
+            var center = new ChunkPos(site.source());
+            for (int x = center.x - 1; x <= center.x + 1; x++) for (int z = center.z - 1; z <= center.z + 1; z++) {
+                level.getChunk(x, z); level.setChunkForced(x, z, true);
+            }
+            var base = generator.getBaseColumn(site.source().getX(), site.source().getZ(), level, random);
+            if (base.getBlock(site.source().getY()).getFluidState().isEmpty())
+                throw new AssertionError("Native base column lost planned fluid at " + site.source());
+        }
+        observe(level);
+        remaining = Math.max(0, ticks);
+        if (remaining == 0) { finish(); return false; }
         return true;
     }
 
@@ -144,154 +146,48 @@ final class WaterProbe {
         if (remaining <= 0) return;
         remaining--; elapsed++;
         if (remaining != 0) return;
-        try {
-            observe(server.overworld(), elapsed);
-            var observations = report.getAsJsonArray("observations");
-            var finalSites = observations.get(observations.size() - 1).getAsJsonObject().getAsJsonArray("sites");
-            boolean valid = true;
-            for (var element : finalSites) {
-                var site = element.getAsJsonObject();
-                if (!site.get("kind").getAsString().equals("PERIMETER"))
-                    valid &= site.get("floorHoles").getAsInt() == 0 && site.get("rimHoles").getAsInt() == 0;
-                valid &= site.get("sourceAirGaps").getAsInt() == 0;
-                if (site.has("storedHabitatBiome")) valid &= site.get("aquaticPlantBlocks").getAsInt() > 0
-                        && site.get("aquaticSpawnEntries").getAsInt() > 0;
-                if (!site.get("kind").getAsString().equals("ENCLOSED") && elapsed >= 100)
-                    valid &= site.get("flowingOutletBlocks").getAsInt() > 0;
-                if (site.get("kind").getAsString().equals("OUTLET") && elapsed >= 100)
-                    valid &= site.get("deepFlowingOutletBlocks").getAsInt() > 0;
-                if (site.has("beachColumns")) valid &= site.get("beachColumns").getAsInt() > 0;
-            }
-            report.addProperty("fluidAndContainmentChecksPassed", valid);
-            finish(valid);
-        } catch (Throwable failure) {
+        try { observe(server.overworld()); finish(); }
+        catch (Throwable failure) {
+            report.addProperty("complete", false); report.addProperty("failure", failure.toString());
+            try { finish(); } catch (Exception writing) { writing.printStackTrace(); }
             failure.printStackTrace();
-            report.addProperty("failure", failure.toString());
-            try { finish(false); } catch (Exception error) { error.printStackTrace(); }
         } finally { server.halt(false); }
     }
-
-    private static void observe(ServerLevel level, int tick) {
-        var observation = new JsonObject(); observation.addProperty("tick", tick);
-        var sites = new JsonArray(); var pos = new BlockPos.MutableBlockPos();
-        var generator = (SkyIslandChunkGenerator)level.getChunkSource().getGenerator();
-        var field = (InteriorField)(Object)((GeologicalGenerator)(Object)generator).skyweave$field(level.getChunkSource().randomState());
+    private static void observe(ServerLevel level) {
+        var row = new JsonObject(); row.addProperty("tick", elapsed);
+        var sites = new JsonArray();
         for (var site : SITES) {
-            var region = site.region(); var row = new JsonObject(); row.addProperty("kind", region.kind().name());
-            BlockPos spawn = null;
-            var center = new BlockPos(region.x(), region.level() - 3, region.z());
-            row.addProperty("centerAboveState", level.getBlockState(center.above()).toString());
-            row.addProperty("centerBelowState", level.getBlockState(center.below()).toString());
-            search: for (int dx = -region.radius() / 2; dx <= region.radius() / 2; dx++)
-                for (int dz = -region.radius() / 2; dz <= region.radius() / 2; dz++) {
-                    var candidate = center.offset(dx, 0, dz);
-                    if (region.source(candidate.getX(), candidate.getY(), candidate.getZ())
-                            && field.skyweave$waterAt(candidate.getX(), candidate.getZ(), generator.resolvedSkyIslandSettings()).contains(candidate.getY())
-                            && level.getFluidState(candidate).is(FluidTags.WATER)
-                            && level.getFluidState(candidate.below()).is(FluidTags.WATER)
-                            && level.getBlockState(candidate.above()).is(Blocks.WATER)) {
-                        spawn = candidate; break search;
-                    }
-                }
-            if (spawn == null) throw new AssertionError("No unobstructed water-animal witness in " + region);
-            boolean spawnAllowed = WaterAnimal.checkSurfaceWaterAnimalSpawnRules(EntityType.COD, level,
-                    MobSpawnType.NATURAL, spawn, level.random);
-            row.addProperty("waterAnimalHeightPredicate", spawnAllowed);
-            if (region.ocean()) {
-                var biome = level.getChunk(spawn).getNoiseBiome(spawn.getX() >> 2, spawn.getY() >> 2, spawn.getZ() >> 2);
-                row.addProperty("storedHabitatBiome", biome.getRegisteredName());
-                row.addProperty("aquaticSpawnEntries", biome.value().getMobSettings().getMobs(MobCategory.WATER_AMBIENT).unwrap().size()
-                        + biome.value().getMobSettings().getMobs(MobCategory.WATER_CREATURE).unwrap().size());
-                if (!biome.is(BiomeTags.IS_OCEAN)) throw new AssertionError("Ocean habitat stored the wrong biome at " + spawn + ": " + biome);
+            var value = new JsonObject(); value.addProperty("mode", site.mode().name());
+            value.addProperty("source", site.source().toShortString());
+            value.addProperty("sourceFluid", !level.getFluidState(site.source()).isEmpty());
+            value.addProperty("frozenSource",level.getBlockState(site.source()).is(net.minecraft.world.level.block.Blocks.ICE)
+                    && level.getBiome(site.source()).value().coldEnoughToSnow(site.source()));
+            value.addProperty("sourceBlock", net.minecraft.core.registries.BuiltInRegistries.BLOCK
+                    .getKey(level.getBlockState(site.source()).getBlock()).toString());
+            var bed = site.source().atY(site.bedY());
+            value.addProperty("bedY", site.bedY());
+            value.addProperty("bedSupported",level.getBlockState(bed).isFaceSturdy(level,bed,Direction.UP));
+            if (site.edge() != null) {
+                int flowing = 0;
+                for (int y = site.edge().getY(); y >= site.edge().getY() - 16; y--)
+                    if (!level.getFluidState(site.edge().atY(y)).isEmpty()) flowing++;
+                value.addProperty("edgeFluidBlocks", flowing);
             }
-            if (!spawnAllowed) throw new AssertionError("Local-water spawn height rejected basin at " + spawn
-                    + "; localSurface=" + LocalWater.spawnSurface(level, spawn, level.getSeaLevel()));
-            if (LocalWater.spawnSurface(level, spawn.below(region.depth() + 16), level.getSeaLevel()) != level.getSeaLevel())
-                throw new AssertionError("Local-water spawn height escaped its water region");
-            var foreign = level.getServer().getLevel(Level.NETHER);
-            if (foreign != null && LocalWater.spawnSurface(foreign, spawn, foreign.getSeaLevel()) != foreign.getSeaLevel())
-                throw new AssertionError("Local-water spawn height changed a foreign generator");
-            int lowest = region.level() + 1, fluid = 0, frozen = 0, flowing = 0, deepFlowing = 0;
-            for (int dx = -3; dx <= 3; dx++) for (int dz = -3; dz <= 3; dz++)
-                for (int y = level.getMinBuildHeight(); y <= region.level(); y++) {
-                    var state = level.getBlockState(pos.set(site.outlet().getX() + dx, y, site.outlet().getZ() + dz));
-                    if (state.is(Blocks.WATER)) { lowest = Math.min(lowest, y); fluid++; }
-                    if (state.is(Blocks.WATER) && !state.getFluidState().isSource()) {
-                        flowing++;
-                        if (y < region.level() - 4) deepFlowing++;
-                    }
-                    if (state.is(Blocks.ICE)) frozen++;
-                }
-            row.addProperty("outletWaterBlocks", fluid); row.addProperty("lowestOutletWaterY", lowest);
-            row.addProperty("flowingOutletBlocks", flowing); row.addProperty("iceBlocks", frozen);
-            row.addProperty("deepFlowingOutletBlocks", deepFlowing);
-            int floorHoles = 0, rimHoles = 0, sourceAirGaps = 0, aquaticPlants = 0, coral = 0, wetColumns = 0;
-            var holes = new JsonArray();
-            for (int x = region.x() - region.radius() - 1; x <= region.x() + region.radius() + 1; x++)
-                for (int z = region.z() - region.radius() - 1; z <= region.z() + region.radius() + 1; z++) {
-                    boolean plannedWater = false;
-                    if (region.basin(x, z)) {
-                        var planned = field.skyweave$waterAt(x, z, generator.resolvedSkyIslandSettings());
-                        plannedWater = !planned.sources().isEmpty();
-                        if (plannedWater) wetColumns++;
-                        for (int y = region.bed(x, z) + 1; y <= region.level(); y++) {
-                            var state = level.getBlockState(pos.set(x, y, z));
-                            if (state.is(Blocks.KELP) || state.is(Blocks.KELP_PLANT) || state.is(Blocks.SEAGRASS)
-                                    || state.is(Blocks.TALL_SEAGRASS) || state.is(Blocks.SEA_PICKLE)) aquaticPlants++;
-                            if (state.is(BlockTags.CORALS) || state.is(BlockTags.CORAL_BLOCKS)) coral++;
-                            if (planned.contains(y) && state.isAir()) {
-                                sourceAirGaps++;
-                                if (holes.size() < 12) holes.add(x + "," + y + "," + z + ": source replaced by air");
-                            }
-                        }
-                    }
-                    if (region.basin(x, z) && !region.shaft(x, z)
-                            && (region.kind() != WaterRegion.Kind.PERIMETER || plannedWater)) {
-                        int bed = region.bed(x, z);
-                        if (region.channel(x, z)) bed = Math.min(bed, region.level() - 2);
-                        var state = level.getBlockState(pos.set(x, bed, z));
-                        if (!state.isCollisionShapeFullBlock(level, pos)) {
-                            floorHoles++;
-                            if (holes.size() < 12) holes.add(x + "," + bed + "," + z + ": " + state);
-                        }
-                    } else if (region.kind() != WaterRegion.Kind.PERIMETER && !region.channel(x, z) && !region.basin(x, z)) {
-                        boolean neighbor = region.basin(x + 1, z) || region.basin(x - 1, z)
-                                || region.basin(x, z + 1) || region.basin(x, z - 1);
-                        if (neighbor) for (int y = region.level() - 1; y <= region.level(); y++) {
-                            var state = level.getBlockState(pos.set(x, y, z));
-                            if (!state.isCollisionShapeFullBlock(level, pos)) {
-                                rimHoles++;
-                                if (holes.size() < 12) holes.add(x + "," + y + "," + z + ": " + state);
-                            }
-                        }
-                    }
-                }
-            row.addProperty("floorHoles", floorHoles); row.addProperty("rimHoles", rimHoles);
-            row.addProperty("sourceAirGaps", sourceAirGaps);
-            row.addProperty("aquaticPlantBlocks", aquaticPlants);
-            row.addProperty("coralBlocks", coral); row.addProperty("plannedWaterColumns", wetColumns);
-            if (region.ocean() && region.kind() == WaterRegion.Kind.OVERFLOW) {
-                int beach = 0, sand = 0, reach = region.radius() + region.beachWidth();
-                for (int x = region.x() - reach; x <= region.x() + reach; x++)
-                    for (int z = region.z() - reach; z <= region.z() + reach; z++) {
-                        if (region.basin(x, z) || !region.affects(x, z)) continue;
-                        int y = level.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1;
-                        var chunk = level.getChunk(x >> 4, z >> 4);
-                        if (chunk.getNoiseBiome(x >> 2, y >> 2, z >> 2).is(BiomeTags.IS_BEACH)) {
-                            beach++;
-                            if (chunk.getBlockState(pos.set(x, y, z)).is(Blocks.SAND)) sand++;
-                        }
-                    }
-                row.addProperty("beachColumns", beach); row.addProperty("surfaceSandColumns", sand);
-            }
-            row.add("firstHoles", holes); sites.add(row);
+            sites.add(value);
         }
-        observation.add("sites", sites); report.getAsJsonArray("observations").add(observation);
+        row.add("sites", sites); report.getAsJsonArray("observations").add(row);
     }
-
-    private static void finish(boolean complete) throws Exception {
-        report.addProperty("complete", complete); report.addProperty("observedTicks", elapsed);
-        report.addProperty("elapsedSeconds", (System.nanoTime() - began) / 1e9);
+    private static void finish() throws Exception {
+        var rows = report.getAsJsonArray("observations");
+        boolean valid = !report.has("failure");
+        for (var value : rows.get(rows.size() - 1).getAsJsonObject().getAsJsonArray("sites")) {
+            var site = value.getAsJsonObject();
+            valid &= site.get("sourceFluid").getAsBoolean() || site.get("frozenSource").getAsBoolean();
+            valid &= site.get("bedSupported").getAsBoolean();
+            if (elapsed >= 100 && site.has("edgeFluidBlocks")) valid &= site.get("edgeFluidBlocks").getAsInt() >= 12;
+        }
+        report.addProperty("complete", valid); report.addProperty("fluidAndContainmentChecksPassed", valid);
+        report.addProperty("observedTicks", elapsed); report.addProperty("elapsedSeconds", (System.nanoTime() - began) / 1e9);
         Files.writeString(destination, new GsonBuilder().setPrettyPrinting().create().toJson(report) + "\n");
     }
 }

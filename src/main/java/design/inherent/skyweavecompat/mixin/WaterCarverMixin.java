@@ -1,7 +1,6 @@
 package design.inherent.skyweavecompat.mixin;
 
 import design.inherent.skyweavecompat.terrain.GeologicalCarving;
-import design.inherent.skyweavecompat.terrain.InteriorField;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.biome.Biome;
@@ -24,10 +23,13 @@ public abstract class WaterCarverMixin {
             CallbackInfoReturnable<Boolean> result) {
         var geology = ((GeologicalCarving)(Object)context).skyweave$geology();
         if (geology == null) return;
-        var water = ((InteriorField)(Object)geology.field()).skyweave$waterAt(pos.getX(), pos.getZ(),
-                geology.generator().resolvedSkyIslandSettings());
-        if (water.contains(pos.getY())
-                || water.regions().stream().anyMatch(region -> region.protects(pos.getX(), pos.getY(), pos.getZ())))
+        var field = geology.field();
+        var settings = geology.generator().resolvedSkyIslandSettings();
+        var water = field.sampleWaterArchetypeColumnProfile(pos.getX(), pos.getZ(), settings);
+        var river = field.sampleHydrologyColumn(pos.getX(), pos.getZ(), settings);
+        int y = pos.getY();
+        if (water.containsWaterAt(y) || water.containsProtectedSealAt(y) || river.containsFluidAt(y)
+                || river.affected() && y <= river.solidSurfaceY() && y >= river.solidSurfaceY() - 3)
             result.setReturnValue(false);
     }
 }

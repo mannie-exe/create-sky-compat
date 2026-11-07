@@ -1,5 +1,7 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.BiomeTerrainSampler;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandDescriptor;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.*;
 import java.util.*;
@@ -12,12 +14,12 @@ final class LayoutProbe {
     static JsonObject run(IslandField field, SkyIslandSettings settings) throws Exception {
         var p = ((ProfiledTerrain)(Object)field).skyweave$profile();
         var sampler = IslandField.class.getDeclaredField("biomeTerrainSampler"); sampler.setAccessible(true);
-        var reverse = new IslandField(field.layoutSeed(), (IslandField.BiomeTerrainSampler)sampler.get(field));
-        var parallel = new IslandField(field.layoutSeed(), (IslandField.BiomeTerrainSampler)sampler.get(field));
+        var reverse = new IslandField(field.layoutSeed(), (BiomeTerrainSampler)sampler.get(field));
+        var parallel = new IslandField(field.layoutSeed(), (BiomeTerrainSampler)sampler.get(field));
         ((ProfiledTerrain)(Object)reverse).skyweave$configure(p); ((ProfiledTerrain)(Object)parallel).skyweave$configure(p);
         var cells = new ArrayList<ClusterLayout.Cell>();
         for (int x = -7; x <= 7; x++) for (int z = -7; z <= 7; z++) cells.add(new ClusterLayout.Cell(x, z));
-        var expected = new LinkedHashMap<ClusterLayout.Cell, List<IslandField.IslandDescriptor>>();
+        var expected = new LinkedHashMap<ClusterLayout.Cell, List<IslandDescriptor>>();
         var membership = (ClusterField)(Object)field;
         for (var cell : cells) expected.put(cell, membership.skyweave$members(cell.x(), cell.z(), settings));
         Collections.reverse(cells);
@@ -38,7 +40,7 @@ final class LayoutProbe {
             if (members.isEmpty()) continue;
             accepted++;
             var anchor = members.getFirst();
-            var frame = new GeologicalFrame(anchor.centerY() - anchor.cliffDepth(), anchor.centerY() + anchor.plateauHeight() + 1);
+            var frame = IslandGeometry.geologicalFrame(anchor);
             for (var island : members) {
                 if (Math.floorDiv(island.centerX(), p.spacing()) == cell.x() && Math.floorDiv(island.centerZ(), p.spacing()) == cell.z()) continue;
                 crossing++;

@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.GeologicalGenerator;
 import net.minecraft.server.MinecraftServer;
@@ -20,7 +21,7 @@ final class DhPregenProbe {
         var generator = (SkyIslandChunkGenerator)level.getChunkSource().getGenerator();
         var field = ((GeologicalGenerator)(Object)generator).skyweave$field(level.getChunkSource().randomState());
         var anchor = field.collectIslandPreviewsInRadius(0, 0, 8000, generator.resolvedSkyIslandSettings())
-                .stream().filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+                .stream().filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                 .min(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).orElseThrow();
         var shared = Class.forName("com.seibel.distanthorizons.core.api.internal.SharedApi");
         var world = shared.getMethod("getAbstractDhWorld").invoke(null);

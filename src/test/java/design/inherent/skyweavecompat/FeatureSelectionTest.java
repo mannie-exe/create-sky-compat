@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class FeatureSelectionTest {
@@ -243,10 +244,10 @@ class FeatureSelectionTest {
     }
 
     private static final Map<String, String> SUPPORTED = Map.ofEntries(
-            Map.entry("sky_archipelago", "1.3.6"), Map.entry("skyvillages", "1.0.6"),
+            Map.entry("sky_archipelago", "1.4"), Map.entry("skyvillages", "1.0.6"),
             Map.entry("architectury", "13.0.11"), Map.entry("sable", "2.0.6"),
             Map.entry("aeronautics_delivery_quests", "1.1.1"), Map.entry("distanthorizons", "3.3.3"),
-            Map.entry("bluemap", "5.7"), Map.entry("analogaudio", "0.1.5-hotfix.1"),
+            Map.entry("bluemap", "5.7"), Map.entry("surveyor", "1.2.4_1.21"), Map.entry("analogaudio", "0.1.5-hotfix.1"),
             Map.entry("create", "6.0.10"), Map.entry("veil", "4.3.2"),
             Map.entry("create_confectionery", "1.1.3."), Map.entry("dndecor", "2.2b"), Map.entry("bits_n_bobs", "2.3.5"),
             Map.entry("mcwwindows", "2.4.2"), Map.entry("ssrd", "1.8.8"), Map.entry("iris", "1.8.14-beta.1+mc1.21.1"), Map.entry("sodium", "0.8.13+mc1.21.1"),
@@ -332,6 +333,23 @@ class FeatureSelectionTest {
         for (var feature : Feature.values()) values.put(feature, false);
         for (var feature : features) values.put(feature, true);
         return new FeatureSettings(values);
+    }
+
+    @Test void surveyorRejectsNoOptionalVersionsUntilItsWholePairIsEnabled() {
+        var feature = Feature.SURVEYOR_STRUCTURES;
+        var pair = FeatureSelection.dependencies(feature);
+        for (boolean client : new boolean[]{false,true}) {
+            assertEquals(java.util.Set.of(feature),FeatureSelection.select(only(feature),pair,client).active());
+            assertEquals(List.of("SurveyorStructureMixin"),FeatureSelection.select(only(feature),pair,client).mixins(client));
+            for (String missing : pair.keySet()) {
+                var incomplete = new HashMap<>(pair);
+                incomplete.remove(missing); incomplete.replaceAll((id,version)->"unsupported");
+                assertTrue(FeatureSelection.select(only(feature),incomplete,client).mixins(client).isEmpty());
+            }
+            var future = new HashMap<>(pair); future.put("surveyor","future");
+            assertTrue(FeatureSelection.select(only(),future,client).mixins(client).isEmpty());
+            assertThrows(IllegalStateException.class,()->FeatureSelection.select(only(feature),future,client));
+        }
     }
 
     @Test void noDependenciesSelectsNoHooksOnEitherSide() {

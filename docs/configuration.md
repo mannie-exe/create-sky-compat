@@ -24,16 +24,16 @@ inactive selections.
 
 | Switch | Adaptation | Prerequisites |
 | --- | --- | --- |
-| `terrain.preset` | Expanded preset, geometry, interiors, geology, and local water | Sky Archipelago 1.3.6 |
+| `terrain.preset` | Expanded preset, geometry, interiors, geology, and local water | Sky Archipelago 1.4 |
 | `terrain.ore_placement` | Relative ore and surface-feature placements | Active preset |
 | `terrain.relative_carvers` | Relative classic carvers and `nativeCarvers` policy | Active preset |
 | `terrain.cave_biomes` | Island-relative cave biome selection | Active preset |
-| `terrain.ancient_cities` | City eligibility and projection | Active preset |
+| `terrain.ancient_cities` | Interior city placement, burial and support | Active preset |
 | `terrain.spawn_landing` | Generated-surface spawn landing | Active preset |
 | `terrain.structure_location` | Relocated structure lookup | Active preset |
 | `terrain.water_animal_spawns` | Local-water spawn height | Active preset |
 | `terrain.climate` | Surface temperature, snow, weather, and portal height | Active preset |
-| `villages.clearance` | Village footprint clearance/proximity | Sky Archipelago 1.3.6, Sky Villages 1.0.6, Architectury 13.x |
+| `villages.clearance` | Village footprint clearance/proximity | Sky Archipelago 1.4, Sky Villages 1.0.6, Architectury 13.x |
 | `villages.placement` | Village altitude and cluster allowance | Active preset, Sky Villages 1.0.6, Architectury 13.x |
 | `sable.island_pressure` | Island-altitude pressure | Active preset, Sable 2.0.6 |
 | `delivery.horizontal_distance` | Horizontal route distance | Active preset, ADQ 1.1.1 |
@@ -58,14 +58,15 @@ inactive selections.
 | `linear_bearing.ponder` | Six machinery tutorials; transmission/gyro scenes follow their owning switches | Client, active carriage adapter, Create 6.0.10, Ponder 1.0.87+mc1.21.1 |
 | `linear_bearing.jade` | Server-backed brake/link status and inspection hints | Active carriage adapter, Jade 15.10.6+neoforge |
 | `distant_horizons.client_handoff` | Concurrent client wrapper ownership | Client, DH 3.3.3 |
-| `distant_horizons.shutdown` | Bounded island unload passes | DH 3.3.3, Sky Archipelago 1.3.6 |
-| `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.3.6; default true |
+| `distant_horizons.shutdown` | Bounded island unload passes | DH 3.3.3, Sky Archipelago 1.4 |
+| `distant_horizons.world_cache` | Per-save key and guarded legacy import | DH 3.3.3, Sky Archipelago 1.4; default true |
 | `lighting.lifecycle` | Keep moving lights client-local and remove old world owners | Client, Sable Dynamic Lights 2.0.1, LambDynamicLights 4.8.11+1.21.1, Create 6.0.10 |
 | `lighting.sodium` | Position-aware moving-light lookup in Sodium | Client, Sable Dynamic Lights 2.0.1, LambDynamicLights 4.8.11+1.21.1, Create 6.0.10, Sodium 0.8.13+mc1.21.1; Sable and Iris are not required |
 | `questlog.interface` | Wrapped conditions, reward preview and scrollbar/input adaptation | Client, Questlog 3.5.0 or 3.5.3 |
 | `questlog.notifications` | First-progress and completion toasts | Client, Questlog 3.5.0 or 3.5.3 |
 | `questlog.reward_validation` | Validate eligibility and choices before grants | Logical server, Questlog 3.5.0 or 3.5.3 |
-| `bluemap.viewer` | Viewer adapter registration | Dedicated server, BlueMap 5.7, Sky Archipelago 1.3.6; map opt-in below |
+| `bluemap.viewer` | Viewer adapter registration | Dedicated server, BlueMap 5.7, Sky Archipelago 1.4; map opt-in below |
+| `surveyor.structure_starts` | Ignore rejected starts when recording map structures; native negative-cache entries remain intact | Shared, Sky Archipelago 1.4 and Surveyor 1.2.4 (NeoForge metadata `1.2.4_1.21`); default on |
 | `rendering.shader_patches` | Assemble verified shader recipes before Iris opens them; default on | Client, Iris 1.8.14-beta.1+mc1.21.1; recipe-specific runtime requirements are separate |
 | `rendering.veil_framebuffer` | Framebuffer preservation and active Iris target | Client, Veil 4.3.2, Iris 1.8.14-beta.1+mc1.21.1 |
 | `rendering.balloon_shadow_pass` | Exclude screen-space balloon effect from shadow pass | Client, Aeronautics 1.3.2, Iris version above |
@@ -142,11 +143,10 @@ the saved identity rejects changes to an existing world.
 | `anchorMinRadius`, `anchorMaxRadius` | 270, 370 | Anchor descriptor radii |
 | `anchorPlateau` | 28 | Native upper-body shape |
 | `anchorMinHeight`, `anchorMaxHeight` | 250, 400 | Uniform target total terrain height, before native relief and erosion |
-| `undersideTaper` | 80 | Curvature scale of the lower body; included in target thickness |
 | `companionMinRadius`, `companionMaxRadius` | 40, 110 | Companion radii; spires retain 12–28 |
 | `companionMinOrbit`, `companionMaxOrbit` | 470, 680 | Horizontal orbit around host |
 | `companionMinOffsetY`, `companionMaxOffsetY` | −60, 50 | Companion-center altitude relative to host |
-| `minimumClusterGap` | 350 | Minimum separation between different clusters’ individual island support disks |
+| `minimumClusterGap` | 350 | Minimum separation between different clusters’ individual native plan support rectangles |
 | `floorClearance`, `buildingHeadroom` | 32, 200 | Terrain clearance inside build bounds |
 
 The loader rejects unknown/missing fields, nonintegral integer settings, impossible
@@ -154,10 +154,9 @@ vertical geometry, jitter reaching half the cell spacing, and profiles requiring
 more than eight neighboring cells for conflict checks. It does not silently repair
 input. Close candidate clusters are rejected by their complete island support
 bounds; lowering spacing or increasing the gap can therefore reduce realized
-density rather than making islands smaller. Older profiles containing `anchorCliff` need the new height and taper
-fields before starting a fresh world; changing the JSON does not migrate a save. The requested center band is intersected with safe shape placement:
+density rather than making islands smaller. Changing the JSON does not migrate a save. The requested center band is intersected with safe shape placement:
 each anchor derives its lower placement limit from its selected thickness. With
-defaults, short anchors can start at Y=200; the tallest require at least Y=268.
+defaults, short anchors can start at Y=200; the tallest require at least Y=338.
 The upper center limit remains Y=490, with independently fitted companions. Relief
 scale must remain between zero and one for the verified shape envelope.
 
@@ -192,64 +191,49 @@ separately when comparing cavity stages. Interiors preserve exterior archetypes 
 taper; they do not alter the anchor-relative ore datum. Large iron/copper veins use
 the preset's native `ore_veins_enabled` setting independently of cavity selection.
 
-## Local water
+## Ancient Cities
 
-`config/skyweave_compat-water.json` controls local water regions in Skyweave
-Islands. It is generated at startup and included in saved generation identity.
-All fields are required; changes require a fresh world. This does not enable
-Sky Archipelago's global ocean or change the world's sea level.
+`config/skyweave_compat-ancient-cities.json` contains `minimumBuriedFraction`, default `0.90`. Values from 0 to 1 set the minimum sampled share of a normal/NOISE city inside its host's exterior; use `0.95` for a stricter check. Core and floor support remain required independently. HOLLOW cities must remain inside the host and fit an existing cavity floor and roof; they do not inherit the partial-exposure allowance.
 
-| Fields | Defaults | Purpose |
-| --- | --- | --- |
-| `chance` | 0.22 | Anchor candidates considered for a basin; terrain checks can reject them |
-| `minRadius`, `maxRadius` | 20, 36 | Basin radius in blocks |
-| `minDepth`, `maxDepth` | 6, 12 | Maximum bowl depth below its local water level |
-| `overflowChance`, `outletChance` | 0.25, 0.20 | Candidate mode probabilities; the remainder use enclosed basins |
-| `maxOutlets` | 1 | Maximum channels or underside openings per open basin |
-| `outletWidth` | 2 | Channel/shaft width control in blocks |
-| `liningDepth` | 3 | Rock retained beneath the basin and overflow channel |
+This file uses the shared optimistic JSON editor under terrain tuning. Values apply to new worlds and are recorded in generation identity. The [terrain guide](development/terrain.md#structures) defines the metric, scope and fit limits. The `terrain.ancient_cities` startup switch owns interior placement and bounded room clearance together. Clearance uses the final piece layout, retains the island shell, foundations and authored water beds, and leaves natural terrain between separate pieces. Disabling the switch does not convert saved starts.
 
-Set `chance` to zero to disable these regions independently of cavities and native
-springs. Admission checks the existing exterior for a supported floor and rim;
-the candidate probability is not the fraction of islands with a generated lake.
-Open modes deliberately cut channels or shafts through their owning island.
-Native fluid ticks produce the falls, and cold biomes can freeze the surface.
-Enclosed regions preserve their floor/rim through the cavity and classic-carver
-passes. Later structures, features and player edits can still alter the blocks.
-Native surface-water-animal spawning uses the basin's level within its planned
-water volume. Actual water and the biome's spawn list are still required; the
-setting does not make every basin an ocean or populate it with all aquatic mobs.
+## Rivers and lakes
 
-## Ocean experiments
-
-`config/skyweave_compat-oceans.json` is generated with `enabled: false`. It controls
-experimental local ocean habitats in the opted-in preset, independently of the
-global ocean layer. All fields are required and included in saved generation identity.
-Use a fresh test world when enabling or changing these settings.
+`config/skyweave_compat-rivers.json` controls native Sky Archipelago 1.4 hydrology in Skyweave Islands. It uses the upstream codec and explicit new-world defaults; missing, unknown or incorrectly typed fields fail instead of restoring legacy disabled defaults. Values apply at startup, belong to saved generation identity and require a fresh world when changed. The shared editor groups the native anchor and satellite settings.
 
 | Fields | Defaults | Purpose |
 | --- | --- | --- |
-| `enabled` | false | Enable ocean-region selection |
-| `basinChance`, `coastalChance` | 0.04, 0.04 | Mutually exclusive anchor candidates for an enclosed ocean basin or an outlet basin with shoreline habitat |
-| `perimeterChance` | 0.01 | Eligible small companions considered for a water-covered cap with open edges |
-| `minRadius`, `maxRadius` | 40, 72 | Anchor-basin radius in blocks |
-| `minDepth`, `maxDepth` | 10, 18 | Basin or cap water depth |
-| `perimeterMaxRadius` | 64 | Largest companion descriptor radius eligible for a perimeter cap; its conservative footprint can be wider |
-| `beachWidth` | 6 | Shoreline-biome band outside coastal basins, where surface height permits it |
+| `enabled`, `lakes_enabled` | true, true | Native rivers and lakes |
+| `anchors.frequency`, `satellites.frequency` | 0.60, 0.25 | Candidate frequencies, before terrain admission |
+| `anchors.minimum_radius`, `satellites.minimum_radius` | 52, 32 | Minimum host descriptor radius |
+| `anchors.minimum_width`, `anchors.maximum_width` | 6, 12 | Anchor river widths |
+| `satellites.minimum_width`, `satellites.maximum_width` | 3, 6 | Satellite river widths |
+| `anchors.minimum_lake_radius`, `anchors.maximum_lake_radius` | 16, 30 | Anchor lake radii |
+| `satellites.minimum_lake_radius`, `satellites.maximum_lake_radius` | 7, 14 | Satellite lake radii |
+| `anchors.maximum_tributaries`, `satellites.maximum_tributaries` | 2, 0 | Tributary limits |
+| `minimum_depth`, `maximum_depth` | 2, 4 | Native channel depth |
+| `meander_strength` | 0.65 | Native meander parameter |
+| `headwater_lake_chance`, `standalone_lake_chance` | 0.35, 0.35 | Native lake candidate choices |
+| `fluid_block` | `minecraft:water` | Native supported source fluid |
+| `temperate_biome`, `cold_biome` | `minecraft:river`, `minecraft:frozen_river` | Native river-biome projection |
+| `ecological_bank_width` | 4 | Bank projection width |
+| `excluded_biomes` | `[]` | Biomes excluded from native hydrology |
 
-Anchor basins must pass terrain-support checks. Their water level follows the
-lowest sampled part of the prospective basin, with a limit on the cut below the
-center. Perimeter caps instead remove the upper part of a small companion and let
-water flow from its existing edges; they do not create a new global water plane.
-Selected ocean candidates replace that descriptor's freshwater selection.
+This does not enable the global ocean or change sea level. Configured frequency is not realized river coverage. The generator owns support checks, plans, materials, flow and river-biome projection; Compat does not run a second basin generator. Native fluid ticks and later features can change initial fluid states. See [terrain stages and ownership](development/terrain.md#local-water).
 
-Ocean cells follow local water and the original biome's temperature category;
-coastal land can receive a beach biome. Sand/gravel beds and native biome features
-supply the habitat substrate. This does not enable monuments or guarantee their
-resources, natural spawn populations, or a complete ocean progression route.
-Keep the experiments disabled outside test worlds until their visual and runtime
-results are suitable for the intended pack. [Verification](development/verification.md)
-records the tested scope.
+## Ocean habitats
+
+`config/skyweave_compat-oceans.json` defaults to `enabled: false`. Enabling it admits native floating ocean archetypes in eligible ocean-biome locations, independently of the disabled global ocean layer. Native settings own archetype selection, weights, materials, biomes and underbellies. Water-archetype anchors have no land companions.
+
+| Fields | Defaults | Purpose |
+| --- | --- | --- |
+| `enabled` | false | Admit floating ocean habitats |
+| `coastalChance`, `perimeterChance` | 0.04, 0.01 | Deterministic edge-treatment choices on eligible Lagoon/Reef Ring descriptors |
+| `perimeterMinRadius`, `perimeterMaxRadius` | 40, 64 | Descriptor radii for falling-perimeter hosts |
+| `outletWidth`, `outletDepth` | 2, 2 | Coastal corridor width and depth below fluid surface |
+| `sealThickness` | 4 | Minimum retaining-bed thickness |
+
+Coastal mode lowers a selected native rim corridor; perimeter mode lowers the rim around the wet footprint. Unselected native profiles remain unchanged. There is no separate enclosed basin or underside-outlet backend. All fields are required and included in generation identity. Use a fresh world when changing them. These policies do not certify aquatic progression, natural populations or resource availability; [verification](development/verification.md) records actual tested coverage.
 
 ## Biome materials
 

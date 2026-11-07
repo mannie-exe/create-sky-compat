@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import design.inherent.skyweavecompat.terrain.*;
 import design.inherent.skyweavecompat.OptionalIntegrations;
@@ -39,7 +40,7 @@ final class GenerationProbe {
             var settings = sky.resolvedSkyIslandSettings();
             var spawn = level.getSharedSpawnPos();
             var anchors = field.collectIslandPreviewsInRadius(spawn.getX(), spawn.getZ(), 4500, settings).stream()
-                    .filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+                    .filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                     .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x() - spawn.getX(), p.z() - spawn.getZ()))).toList();
             report.add("anchors", new Gson().toJsonTree(anchors));
             for (var anchor : anchors.stream().limit(2).toList()) {
@@ -59,6 +60,17 @@ final class GenerationProbe {
         if (System.getProperty("neighbors.probe.generation").equals("adapted")) {
             check(level.getMinBuildHeight() == -128 && level.getMaxBuildHeight() == 768, "Expanded dimension bounds");
             check(sky != null && ((GeologicalGenerator)(Object)sky).skyweave$isEnabled(), "Opt-in generator not enabled");
+            var spawn = level.getSharedSpawnPos();
+            var landing = new JsonObject();
+            landing.add("position", new Gson().toJsonTree(spawn));
+            landing.addProperty("floor", BuiltInRegistries.BLOCK.getKey(level.getBlockState(spawn.below()).getBlock()).toString());
+            boolean supported = level.getBlockState(spawn.below()).isFaceSturdy(level, spawn.below(), net.minecraft.core.Direction.UP);
+            boolean room = level.getBlockState(spawn).getCollisionShape(level, spawn).isEmpty()
+                    && level.getBlockState(spawn.above()).getCollisionShape(level, spawn.above()).isEmpty();
+            boolean dry = level.getFluidState(spawn).isEmpty() && level.getFluidState(spawn.above()).isEmpty();
+            landing.addProperty("supported", supported); landing.addProperty("clearance", room); landing.addProperty("dry", dry);
+            report.add("freshSpawn", landing);
+            check(supported && room && dry, "Fresh spawn lacks a supported, clear and dry landing: " + spawn);
             TerrainProbe.checkEmbeddedSettings(sky);
             var membership = (ClusterField)(Object)field;
             var settings = sky.resolvedSkyIslandSettings();

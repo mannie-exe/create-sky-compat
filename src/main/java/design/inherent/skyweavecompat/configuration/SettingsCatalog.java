@@ -23,7 +23,7 @@ public final class SettingsCatalog {
         MACAW(Category.SHIPS, "mcwbridges"),
         GRAVES(Category.INVENTORY, "yigd"), AUDIO(Category.AUDIO, "analog_audio"),
         DELIVERY(Category.SHIPS, "delivery"), QUESTLOG_SERVER(Category.INTERFACE, "questlog"),
-        DH(Category.MAPS, "distant_horizons"), BLUEMAP(Category.MAPS, "bluemap"),
+        DH(Category.MAPS, "distant_horizons"), BLUEMAP(Category.MAPS, "bluemap"), SURVEYOR(Category.MAPS, "surveyor"),
         TERRAIN(Category.WORLD, "sky_archipelago"), VILLAGES(Category.WORLD, "sky_villages"),
         PRESSURE(Category.SHIPS, "sable");
         public final Category category;
@@ -84,7 +84,7 @@ public final class SettingsCatalog {
             return switch (help) {
                 case "journal" -> Timing.IMMEDIATE;
                 case "villages" -> Timing.SERVER_START;
-                case "generation", "interiors", "water", "oceans" -> Timing.NEW_WORLD;
+                case "generation", "interiors", "rivers", "oceans", "ancient_cities" -> Timing.NEW_WORLD;
                 case "bluemap", "link_gui_client", "link_gui_common" -> Timing.RELOAD;
                 default -> Timing.GAME_RESTART;
             };
@@ -123,6 +123,7 @@ public final class SettingsCatalog {
             case QUESTLOG_REWARD_VALIDATION -> Group.QUESTLOG_SERVER;
             case DH_SHUTDOWN, DH_CACHE -> Group.DH;
             case BLUEMAP -> Group.BLUEMAP;
+            case SURVEYOR_STRUCTURES -> Group.SURVEYOR;
             case TERRAIN, ORE_PLACEMENT, CARVERS, CAVE_BIOMES, ANCIENT_CITIES, SPAWN,
                     STRUCTURE_LOCATION, WATER_SPAWNS, CLIMATE -> Group.TERRAIN;
             case VILLAGE_CLEARANCE, VILLAGE_PLACEMENT -> Group.VILLAGES;
@@ -143,8 +144,9 @@ public final class SettingsCatalog {
             new FileEntry("skyweave_compat-common.toml", Group.VILLAGES, "villages", List.of(Feature.VILLAGE_CLEARANCE, Feature.VILLAGE_PLACEMENT), SectionKind.TUNING),
             new FileEntry("skyweave_compat-generation.json", Group.TERRAIN, "generation", List.of(Feature.TERRAIN), SectionKind.TUNING),
             new FileEntry("skyweave_compat-interiors.json", Group.TERRAIN, "interiors", List.of(Feature.TERRAIN), SectionKind.TUNING),
-            new FileEntry("skyweave_compat-water.json", Group.TERRAIN, "water", List.of(Feature.TERRAIN), SectionKind.TUNING),
+            new FileEntry("skyweave_compat-rivers.json", Group.TERRAIN, "rivers", List.of(Feature.TERRAIN), SectionKind.TUNING),
             new FileEntry("skyweave_compat-oceans.json", Group.TERRAIN, "oceans", List.of(Feature.TERRAIN), SectionKind.TUNING),
+            new FileEntry("skyweave_compat-ancient-cities.json", Group.TERRAIN, "ancient_cities", List.of(Feature.ANCIENT_CITIES), SectionKind.TUNING),
             new FileEntry("skyweave_compat-bluemap.json", Group.BLUEMAP, "bluemap", List.of(Feature.BLUEMAP), SectionKind.TUNING));
     private SettingsCatalog() {}
 }

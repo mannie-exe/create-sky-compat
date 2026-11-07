@@ -6,11 +6,11 @@ import design.inherent.skyweavecompat.terrain.*;
 import java.util.*;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField;
-import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField.*;
-import org.sathrek.sky_archipelago.worldgen.generator.field.biomepolicy.BiomeIslandSpawnPolicy;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.*;
 import org.sathrek.sky_archipelago.worldgen.generator.field.cache.ClusterCacheKey;
 import org.sathrek.sky_archipelago.worldgen.generator.field.cache.IslandFieldCaches;
 import org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandClusterSampler;
+import org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandDescriptorFactory;
 import org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandNoise;
 import org.spongepowered.asm.mixin.*;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,10 +24,27 @@ public abstract class ClusterPlacementMixin implements ClusterField {
     @Shadow @Final private IslandNoise noise;
     @Shadow @Final private IslandClusterSampler clusterSampler;
     @Shadow @Final private BiomeTerrainSampler biomeTerrainSampler;
-    @Shadow @Final private BiomeIslandSpawnPolicy biomeIslandSpawnPolicy;
     @Shadow @Final private IslandFieldCaches caches;
     @Shadow private ClusterDescriptor sampleCluster(int x, int z, SkyIslandSettings settings) { throw new AssertionError(); }
-    @Shadow private List<IslandDescriptor> buildClusterIslands(ClusterDescriptor cluster, SkyIslandSettings settings) { throw new AssertionError(); }
+    @Shadow private List<IslandTerrainPlan> buildClusterTerrainPlans(ClusterDescriptor cluster, SkyIslandSettings settings) { throw new AssertionError(); }
+    @Shadow @Final private IslandDescriptorFactory descriptorFactory;
+    @Shadow private IslandTerrainPlan terrainPlanForDescriptor(IslandDescriptor island, SkyIslandSettings settings) { throw new AssertionError(); }
+
+    @Unique private List<IslandDescriptor> skyweave$descriptors(ClusterDescriptor cluster, SkyIslandSettings settings) {
+        return buildClusterTerrainPlans(cluster, settings).stream().map(IslandTerrainPlan::descriptor).toList();
+    }
+
+    @Inject(method = "createClusterTerrainPlans", at = @At("RETURN"), cancellable = true)
+    private void spires(ClusterDescriptor cluster, SkyIslandSettings settings,
+            CallbackInfoReturnable<List<IslandTerrainPlan>> result) {
+        if (skyweave$layoutProfile() == null || cluster.archetype().waterBased()
+                || !settings.advanced().clusterCompanionIslandsEnabled() || cluster.spireCount() == 0) return;
+        var plans = new ArrayList<>(result.getReturnValue());
+        for (int i = 0; i < cluster.spireCount(); i++)
+            plans.add(terrainPlanForDescriptor(descriptorFactory.createSpireDescriptor(cluster, settings, i), settings));
+        result.setReturnValue(List.copyOf(plans));
+    }
+
     @Unique private final Cache<ClusterCacheKey, Optional<ClusterDescriptor>> skyweave$candidates = CacheBuilder.newBuilder().maximumSize(8192).build();
     @Unique private final Cache<ClusterCacheKey, Boolean> skyweave$decisions = CacheBuilder.newBuilder().maximumSize(8192).build();
 
@@ -40,10 +57,15 @@ public abstract class ClusterPlacementMixin implements ClusterField {
         ClusterDescriptor candidate = null;
         var profile = skyweave$layoutProfile();
         if (noise.sample01(x, z, 101) < profile.activation()) {
-            var sampled = clusterSampler.sampleClusterDescriptor(x, z, layoutSeed, profile.spacing(), settings, 337);
+            var sampled = clusterSampler.sampleClusterDescriptor(x, z, layoutSeed, profile.spacing(), settings, 337, false);
             // Admission follows the displaced anchor and its surface datum, not the old cell center.
             var biome = biomeTerrainSampler.sample(sampled.centerX(), sampled.centerY() + profile.anchorPlateau(), sampled.centerZ());
-            if (biomeIslandSpawnPolicy.allowIslandSpawn(biome, settings)) candidate = sampled;
+            if (biome.oceanIslandsEligible()) {
+                if (OceanConfiguration.profile().enabled()) {
+                    var archetype = clusterSampler.selectAnchorArchetype(x, z, settings, true);
+                    if (archetype != null) candidate = sampled.withArchetype(archetype);
+                }
+            } else candidate = sampled;
         }
         skyweave$candidates.put(key, Optional.ofNullable(candidate));
         return candidate;
@@ -52,8 +74,13 @@ public abstract class ClusterPlacementMixin implements ClusterField {
     @Unique private ClusterLayout.Candidate skyweave$supports(ClusterDescriptor cluster, SkyIslandSettings settings) {
         return new ClusterLayout.Candidate(new ClusterLayout.Cell(cluster.cellX(), cluster.cellZ()),
                 IslandNoise.mix(layoutSeed + 809, cluster.cellX(), cluster.cellZ()),
-                buildClusterIslands(cluster, settings).stream().map(island -> new ClusterLayout.Support(
-                        island.centerX(), island.centerZ(), GenerationProfile.supportRadius(island.maxRadius()))).toList());
+                buildClusterTerrainPlans(cluster, settings).stream().map(plan -> {
+                    var b = plan.bounds();
+                    var island = plan.descriptor();
+                    return new ClusterLayout.Support(island.centerX(), island.centerZ(),
+                            Math.max(island.centerX() - b.minX(), b.maxX() - island.centerX()),
+                            Math.max(island.centerZ() - b.minZ(), b.maxZ() - island.centerZ()));
+                }).toList());
     }
 
     @Inject(method = "sampleCluster", at = @At("HEAD"), cancellable = true)
@@ -76,7 +103,7 @@ public abstract class ClusterPlacementMixin implements ClusterField {
 
     @Override public List<IslandDescriptor> skyweave$members(int x, int z, SkyIslandSettings settings) {
         var cluster = sampleCluster(x, z, settings);
-        return cluster == null ? List.of() : buildClusterIslands(cluster, settings);
+        return cluster == null ? List.of() : skyweave$descriptors(cluster, settings);
     }
 
     @Override public ClusterLayout.Cell skyweave$owner(IslandDescriptor descriptor, SkyIslandSettings settings) {
@@ -101,13 +128,18 @@ public abstract class ClusterPlacementMixin implements ClusterField {
             for (int cz = Math.floorDiv(z - radius, spacing) - range; cz <= Math.floorDiv(z + radius, spacing) + range; cz++) {
                 var cluster = sampleCluster(cx, cz, settings);
                 if (cluster == null) continue;
-                for (var island : buildClusterIslands(cluster, settings)) {
-                    int reach = GenerationProfile.supportRadius(island.maxRadius());
+                for (var plan : buildClusterTerrainPlans(cluster, settings)) {
+                    var island = plan.descriptor();
+                    int reach = plan.horizontalReach();
                     long dx = (long)island.centerX() - x, dz = (long)island.centerZ() - z;
-                    long eligible = (long)radius + (intersecting ? reach : 0);
-                    if (dx * dx + dz * dz <= eligible * eligible) previews.add(new IslandPreview(island.archetype(),
+                    if (intersecting) {
+                        var bounds = plan.bounds();
+                        dx = Math.max(0L, Math.max((long)bounds.minX() - x, (long)x - bounds.maxX()));
+                        dz = Math.max(0L, Math.max((long)bounds.minZ() - z, (long)z - bounds.maxZ()));
+                    }
+                    if (dx * dx + dz * dz <= (long)radius * radius) previews.add(new IslandPreview(island.archetype(),
                             island.family(), cluster.heightBand(), island.centerX(), island.centerY(), island.centerZ(),
-                            island.maxRadius(), island.plateauHeight(), island.hangDepth(), reach));
+                            island.maxRadius(), island.plateauHeight(), island.hangDepth(), reach, plan));
                 }
             }
         }

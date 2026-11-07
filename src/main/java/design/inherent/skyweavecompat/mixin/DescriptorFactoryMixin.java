@@ -2,8 +2,8 @@ package design.inherent.skyweavecompat.mixin;
 
 import design.inherent.skyweavecompat.terrain.*;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
-import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField.ClusterDescriptor;
-import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField.IslandDescriptor;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.ClusterDescriptor;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandDescriptor;
 import org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandDescriptorFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;

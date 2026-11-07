@@ -1,14 +1,27 @@
 package design.inherent.skyweavecompat.terrain;
 
-/** Experimental local habitats. Probabilities apply before terrain admission. */
-public record OceanProfile(boolean enabled, double basinChance, double coastalChance, double perimeterChance,
-        int minRadius, int maxRadius, int minDepth, int maxDepth, int perimeterMaxRadius, int beachWidth) {
-    public static final OceanProfile INITIAL = new OceanProfile(false, 0.04, 0.04, 0.01, 40, 72, 10, 18, 64, 6);
+/** Optional edge treatments of native wet islands; no independent basin generator. */
+public record OceanProfile(boolean enabled, double coastalChance, double perimeterChance,
+        int perimeterMinRadius, int perimeterMaxRadius, int outletWidth, int outletDepth, int sealThickness) {
+    public enum Mode { NATIVE, COASTAL, PERIMETER }
+    public static final OceanProfile INITIAL = new OceanProfile(false, 0.04, 0.01, 40, 64, 2, 2, 4);
     public OceanProfile {
-        if (!Double.isFinite(basinChance) || !Double.isFinite(coastalChance) || !Double.isFinite(perimeterChance)
-                || basinChance < 0 || coastalChance < 0 || basinChance + coastalChance > 1
-                || perimeterChance < 0 || perimeterChance > 1 || minRadius < 16 || maxRadius > 96 || minRadius > maxRadius
-                || minDepth < 4 || maxDepth > 32 || minDepth > maxDepth || perimeterMaxRadius < 32 || perimeterMaxRadius > 96
-                || beachWidth < 2 || beachWidth > 16) throw new IllegalArgumentException("Invalid ocean habitat profile");
+        if (!Double.isFinite(coastalChance) || !Double.isFinite(perimeterChance)
+                || coastalChance < 0 || perimeterChance < 0 || coastalChance + perimeterChance > 1
+                || perimeterMinRadius < 16 || perimeterMaxRadius > 128 || perimeterMinRadius > perimeterMaxRadius
+                || outletWidth < 1 || outletWidth > 16 || outletDepth < 1 || outletDepth > 8
+                || sealThickness < 3 || sealThickness > 16)
+            throw new IllegalArgumentException("Invalid native ocean edge profile");
+    }
+    public Mode mode(long seed) {
+        if (!enabled) return Mode.NATIVE;
+        double roll = unit(seed ^ 0x42af48b6121c5e93L);
+        return roll < perimeterChance ? Mode.PERIMETER
+                : roll < perimeterChance + coastalChance ? Mode.COASTAL : Mode.NATIVE;
+    }
+    public static double unit(long value) {
+        value = (value ^ (value >>> 30)) * 0xbf58476d1ce4e5b9L;
+        value = (value ^ (value >>> 27)) * 0x94d049bb133111ebL;
+        return ((value ^ (value >>> 31)) >>> 11) * 0x1.0p-53;
     }
 }

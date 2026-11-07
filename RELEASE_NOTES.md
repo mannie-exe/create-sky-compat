@@ -1,24 +1,31 @@
-# Skyweave: Compatibility Patches 0.22.1
+# Skyweave: Compatibility Patches 0.23.0
 
-Configuration now groups mod pages by gameplay system, with localized search and
-measured section navigation. One ordered definition drives the sidebar and page
-content. Inline JSON and registered TOML controls stage edits until Save, validate
-values, preserve external edits and report partial saves. Single-option forms no
-longer open separate screens. Outlined groups, yellow selection and a text-only
-Unicode information action improve the hierarchy.
+Skyweave Islands now targets **Sky Archipelago 1.4**. Native exterior shaping,
+rivers, lakes and water-archetype profiles replace the superseded taper and water
+backends. Sparse displaced clusters, varied elevations, independent NOISE/HOLLOW
+interiors, island-relative geology, ores and large iron/copper veins remain.
+Floating ocean extensions stay opt-in; the global ocean stays disabled.
 
-Optional SSRD/Sable/Iris adapters restore distant construct visibility with
-shaders. A separate DH adapter repairs opaque-terrain occlusion. Extend selected
-backfaces to Macaw's mosaic glass, caramel bricks, bubble gum, ornate grates and
-industrial grating. Flat bridge lantern selection and collision now match the
-pack's model; the approved hanging stair lantern remains intact.
+Ancient Cities fit inside islands with configurable exterior burial and separate
+core/floor checks. Bounded, piece-aware clearance reuses vanilla's Beardifier
+without excavating a single rectangular hall. It retains the island shell,
+foundations, authored water beds and existing HOLLOW room. Nearby ordinary and
+Sky Villages may coexist. Cave-biome physical queries retain island ownership;
+water-structure lookup supports floating water hosts with the global ocean off.
 
-Terrain placement and generation identity are unchanged. These integrations retain
-independent startup switches, dependency checks and physical-side exclusions.
+An optional Surveyor adaptation ignores invalid structure starts before they
+reach its map recorder. Generation, interior and ocean startup readers now reject
+duplicate JSON keys just as the configuration editor does. River/lake controls
+use the native codec and the existing nested configuration form.
 
-`./gradlew --no-daemon check build clientProbeJar` passes 161 Java tests and the
-tooling, resource, upstream and packaging checks. The POSIX directory-permission fixture runs only on supported filesystems;
-Windows skips that fixture. Native full/minimum clients verified configuration behavior; native rendering and collision checks retain
-their documented scope. See [verification](docs/development/verification.md) for
-versions and remaining limits, and [configuration](docs/configuration.md) for
-ownership and application timing. Previous release: [0.21.1](docs/releases/0.21.1.md).
+**Use a fresh world for the new generator.** Existing marked saves reject an
+incompatible generation identity. Keep their original mod/settings or preserve
+those saves before creating another world; no automatic terrain or LOD migration
+is provided. Other integrations retain their independent switches and side gates.
+
+Completed single-column queries can be substantially slower than the previous
+generator; bulk filling uses native snapshots. Targeted checks do not establish
+ore scarcity, aquatic progression or complete native biome-locate discovery.
+See [verification](docs/development/verification.md) for exact tested artifacts,
+native cases and limits, and [configuration](docs/configuration.md) for settings
+and application timing. Previous release: [0.22.1](docs/releases/0.22.1.md).

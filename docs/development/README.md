@@ -6,7 +6,7 @@ Use JDK 21 and the checked-in Gradle wrapper:
 ./gradlew --no-daemon check build
 ```
 
-The target is Minecraft 1.21.1 / NeoForge 21.1.265. Sky Archipelago 1.3.6 and
+The target is Minecraft 1.21.1 / NeoForge 21.1.265. Sky Archipelago 1.4 and
 Sky Villages 1.0.6 are pinned by Modrinth version ID and SHA-256. They are downloaded
 for compilation/testing, not redistributed. Architectury 13.0.11 is included in
 the development runtime for Sky Villages. Output is in `build/libs`.
@@ -250,6 +250,11 @@ This diagnoses endpoint loading; it does not transport or complete cargo.
 `./gradlew clientProbeJar` builds `build/probe/skyweave-client-probe.jar`.
 Install it only in a disposable client, with desktop authorization before launch.
 It is excluded from production artifacts and the server probe.
+
+`tools/probe.py --world-output /new/fixture/path` retains a successful, stopped
+probe world for client inspection. The destination must not exist. Use the same
+dependencies and generation configuration in the isolated client; this does not
+export a distributable world or update a personal instance.
 
 For resource comparisons in a full rendering client with Iris, use
 `-Dskyweave_compat.probe.resources=true`. This mode requires

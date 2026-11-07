@@ -40,7 +40,7 @@ public final class GenerationGuard {
         }
         var ops = RegistryOps.create(JsonOps.INSTANCE, server.registryAccess());
         var identity = new JsonObject();
-        identity.addProperty("algorithm", "islands_v1-prototype-10");
+        identity.addProperty("algorithm", "islands_v1-skyarch-1.4-1");
         identity.addProperty("largeVeins", "native_reference_depth_v1");
         identity.addProperty("seed", server.getWorldData().worldGenOptions().seed());
         identity.add("villagePolicy", new Gson().toJsonTree(NeighborConfig.settings()));
@@ -50,8 +50,7 @@ public final class GenerationGuard {
         }
         identity.add("profile", new Gson().toJsonTree(GenerationConfiguration.profile()));
         identity.add("interiors", new Gson().toJsonTree(InteriorConfiguration.profile()));
-        identity.add("water", new Gson().toJsonTree(WaterConfiguration.profile()));
-        identity.addProperty("waterPolicy", "owned_sources_and_lining_v1");
+        identity.addProperty("hydrology", "native_skyarch_1.4");
         identity.add("oceans", new Gson().toJsonTree(OceanConfiguration.profile()));
         var mudBiomes = new JsonArray();
         server.registryAccess().registryOrThrow(Registries.BIOME).getTag(BiomeMaterials.MUD).ifPresent(tag ->
@@ -59,7 +58,11 @@ public final class GenerationGuard {
         identity.add("mudSurfaceBiomes", mudBiomes);
         identity.addProperty("geologicalSurfaceReference", GeologicalFrame.REFERENCE_SURFACE);
         identity.addProperty("canyonOrigins", "local_surface");
-        identity.addProperty("ancientCityEligibility", "lower_quarter_v1");
+        identity.addProperty("ancientCityPlacement", "interior_union_v1");
+        identity.addProperty("ancientCityClearance", "bounded_beard_box_v1");
+        identity.addProperty("deepDarkBand", "native_exterior_lower45_v1");
+        identity.addProperty("physicalCaveBiomes", "native_projection_v1");
+        identity.add("ancientCities", new Gson().toJsonTree(design.inherent.skyweavecompat.terrain.city.CityConfiguration.policy()));
         identity.addProperty("spawnLanding", "generated_surface");
         identity.addProperty("climate", "biome_temperature_at_reference_surface");
         var disabled = new JsonArray();

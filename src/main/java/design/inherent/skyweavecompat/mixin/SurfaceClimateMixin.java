@@ -10,13 +10,16 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField;
 import org.sathrek.sky_archipelago.worldgen.generator.surface.SkyIslandSurfacePass;
+import org.sathrek.sky_archipelago.worldgen.generator.surface.IslandSurfaceRules;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(value = SkyIslandSurfacePass.class, remap = false)
 public abstract class SurfaceClimateMixin {
     @WrapMethod(method = "buildSurface")
     private static void surface(WorldGenRegion level, StructureManager structures, ChunkAccess chunk,
-            SkyIslandSettings settings, IslandField field, Operation<Void> original) {
-        SurfaceClimateScope.run(IslandClimate.applies(level), () -> original.call(level, structures, chunk, settings, field));
+            SkyIslandSettings settings, IslandField field, SkyIslandSurfacePass.HostBiomeSampler hostBiomes,
+            IslandSurfaceRules rules, Operation<Void> original) {
+        SurfaceClimateScope.run(IslandClimate.applies(level),
+                () -> original.call(level, structures, chunk, settings, field, hostBiomes, rules));
     }
 }

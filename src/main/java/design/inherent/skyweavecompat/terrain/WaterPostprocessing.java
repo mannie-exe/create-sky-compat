@@ -6,21 +6,25 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField;
 
-/** Only native chunk filling schedules fluids. Neighbor checks remain pure column queries. */
+/** Schedules only actual edge fluids of deliberately opened native water islands. */
 public final class WaterPostprocessing {
     private WaterPostprocessing() {}
     public static void mark(ChunkAccess chunk, IslandField field, SkyIslandSettings settings) {
-        if (((ProfiledTerrain)(Object)field).skyweave$profile() == null) return;
-        var waterField = (InteriorField)(Object)field;
+        if (((ProfiledTerrain)(Object)field).skyweave$profile() == null || !OceanConfiguration.profile().enabled()) return;
         var pos = new BlockPos.MutableBlockPos();
         for (int x = chunk.getPos().getMinBlockX(); x <= chunk.getPos().getMaxBlockX(); x++)
             for (int z = chunk.getPos().getMinBlockZ(); z <= chunk.getPos().getMaxBlockZ(); z++) {
-                var water = waterField.skyweave$waterAt(x, z, settings);
-                for (var range : water.sources()) for (int y = range.bottomY(); y <= range.topY(); y++) {
+                var island = field.sampleDominantIslandDescriptor(x, z, settings);
+                if (island == null || !OceanIslands.wetArchetype(island.archetype())
+                        || OceanConfiguration.profile().mode(island.seed()) == OceanProfile.Mode.NATIVE) continue;
+                var water = field.sampleWaterArchetypeColumnProfile(x, z, settings);
+                if (!water.water()) continue;
+                for (int y = Math.max(chunk.getMinBuildHeight(), water.solidSurfaceY() + 1);
+                        y <= Math.min(chunk.getMaxBuildHeight() - 1, water.fluidSurfaceY()); y++) {
                     if (chunk.getBlockState(pos.set(x, y, z)).getFluidState().isEmpty()) continue;
                     for (var direction : Direction.values()) {
                         int nx = x + direction.getStepX(), ny = y + direction.getStepY(), nz = z + direction.getStepZ();
-                        if (!waterField.skyweave$waterAt(nx, nz, settings).contains(ny)
+                        if (!field.sampleWaterArchetypeColumnProfile(nx, nz, settings).containsWaterAt(ny)
                                 && field.sampleSolidSegments(nx, nz, settings).stream().noneMatch(s -> s.contains(ny))) {
                             chunk.markPosForPostprocessing(pos);
                             break;

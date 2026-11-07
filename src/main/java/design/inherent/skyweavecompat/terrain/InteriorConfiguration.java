@@ -14,7 +14,7 @@ public final class InteriorConfiguration {
     public static InteriorProfile profile() { return profile; }
 
     public static InteriorProfile parse(String text) {
-        var object = JsonParser.parseString(text).getAsJsonObject();
+        var object = design.inherent.skyweavecompat.configuration.ProfileJson.object(text);
         var fields = Arrays.stream(InteriorProfile.class.getRecordComponents())
                 .map(component -> component.getName()).collect(Collectors.toSet());
         if (!object.keySet().equals(fields)) throw new IllegalArgumentException("Interior profile requires exactly: " + fields);

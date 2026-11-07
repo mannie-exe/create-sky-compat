@@ -1,6 +1,12 @@
 package design.inherent.skyweavecompat.mixin;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.ColumnData;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandDescriptor;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import design.inherent.skyweavecompat.terrain.*;
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandTerrainPlan;
 import java.util.List;
 import java.util.ArrayList;
 import design.inherent.skyweavecompat.placement.VillageAnchors;
@@ -16,41 +22,60 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Constant;
-import org.spongepowered.asm.mixin.injection.ModifyConstant;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(value = IslandField.class, remap = false)
 public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalField, VillageAnchors, VeinField, InteriorField {
     @Shadow @Final private IslandClusterSampler clusterSampler;
     @Shadow @Final private IslandDescriptorFactory descriptorFactory;
-    @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandDensityEvaluator densityEvaluator;
+    @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandShapeSampler shapeSampler;
     @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandColumnResolver columnResolver;
+    @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandDensityEvaluator densityEvaluator;
+    @Shadow @Final private org.sathrek.sky_archipelago.worldgen.generator.field.model.BiomeTerrainSampler biomeTerrainSampler;
+    @Shadow private IslandTerrainPlan terrainPlanForDescriptor(IslandDescriptor host, SkyIslandSettings settings) { throw new AssertionError(); }
     @Unique private volatile GenerationProfile skyweave$profile;
     @Unique private volatile IslandVeins skyweave$veins;
     @Unique private boolean skyweave$veinsConfigured;
     @Unique private boolean skyweave$interiorsConfigured;
-    @Unique private IslandWaters skyweave$waters;
-    @Override public IslandWaters skyweave$waters() { return skyweave$waters; }
-    @Override public WaterColumn skyweave$waterAt(int x, int z, SkyIslandSettings settings) {
-        return ((LayeredColumn)(Object)sampleColumnData(x, z, settings)).skyweave$water();
-    }
-    @Shadow abstract IslandField.ColumnData sampleColumnData(int x, int z, SkyIslandSettings settings);
-    @Shadow private IslandField.ColumnData resolveColumnData(int x, int z, SkyIslandSettings settings) { throw new AssertionError(); }
-    @Override public IslandField.ColumnData skyweave$planningColumn(int x, int z, SkyIslandSettings settings, TerrainStage stage) {
+    @Shadow abstract ColumnData sampleColumnData(int x, int z, SkyIslandSettings settings);
+    @Shadow public abstract org.sathrek.sky_archipelago.worldgen.generator.terrain.SkyIslandChunkTerrainSnapshot
+            sampleChunkTerrainSnapshot(net.minecraft.world.level.ChunkPos chunk, SkyIslandSettings settings);
+    @Shadow private ColumnData resolveBaseColumnData(int x, int z, SkyIslandSettings settings) { throw new AssertionError(); }
+    @Override public ColumnData skyweave$planningColumn(int x, int z, SkyIslandSettings settings, TerrainStage stage) {
         if (stage == TerrainStage.COMPLETE) throw new IllegalArgumentException("Planning must select an earlier terrain stage");
-        return stage.query(() -> resolveColumnData(x, z, settings));
+        return stage.query(() -> resolveBaseColumnData(x, z, settings));
     }
     @Override public synchronized void skyweave$configureInteriors(net.minecraft.world.level.levelgen.RandomState random,
             InteriorProfile profile) {
         if (skyweave$interiorsConfigured) return;
-        skyweave$waters = new IslandWaters(this, WaterConfiguration.profile(), OceanConfiguration.profile());
-        ((InteriorResolver)(Object)columnResolver).skyweave$interiors(new IslandInteriors(random, profile, skyweave$waters));
+        ((InteriorResolver)(Object)columnResolver).skyweave$interiors(new IslandInteriors(random, profile));
         skyweave$interiorsConfigured = true;
     }
     @Override public List<org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn> skyweave$exteriorAt(
             int x, int z, SkyIslandSettings settings) {
-        return ((LayeredColumn)(Object)sampleColumnData(x, z, settings)).skyweave$exterior();
+        return skyweave$planningColumn(x, z, settings, TerrainStage.EXTERIOR).segments();
+    }
+    @Override public org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn skyweave$exteriorOf(
+            IslandDescriptor host, int x, int z, SkyIslandSettings settings) {
+        var empty = org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn.EMPTY;
+        if (skyweave$profile == null || host == null) return empty;
+        var plan = terrainPlanForDescriptor(host, settings);
+        if (!plan.mightInfluence(x, z)) return empty;
+        var horizontal = shapeSampler.sampleHorizontal(plan, x, z);
+        if (!horizontal.inInfluence()) return empty;
+        var prepared = densityEvaluator.prepareDensity(host, horizontal, x, z, settings,
+                biomeTerrainSampler.sample(x, host.centerY(), z).terrainProfile());
+        var wet = prepared.waterArchetype();
+        return wet.exists() ? new org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn(
+                wet.underbellyBottomY(), wet.solidSurfaceY()) : prepared.landBody();
+    }
+
+    // Completed point queries share fill's native interpolation, shoreline sealing and cleanup.
+    // Snapshot construction uses the earlier raw/uncleaned paths, not this method.
+    @Inject(method = "sampleColumnData", at = @At("HEAD"), cancellable = true)
+    private void completedColumn(int x, int z, SkyIslandSettings settings, CallbackInfoReturnable<ColumnData> result) {
+        if (skyweave$profile != null) result.setReturnValue(sampleChunkTerrainSnapshot(
+                new net.minecraft.world.level.ChunkPos(Math.floorDiv(x, 16), Math.floorDiv(z, 16)), settings).columnDataAt(x, z));
     }
     @Inject(method = "sampleColumn", at = @At("HEAD"), cancellable = true)
     private void actualTopInterval(int x, int z, SkyIslandSettings settings,
@@ -82,14 +107,14 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
         }
         ((ProfiledTerrain)(Object)clusterSampler).skyweave$configure(profile);
         ((ProfiledTerrain)(Object)descriptorFactory).skyweave$configure(profile);
-        ((ProfiledTerrain)(Object)densityEvaluator).skyweave$configure(profile);
+        ((ProfiledTerrain)(Object)shapeSampler).skyweave$configure(profile);
         ((ProfiledTerrain)(Object)columnResolver).skyweave$configure(profile);
         skyweave$profile = profile;
     }
     @Override public GenerationProfile skyweave$profile() { return skyweave$profile; }
 
-    @Shadow public abstract IslandField.IslandDescriptor sampleDominantIslandDescriptor(int x, int z, SkyIslandSettings settings);
-    @Shadow private List<IslandField.IslandDescriptor> descriptorsForCell(int x, int z, SkyIslandSettings settings) { throw new AssertionError(); }
+    @Shadow public abstract IslandDescriptor sampleDominantIslandDescriptor(int x, int z, SkyIslandSettings settings);
+    @Shadow private List<IslandTerrainPlan> terrainPlansForCell(int x, int z, SkyIslandSettings settings) { throw new AssertionError(); }
 
     @Override public List<VillagePlan.Anchor> skyweave$anchorsNear(int x, int z, SkyIslandSettings settings) {
         if (skyweave$profile == null) return List.of();
@@ -98,9 +123,9 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
         // Maximum configured village reach includes layout reservation and native SKY retries.
         int range = skyweave$profile.lookupCells(skyweave$profile.anchorMaxRadius() + 2048 + 320);
         for (int dx = -range; dx <= range; dx++) for (int dz = -range; dz <= range; dz++) {
-            var descriptors = descriptorsForCell(cx + dx, cz + dz, settings);
+            var descriptors = terrainPlansForCell(cx + dx, cz + dz, settings);
             if (descriptors.isEmpty()) continue;
-            var anchor = descriptors.getFirst();
+            var anchor = descriptors.getFirst().descriptor();
             anchors.add(new VillagePlan.Anchor(anchor.seed(), anchor.centerX(), anchor.centerZ(), anchor.maxRadius(),
                     anchor.centerY() + anchor.plateauHeight()));
         }
@@ -112,16 +137,30 @@ public abstract class IslandFieldMixin implements ProfiledTerrain, GeologicalFie
         var owner = sampleDominantIslandDescriptor(x, z, settings);
         if (owner == null) return null;
         var anchor = owner;
-        if (owner.family() != IslandField.IslandFamily.ANCHOR_PLATEAU) {
+        if (owner.family() != IslandFamily.ANCHOR_PLATEAU) {
             var membership = (ClusterField)this;
             var cell = membership.skyweave$owner(owner, settings);
             anchor = membership.skyweave$members(cell.x(), cell.z(), settings).getFirst();
         }
-        return new GeologicalFrame(anchor.centerY() - anchor.cliffDepth(), anchor.centerY() + anchor.plateauHeight() + 1);
+        return IslandGeometry.geologicalFrame(anchor);
     }
 
-    @ModifyConstant(method = {"sampleDensity", "collectSnapshotCandidates"}, constant = @Constant(intValue = 3), require = 8)
-    private int searchRange(int original) { return skyweave$profile == null ? original : skyweave$profile.lookupCells(); }
+    @WrapOperation(method = "*", at = @At(value = "INVOKE", target =
+            "Lorg/sathrek/sky_archipelago/worldgen/generator/field/internal/IslandSearchReach;cellRadius(ILorg/sathrek/sky_archipelago/config/SkyIslandSettings;)I"), require = 3)
+    private int searchRange(int spacing, SkyIslandSettings settings, Operation<Integer> original) {
+        return skyweave$profile == null ? original.call(spacing, settings) : skyweave$profile.lookupCells();
+    }
+
+    @Inject(method = "clusterMightIntersect", at = @At("HEAD"), cancellable = true)
+    private void possibleCluster(int cellX, int cellZ, int spacing, SkyIslandSettings settings,
+            int minX, int minZ, int maxX, int maxZ, CallbackInfoReturnable<Boolean> result) {
+        if (skyweave$profile == null) return;
+        long x = (long)cellX * spacing + spacing / 2;
+        long z = (long)cellZ * spacing + spacing / 2;
+        long extent = (long)skyweave$profile.jitter() + skyweave$profile.clusterReach();
+        result.setReturnValue(x + extent >= minX && x - extent <= maxX
+                && z + extent >= minZ && z - extent <= maxZ);
+    }
 
     @Inject(method = "effectiveClusterSpacing", at = @At("HEAD"), cancellable = true)
     private void spacing(SkyIslandSettings settings, CallbackInfoReturnable<Integer> result) {

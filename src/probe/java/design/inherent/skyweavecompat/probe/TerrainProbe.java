@@ -1,5 +1,7 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandDescriptor;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandPreview;
 import com.google.gson.*;
 import com.mojang.serialization.JsonOps;
 import design.inherent.skyweavecompat.terrain.*;
@@ -11,7 +13,7 @@ import org.sathrek.sky_archipelago.worldgen.generator.core.SkyIslandChunkGenerat
 import org.sathrek.sky_archipelago.config.SkyIslandGeneratorSettings;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField;
-import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField.IslandFamily;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import java.nio.file.*;
 import java.util.*;
 
@@ -45,7 +47,6 @@ final class TerrainProbe {
                 var random = RandomState.create(generator.generatorSettings().value(),
                         server.registryAccess().registryOrThrow(Registries.NOISE).asLookup(), seed);
                 var field = ((GeologicalGenerator)(Object)generator).skyweave$field(random);
-                if (adapted && seed == -3095298318114116683L) report.add("underside", UndersideProbe.run(field, selectedSettings));
                 var previews = field.collectIslandPreviewsInRadius(0, 0, 16000, selectedSettings);
                 var anchors = previews.stream().filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                         .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).toList();
@@ -65,7 +66,7 @@ final class TerrainProbe {
                 if (adapted) {
                     var profile = ((ProfiledTerrain)(Object)field).skyweave$profile();
                     var clearances = new JsonArray();
-                    var ownership = new HashMap<IslandField.IslandPreview, ClusterLayout.Cell>();
+                    var ownership = new HashMap<IslandPreview, ClusterLayout.Cell>();
                     for (var preview : previews) ownership.put(preview, owner(field, selectedSettings, profile, preview));
                     var groups = new JsonArray();
                     for (var cell : ownership.values().stream().distinct().sorted(Comparator.comparingInt(ClusterLayout.Cell::x)
@@ -81,8 +82,11 @@ final class TerrainProbe {
                         double gap = Double.POSITIVE_INFINITY;
                         for (var member : members) for (var other : previews) {
                             if (ownership.get(anchor).equals(ownership.get(other))) continue;
-                            gap = Math.min(gap, Math.hypot(member.x() - other.x(), member.z() - other.z())
-                                    - GenerationProfile.supportRadius(member.radius()) - GenerationProfile.supportRadius(other.radius()));
+                            var a = member.terrainPlan().bounds();
+                            var b = other.terrainPlan().bounds();
+                            long dx = Math.max(0L, Math.max((long)a.minX() - b.maxX(), (long)b.minX() - a.maxX()));
+                            long dz = Math.max(0L, Math.max((long)a.minZ() - b.maxZ(), (long)b.minZ() - a.maxZ()));
+                            gap = Math.min(gap, Math.hypot(dx, dz));
                         }
                         if (gap < profile.minimumClusterGap()) throw new AssertionError("Native cluster envelope gap " + gap);
                         var clearance = new JsonObject();
@@ -92,7 +96,7 @@ final class TerrainProbe {
                     }
                     row.add("clusterClearances", clearances);
                     var footprintRows = new JsonArray();
-                    var footprints = new HashMap<IslandField.IslandPreview, List<int[]>>();
+                    var footprints = new HashMap<IslandPreview, List<int[]>>();
                     for (var anchor : anchors.stream().limit(3).toList()) {
                         var nearest = anchors.stream().filter(p -> p != anchor)
                                 .min(Comparator.comparingDouble(p -> Math.hypot(p.x() - anchor.x(), p.z() - anchor.z()))).orElseThrow();
@@ -143,14 +147,13 @@ final class TerrainProbe {
                         estimatedVolume += (long)thickness * step * step;
                     }
                     if (adapted) {
-                        var get = IslandField.class.getDeclaredMethod("descriptorsForCell", int.class, int.class, SkyIslandSettings.class);
-                        get.setAccessible(true);
-                        @SuppressWarnings("unchecked") var members = (List<IslandField.IslandDescriptor>)get.invoke(field,
+                        var members = ((ClusterField)(Object)field).skyweave$members(
                                 Math.floorDiv(anchor.x(), GenerationConfiguration.profile().spacing()),
                                 Math.floorDiv(anchor.z(), GenerationConfiguration.profile().spacing()), selectedSettings);
                         var anchorShape = members.getFirst();
                         island.add("shape", new Gson().toJsonTree(anchorShape));
-                        island.addProperty("targetHeight", anchorShape.cliffDepth() + GenerationConfiguration.profile().anchorPlateau() + 32);
+                        var frame = IslandGeometry.geologicalFrame(anchorShape);
+                        island.addProperty("nominalBodyHeight", frame.topExclusive() - frame.bottom());
                     }
                     island.addProperty("step", step); island.addProperty("occupiedSamples", occupied);
                     island.addProperty("sampledMinY", occupied == 0 ? 0 : minY);
@@ -169,7 +172,8 @@ final class TerrainProbe {
     }
 
     private static List<int[]> footprint(IslandField field, SkyIslandSettings settings,
-            GenerationProfile profile, IslandField.IslandPreview anchor) {
+            GenerationProfile profile, IslandPreview anchor) {
+        var target = owner(field,settings,profile,anchor);
         int step = 16, reach = profile.clusterReach();
         int minX = Math.floorDiv(anchor.x() - reach, step) * step;
         int minZ = Math.floorDiv(anchor.z() - reach, step) * step;
@@ -177,6 +181,8 @@ final class TerrainProbe {
         var occupied = new boolean[size][size];
         for (int ix = 0; ix < size; ix++) for (int iz = 0; iz < size; iz++) {
             int x = minX + ix * step, z = minZ + iz * step;
+            var descriptor = field.sampleDominantIslandDescriptor(x,z,settings);
+            if (descriptor == null || !((ClusterField)(Object)field).skyweave$owner(descriptor,settings).equals(target)) continue;
             var segments = field.sampleSolidSegments(x, z, settings);
             occupied[ix][iz] = !segments.isEmpty();
             for (var segment : segments) {
@@ -199,7 +205,7 @@ final class TerrainProbe {
     }
 
     private static ClusterLayout.Cell owner(IslandField field, SkyIslandSettings settings,
-            GenerationProfile profile, IslandField.IslandPreview preview) {
+            GenerationProfile profile, IslandPreview preview) {
         var membership = (ClusterField)(Object)field;
         int cx = Math.floorDiv(preview.x(), profile.spacing()), cz = Math.floorDiv(preview.z(), profile.spacing());
         int range = profile.lookupCells();

@@ -14,7 +14,7 @@ public final class OceanConfiguration {
     private OceanConfiguration() {}
     public static OceanProfile profile() { return profile; }
     public static OceanProfile parse(String text) {
-        var object = JsonParser.parseString(text).getAsJsonObject();
+        var object = design.inherent.skyweavecompat.configuration.ProfileJson.object(text);
         var fields = Arrays.stream(OceanProfile.class.getRecordComponents()).map(c -> c.getName()).collect(Collectors.toSet());
         if (!object.keySet().equals(fields)) throw new IllegalArgumentException("Ocean profile requires exactly: " + fields);
         for (var entry : object.entrySet()) {
@@ -24,7 +24,7 @@ public final class OceanConfiguration {
                 if (!value.isBoolean()) throw new IllegalArgumentException("Expected boolean for enabled");
             } else {
                 if (!value.isNumber()) throw new IllegalArgumentException("Expected number for " + entry.getKey());
-                if (!Set.of("basinChance", "coastalChance", "perimeterChance").contains(entry.getKey())) value.getAsBigDecimal().intValueExact();
+                if (!Set.of("coastalChance", "perimeterChance").contains(entry.getKey())) value.getAsBigDecimal().intValueExact();
             }
         }
         return JSON.fromJson(object, OceanProfile.class);

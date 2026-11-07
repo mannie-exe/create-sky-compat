@@ -1,11 +1,12 @@
 package design.inherent.skyweavecompat.terrain;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.ColumnData;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandDescriptor;
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.ResolvedContributor;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
-import org.sathrek.sky_archipelago.worldgen.generator.field.IslandField;
 import org.sathrek.sky_archipelago.worldgen.generator.field.TerrainColumn;
-import org.sathrek.sky_archipelago.worldgen.generator.field.internal.IslandDensityEvaluator;
 import org.sathrek.sky_archipelago.config.SkyIslandSettings;
 import java.util.*;
 
@@ -14,11 +15,9 @@ public final class IslandInteriors {
     public enum Kind { BASELINE, NOISE, HOLLOW }
     private final InteriorProfile profile;
     private final NormalNoise passageA, passageB, chamber;
-    private final IslandWaters waters;
 
-    public IslandInteriors(RandomState random, InteriorProfile profile, IslandWaters waters) {
+    public IslandInteriors(RandomState random, InteriorProfile profile) {
         this.profile = profile;
-        this.waters = waters;
         // Opaque legacy random salt: changing it changes terrain for the same seed.
         var factory = random.getOrCreateRandomFactory(ResourceLocation.parse("create_sky_compat:interiors"));
         passageA = NormalNoise.create(factory.fromHashOf("passage_a"), new NormalNoise.NoiseParameters(-3, 1.0, 0.5));
@@ -26,55 +25,48 @@ public final class IslandInteriors {
         chamber = NormalNoise.create(factory.fromHashOf("chamber"), new NormalNoise.NoiseParameters(-3, 1.0, 0.5));
     }
 
-    public static Kind kind(IslandField.IslandDescriptor island, InteriorProfile profile) {
+    public static Kind kind(IslandDescriptor island, InteriorProfile profile) {
         if (island.cliffDepth() < profile.shellThickness() * 4) return Kind.BASELINE;
         double selection = unit(island.seed() ^ 0x60bb123f7a84a1d5L);
         return selection < profile.hollowChance() ? Kind.HOLLOW
                 : selection < profile.noiseChance() + profile.hollowChance() ? Kind.NOISE : Kind.BASELINE;
     }
 
-    public IslandField.ColumnData carve(int x, int z, SkyIslandSettings settings, IslandField.ColumnData exterior,
-            List<IslandField.ResolvedContributor> contributors, IslandDensityEvaluator density) {
+    public ColumnData carve(int x, int z, SkyIslandSettings settings, ColumnData exterior,
+            List<ResolvedContributor> contributors) {
         if (exterior.segments().isEmpty()) return exterior;
         var allowed = new BitSet(GenerationProfile.MAX_Y - GenerationProfile.MIN_Y);
         for (var segment : exterior.segments()) allowed.set(segment.bottomY() - GenerationProfile.MIN_Y,
                 segment.topY() + 1 - GenerationProfile.MIN_Y);
         var retained = new BitSet(allowed.length());
-        var waterBits = new BitSet(allowed.length());
-        var regions = new ArrayList<WaterRegion>();
         for (var contributor : contributors) {
             var descriptor = contributor.descriptor();
             var kind = kind(descriptor, profile);
-            boolean hollow = kind == Kind.HOLLOW;
-            boolean active = kind != Kind.BASELINE;
-            var water = TerrainStage.current() == TerrainStage.COMPLETE ? waters.region(descriptor, settings) : null;
-            if (water != null && !water.affects(x, z)) water = null;
-            if (water != null) regions.add(water);
-            int top = Integer.MIN_VALUE;
-            for (int y = contributor.maxY(); y >= contributor.minY() - 1; y--) {
-                boolean solid = y >= contributor.minY() && density.samplePreparedDensity(contributor.preparedDensity(), y) > 0;
-                if (solid) { if (top == Integer.MIN_VALUE) top = y; continue; }
-                if (top == Integer.MIN_VALUE) continue;
-                for (int sy = y + 1; sy <= top; sy++) {
-                    int index = sy - GenerationProfile.MIN_Y;
-                    if (!allowed.get(index)) continue;
-                    boolean keep = !active || !removed(descriptor, x, sy, z, y + 1, top, hollow);
-                    if (water != null) {
-                        if (water.protects(x, sy, z)) keep = true;
-                        if (water.cuts(x, sy, z)) keep = false;
-                        if (water.source(x, sy, z)) waterBits.set(index);
-                    }
-                    if (keep) retained.set(index);
-                }
-                top = Integer.MIN_VALUE;
+            var water = contributor.preparedDensity().waterArchetype();
+            var body = water.exists() ? new TerrainColumn(water.underbellyBottomY(), water.solidSurfaceY())
+                    : contributor.preparedDensity().landBody();
+            if (!body.exists()) continue;
+            int bottom = Math.max(GenerationProfile.MIN_Y, Math.max(contributor.minY(), body.bottomY()));
+            int top = Math.min(GenerationProfile.MAX_Y - 1, Math.min(contributor.maxY(), body.topY()));
+            if (top < bottom) continue;
+            if (kind == Kind.BASELINE) {
+                var solid = new BitSet(allowed.length());
+                solid.set(bottom - GenerationProfile.MIN_Y, top + 1 - GenerationProfile.MIN_Y);
+                solid.and(allowed);
+                retained.or(solid);
+                continue;
+            }
+            for (int y = bottom; y <= top; y++) {
+                int index = y - GenerationProfile.MIN_Y;
+                if (allowed.get(index) && (water.containsProtectedSealAt(y)
+                        || !removed(descriptor, x, y, z, bottom, top, kind == Kind.HOLLOW))) retained.set(index);
             }
         }
-        if (retained.equals(allowed) && regions.isEmpty()) return exterior;
-        waterBits.andNot(retained);
-        // The native profile describes the exterior cap, never a newly exposed cavern floor.
-        var result = new IslandField.ColumnData(intervals(retained), exterior.profile(), exterior.dominantDescriptor());
-        ((LayeredColumn)(Object)result).skyweave$exterior(exterior.segments());
-        ((LayeredColumn)(Object)result).skyweave$water(new WaterColumn(intervals(waterBits), regions));
+        // Preserve native river/water/overlay metadata; a cavity is not another island.
+        var result = new ColumnData(intervals(retained), exterior.profile(), exterior.dominantDescriptor(),
+                exterior.waterArchetype(), exterior.river(), exterior.overlayExposedSegments());
+        ((LayeredColumn)(Object)result).skyweave$exterior(exterior.segments(),
+                contributors.stream().anyMatch(contributor -> kind(contributor.descriptor(), profile) != Kind.BASELINE));
         return result;
     }
 
@@ -88,7 +80,7 @@ public final class IslandInteriors {
         return List.copyOf(segments);
     }
 
-    private boolean removed(IslandField.IslandDescriptor island, int x, int y, int z, int bottom, int top, boolean hollow) {
+    private boolean removed(IslandDescriptor island, int x, int y, int z, int bottom, int top, boolean hollow) {
         double dx = x - island.centerX(), dz = z - island.centerZ();
         double middle = island.centerY() - island.cliffDepth() * 0.35;
         double h = island.cliffDepth() * profile.hollowHeight();
@@ -121,7 +113,7 @@ public final class IslandInteriors {
                 || chamber.getValue(nx * 0.6, ny * 0.6, nz * 0.6) > profile.chamberThreshold();
     }
 
-    private boolean entrance(IslandField.IslandDescriptor island, double dx, double dy, double dz, double h) {
+    private boolean entrance(IslandDescriptor island, double dx, double dy, double dz, double h) {
         double c = Math.cos(island.rotation()), s = Math.sin(island.rotation());
         double along = dx * c + dz * s, across = dz * c - dx * s;
         double rise = Math.max(0, along) * 0.16;

@@ -1,5 +1,6 @@
 package design.inherent.skyweavecompat.probe;
 
+import org.sathrek.sky_archipelago.worldgen.generator.field.model.IslandFamily;
 import com.google.gson.*;
 import com.mojang.serialization.JsonOps;
 import design.inherent.skyweavecompat.terrain.GeologicalGenerator;
@@ -89,7 +90,7 @@ final class CoverageProbe {
             var ancientCity = structureRegistry.get(ResourceLocation.withDefaultNamespace("ancient_city"));
             var observations = new JsonArray();
             var anchors = field.collectIslandPreviewsInRadius(0, 0, 16000, settings).stream()
-                    .filter(p -> p.family() == IslandField.IslandFamily.ANCHOR_PLATEAU)
+                    .filter(p -> p.family() == IslandFamily.ANCHOR_PLATEAU)
                     .sorted(Comparator.comparingDouble(p -> Math.hypot(p.x(), p.z()))).toList();
             for (var anchor : anchors) {
                 int x = (anchor.x() >> 4) * 16 + 8, z = (anchor.z() >> 4) * 16 + 8;
@@ -107,12 +108,12 @@ final class CoverageProbe {
                     row.addProperty("lowerQuarterBiome", generator.getBiomeSource().getNoiseBiome(x >> 2, lower >> 2, z >> 2, random.sampler()).getRegisteredName());
                 }
                 var context = new org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.PlacementRequest.StructureGenerationContext(
-                        generator, generator.getBiomeSource(), access, random, server.getStructureManager(), 0);
+                        generator, generator.projectedBiomeSource(), access, random, server.getStructureManager(), 0);
                 var validity = org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.StructureGenerationAttemptService
                         .biomeValidityAt(ancientCity, context, new net.minecraft.world.level.ChunkPos(x >> 4, z >> 4), middle);
                 row.addProperty("precheckValid", validity.valid());
                 row.addProperty("precheckBiome", validity.biomeId());
-                if (observations.size() < 2) {
+                if (observations.size() < 6) {
                     var chunkPos = new net.minecraft.world.level.ChunkPos(x >> 4, z >> 4);
                     var chunk = level.getChunk(chunkPos.x, chunkPos.z, net.minecraft.world.level.chunk.status.ChunkStatus.STRUCTURE_STARTS);
                     var request = new org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.PlacementRequest(
@@ -120,6 +121,27 @@ final class CoverageProbe {
                             net.minecraft.world.level.levelgen.structure.StructureStart.INVALID_START, null,
                             level.structureManager(), net.minecraft.core.SectionPos.of(chunkPos, level.getMinSection()), chunk,
                             chunkPos, settings, field, level.getSeed(), null, null, level.dimension(), context);
+                    design.inherent.skyweavecompat.terrain.city.CityPlacementScope.run(request, () -> {
+                        var site = new org.sathrek.sky_archipelago.worldgen.generator.structure.v2.underground.UndergroundCanonicalSitePlanner.Site(anchor,chunkPos,column);
+                        design.inherent.skyweavecompat.terrain.city.CityPlacementScope.select(site);
+                        var selected = design.inherent.skyweavecompat.terrain.city.CityPlacementScope.site();
+                        if (selected == null) return null;
+                        row.addProperty("selectedFloor",selected.floorY());
+                        var nativeContext = new Structure.GenerationContext(access,generator,generator.getBiomeSource(),random,
+                                server.getStructureManager(),level.getSeed(),chunkPos,level,ancientCity.biomes()::contains);
+                        try (var scope = SkyIslandDeepDarkBiomeProjector.activateForStructureGeneration(generator,random,chunk,ancientCity)) {
+                            ((net.minecraft.world.level.levelgen.structure.structures.JigsawStructure)ancientCity)
+                                    .findGenerationPoint(nativeContext).ifPresent(stub -> {
+                                var point = stub.position();
+                                row.addProperty("nativePoint",point.toShortString());
+                                row.addProperty("nativePointBiome",generator.getBiomeSource().getNoiseBiome(
+                                        point.getX()>>2,point.getY()>>2,point.getZ()>>2,random.sampler()).getRegisteredName());
+                                row.addProperty("physicalPointBiome",generator.projectedBiomeSource().getNoiseBiome(
+                                        point.getX()>>2,point.getY()>>2,point.getZ()>>2,random.sampler()).getRegisteredName());
+                            });
+                        }
+                        return null;
+                    });
                     var decision = new org.sathrek.sky_archipelago.worldgen.generator.structure.v2.underground.UndergroundV2PlacementEngine().place(request);
                     row.addProperty("placementAccepted", decision.accepted());
                     row.addProperty("placementStage", decision.stage());
@@ -133,9 +155,48 @@ final class CoverageProbe {
                 if (observations.size() >= 12) break;
             }
             report.add("ancientCityEligibility", observations);
+            var bodyControls = new JsonArray();
+            bodySearch: for (var anchor : anchors) for (int dx : new int[]{0,-anchor.radius()/3,anchor.radius()/3})
+                    for (int dz : new int[]{0,-anchor.radius()/3,anchor.radius()/3}) {
+                int x = ((anchor.x()+dx) >> 2) * 4 + 2, z = ((anchor.z()+dz) >> 2) * 4 + 2;
+                if (!generator.getBiomeSource().getNoiseBiome(x >> 2, -48 >> 2, z >> 2, random.sampler())
+                        .is(net.minecraft.world.level.biome.Biomes.DEEP_DARK)) continue;
+                var exterior = ((design.inherent.skyweavecompat.terrain.InteriorField)(Object)field)
+                        .skyweave$planningColumn(x,z,settings,design.inherent.skyweavecompat.terrain.TerrainStage.EXTERIOR).profile();
+                if (!exterior.exists()) continue;
+                var solid = field.sampleColumnProfile(x,z,settings);
+                if (solid.bottomY() == exterior.bottomY()) continue;
+                int y = ((exterior.bottomY() + (exterior.topY() - exterior.bottomY()) / 4) >> 2) * 4 + 2;
+                String projected;
+                String physical;
+                try (var scope = SkyIslandDeepDarkBiomeProjector.activateForStructureGeneration(generator, random, null, ancientCity)) {
+                    projected = generator.getBiomeSource().getNoiseBiome(x >> 2, y >> 2, z >> 2, random.sampler()).getRegisteredName();
+                    physical = generator.projectedBiomeSource().getNoiseBiome(x >> 2, y >> 2, z >> 2, random.sampler()).getRegisteredName();
+                }
+                var chunk = level.getChunk(x >> 4,z >> 4,net.minecraft.world.level.chunk.status.ChunkStatus.BIOMES);
+                String stored = chunk.getNoiseBiome(x >> 2,y >> 2,z >> 2).getRegisteredName();
+                String outsideScope = generator.projectedBiomeSource().getNoiseBiome(x >> 2,y >> 2,z >> 2,
+                        random.sampler()).getRegisteredName();
+                var row = new JsonObject(); row.addProperty("x",x); row.addProperty("y",y); row.addProperty("z",z);
+                row.addProperty("exteriorBottom",exterior.bottomY()); row.addProperty("exteriorTop",exterior.topY());
+                row.addProperty("topSolidBottom",solid.bottomY());
+                row.addProperty("projected",projected); row.addProperty("physical",physical);
+                row.addProperty("stored",stored); bodyControls.add(row);
+                row.addProperty("physicalOutsideScope",outsideScope);
+                if (bodyControls.size() == 6) break bodySearch;
+            }
+            report.add("deepDarkBodyControls",bodyControls);
+            for (var value : bodyControls) {
+                var row = value.getAsJsonObject();
+                if (!row.get("projected").getAsString().equals("minecraft:deep_dark")
+                        || !row.get("physical").getAsString().equals("minecraft:deep_dark")
+                        || !row.get("physicalOutsideScope").getAsString().equals("minecraft:deep_dark")
+                        || !row.get("stored").getAsString().equals("minecraft:deep_dark"))
+                    throw new AssertionError("Deep Dark ownership followed a cavity roof: " + row);
+            }
             var controls = new JsonArray();
             var context = new org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.PlacementRequest.StructureGenerationContext(
-                    generator, generator.getBiomeSource(), access, random, server.getStructureManager(), 0);
+                    generator, generator.projectedBiomeSource(), access, random, server.getStructureManager(), 0);
             for (var anchor : anchors.subList(0, Math.min(24, anchors.size()))) {
                 int x = (anchor.x() >> 4) * 16 + 8, z = (anchor.z() >> 4) * 16 + 8;
                 var column = field.sampleColumnProfile(x, z, settings).terrainColumn();
@@ -144,21 +205,22 @@ final class CoverageProbe {
                 int lower = column.bottomY() + column.thickness() / 4;
                 String expected;
                 try (var scope = SkyIslandDeepDarkBiomeProjector.activateForStructureGeneration(generator, random, null, ancientCity)) {
-                    expected = generator.getBiomeSource().getNoiseBiome(x >> 2, lower >> 2, z >> 2, random.sampler()).getRegisteredName();
+                    expected = generator.projectedBiomeSource().getNoiseBiome(x >> 2, middle >> 2, z >> 2, random.sampler()).getRegisteredName();
                 }
                 var chunkPos = new net.minecraft.world.level.ChunkPos(x >> 4, z >> 4);
                 var checked = org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.StructureGenerationAttemptService
                         .biomeValidityAt(ancientCity, context, chunkPos, middle);
-                if (design.inherent.skyweavecompat.terrain.AncientCityBiomeScope.active())
+                if (design.inherent.skyweavecompat.terrain.city.CityPlacementScope.active())
                     throw new AssertionError("Ancient-city query scope leaked");
                 var row = new JsonObject();
                 row.addProperty("expectedBiome", expected);
                 row.addProperty("precheckBiome", checked.biomeId());
-                row.addProperty("matchesProjectedBand", expected.equals(checked.biomeId()));
+                row.addProperty("matchesActualHeight", expected.equals(checked.biomeId()));
+                if (!expected.equals(checked.biomeId())) throw new AssertionError("City preflight queried a different height");
                 var trial = structureRegistry.get(ResourceLocation.withDefaultNamespace("trial_chambers"));
                 String trialExpected;
                 try (var scope = SkyIslandDeepDarkBiomeProjector.activateForStructureGeneration(generator, random, null, trial)) {
-                    trialExpected = generator.getBiomeSource().getNoiseBiome(x >> 2, middle >> 2, z >> 2, random.sampler()).getRegisteredName();
+                    trialExpected = generator.projectedBiomeSource().getNoiseBiome(x >> 2, middle >> 2, z >> 2, random.sampler()).getRegisteredName();
                 }
                 var trialChecked = org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.StructureGenerationAttemptService
                         .biomeValidityAt(trial, context, chunkPos, middle);
@@ -172,11 +234,11 @@ final class CoverageProbe {
             var ordinaryRandom = net.minecraft.world.level.levelgen.RandomState.create(ordinary.generatorSettings().value(),
                     access.lookupOrThrow(Registries.NOISE), level.getSeed());
             var ordinaryContext = new org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.PlacementRequest.StructureGenerationContext(
-                    ordinary, ordinary.getBiomeSource(), access, ordinaryRandom, server.getStructureManager(), 0);
+                    ordinary, ordinary.projectedBiomeSource(), access, ordinaryRandom, server.getStructureManager(), 0);
             var ordinaryChunk = new net.minecraft.world.level.ChunkPos(0, 0);
             String ordinaryExpected;
             try (var scope = SkyIslandDeepDarkBiomeProjector.activateForStructureGeneration(ordinary, ordinaryRandom, null, ancientCity)) {
-                ordinaryExpected = ordinary.getBiomeSource().getNoiseBiome(2, 16, 2, ordinaryRandom.sampler()).getRegisteredName();
+                ordinaryExpected = ordinary.projectedBiomeSource().getNoiseBiome(2, 16, 2, ordinaryRandom.sampler()).getRegisteredName();
             }
             var ordinaryChecked = org.sathrek.sky_archipelago.worldgen.generator.structure.v2.common.StructureGenerationAttemptService
                     .biomeValidityAt(ancientCity, ordinaryContext, ordinaryChunk, 64);
@@ -185,6 +247,8 @@ final class CoverageProbe {
             report.add("locatePreviewControls", locateControls(server, generator, ordinary, ordinaryRandom));
         }
         report.addProperty("complete", true);
+        report.add("nativePlacement",new Gson().toJsonTree(org.sathrek.sky_archipelago.worldgen.benchmark.StructureBenchmarkRecorder
+                .report("skyweave", level.getSeed(),List.of(),Map.of())));
         Files.writeString(output, new GsonBuilder().setPrettyPrinting().create().toJson(report));
     }
 
@@ -209,9 +273,7 @@ final class CoverageProbe {
             var structure = registry.get(id);
             boolean preview = (boolean)method.invoke(checker, chunk, structure);
             boolean expected = !generator.resolvedSkyIslandSettings().advanced().structurePlacementPolicy()
-                    .denylistedStructures().contains(id)
-                    && generator.resolvedSkyIslandSettings().advanced().structurePlacementPolicy().categoryFor(id)
-                       != org.sathrek.sky_archipelago.worldgen.structure.StructurePlacementCategory.WATER;
+                    .denylistedStructures().contains(id);
             if (preview != expected) throw new AssertionError("Relocated/ocean preview mismatch: " + id);
             boolean ordinaryActual = (boolean)method.invoke(ordinaryChecker, chunk, structure);
             boolean ordinaryExpected = structure.findValidGenerationPoint(new Structure.GenerationContext(access,

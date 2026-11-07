@@ -1,0 +1,43 @@
+package design.inherent.skyweavecompat.terrain.city;
+
+import com.google.gson.*;
+import design.inherent.skyweavecompat.configuration.JsonEdits;
+import java.io.IOException;
+import java.nio.file.*;
+import java.util.Set;
+
+/** Ancient City policy; shared by the runtime loader and optimistic configuration editor. */
+public final class CityConfiguration {
+    public static final String FILE = "skyweave_compat-ancient-cities.json";
+    public record Policy(double minimumBuriedFraction) {
+        public Policy {
+            if (!Double.isFinite(minimumBuriedFraction) || minimumBuriedFraction < 0 || minimumBuriedFraction > 1)
+                throw new IllegalArgumentException("Minimum buried fraction must be between 0 and 1");
+        }
+    }
+    public static final Policy DEFAULT = new Policy(.90);
+    private static volatile Policy policy = DEFAULT;
+    private CityConfiguration() {}
+    public static Policy policy() { return policy; }
+    public static Policy parse(String text) {
+        JsonObject value;
+        try { value = JsonEdits.object(text); }
+        catch (IOException error) { throw new IllegalArgumentException("Invalid Ancient City JSON", error); }
+        if (!value.keySet().equals(Set.of("minimumBuriedFraction"))
+                || !value.get("minimumBuriedFraction").isJsonPrimitive()
+                || !value.getAsJsonPrimitive("minimumBuriedFraction").isNumber())
+            throw new IllegalArgumentException("Expected minimumBuriedFraction as a number");
+        return new Policy(value.get("minimumBuriedFraction").getAsDouble());
+    }
+    public static void load(Path directory) {
+        var path = directory.resolve(FILE);
+        try {
+            Files.createDirectories(directory);
+            if (!Files.exists(path)) Files.writeString(path, new GsonBuilder().setPrettyPrinting().create().toJson(DEFAULT) + "\n",
+                    StandardOpenOption.CREATE_NEW);
+            policy = parse(Files.readString(path));
+        } catch (IOException | RuntimeException failure) {
+            throw new IllegalStateException("Cannot load " + path + ": " + failure.getMessage(), failure);
+        }
+    }
+}

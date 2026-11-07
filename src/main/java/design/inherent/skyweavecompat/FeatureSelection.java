@@ -111,8 +111,8 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case RECHISELED_GLASS -> Map.of("rechiseled", "1.2.6");
             case QUESTLOG_INTERFACE, QUESTLOG_NOTIFICATIONS, QUESTLOG_REWARD_VALIDATION -> Map.of("questlog", "3.5.0");
             case TERRAIN, ORE_PLACEMENT, CARVERS, CAVE_BIOMES, ANCIENT_CITIES, SPAWN,
-                    STRUCTURE_LOCATION, WATER_SPAWNS, CLIMATE -> Map.of("sky_archipelago", "1.3.6");
-            case VILLAGE_CLEARANCE, VILLAGE_PLACEMENT -> Map.of("sky_archipelago", "1.3.6", "skyvillages", "1.0.6", "architectury", "13.");
+                    STRUCTURE_LOCATION, WATER_SPAWNS, CLIMATE -> Map.of("sky_archipelago", "1.4");
+            case VILLAGE_CLEARANCE, VILLAGE_PLACEMENT -> Map.of("sky_archipelago", "1.4", "skyvillages", "1.0.6", "architectury", "13.");
             case PRESSURE -> Map.of("sable", "2.0.6");
             case DELIVERY_DISTANCE, DELIVERY_CHUNKS -> Map.of("aeronautics_delivery_quests", "1.1.1");
             case DELIVERY_LANDING -> Map.of("aeronautics_delivery_quests", "1.1.1", "skyvillages", "1.0.6", "architectury", "13.");
@@ -130,8 +130,9 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             case LINEAR_PONDER -> Map.of("linearbearing", "1.3.5", "create", "6.0.10", "ponder", "1.0.87+mc1.21.1");
             case LINEAR_JADE -> Map.of("linearbearing", "1.3.5", "jade", "15.10.6+neoforge");
             case DH_HANDOFF -> Map.of("distanthorizons", "3.3.3");
-            case DH_SHUTDOWN, DH_CACHE -> Map.of("distanthorizons", "3.3.3", "sky_archipelago", "1.3.6");
-            case BLUEMAP -> Map.of("bluemap", "5.7", "sky_archipelago", "1.3.6");
+            case DH_SHUTDOWN, DH_CACHE -> Map.of("distanthorizons", "3.3.3", "sky_archipelago", "1.4");
+            case BLUEMAP -> Map.of("bluemap", "5.7", "sky_archipelago", "1.4");
+            case SURVEYOR_STRUCTURES -> Map.of("surveyor", "1.2.4_1.21", "sky_archipelago", "1.4");
             case FRAMEBUFFER -> Map.of("veil", "4.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
             case BALLOON -> Map.of("aeronautics", "1.3.2", "iris", "1.8.14-beta.1+mc1.21.1");
             case TEXT_DISPLAY_LIGHTING, NAMETAG_LIGHTING, TEXT_DISPLAY_SHADOW, NAMETAG_SHADOW -> Map.of("iris", "1.8.14-beta.1+mc1.21.1");
@@ -151,15 +152,16 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
             if (!enabled(feature)) continue;
             result.addAll(switch (feature) {
                 case TERRAIN -> List.of("GeneratorProfileMixin", "IslandFieldMixin", "ColumnResolverMixin",
-                        "ColumnDataMixin", "InteriorSurfaceMixin", "ClusterPlacementMixin", "ClusterSamplerMixin",
-                        "DescriptorFactoryMixin", "IslandDensityMixin", "PreparedDensityMixin", "TerrainMaterialMixin",
+                        "ColumnDataMixin", "InteriorSurfaceMixin", "SurfaceRulesMixin", "ClusterPlacementMixin", "ClusterSamplerMixin",
+                        "DescriptorFactoryMixin", "OceanShapeMixin", "TerrainMaterialMixin", "InteriorInterpolationMixin",
                         "GeologicalMaterialMixin", "OreVeinifierAccessor");
                 case ORE_PLACEMENT -> List.of("OreHeightMixin");
                 case CARVERS -> List.of("TerrainCarverPolicyMixin", "CarvingContextMixin", "CarverHeightMixin", "CarverLavaMixin", "WaterCarverMixin");
-                case CAVE_BIOMES -> List.of("CaveBiomeMixin", "DeepDarkContextAccessor");
-                case ANCIENT_CITIES -> List.of("AncientCityBiomeMixin", "AncientCityProjectionMixin");
+                case CAVE_BIOMES -> List.of("CaveBiomeMixin", "ProjectedCaveBiomeMixin", "DeepDarkContextAccessor", "DeepDarkProjectorAccess");
+                case ANCIENT_CITIES -> List.of("AncientCityRoutingMixin", "AncientCityPlacementMixin", "AncientCityHeightMixin", "AncientCityTerrainMixin");
                 case SPAWN -> List.of("SpawnFallbackMixin");
                 case STRUCTURE_LOCATION -> List.of("StructureLocateCheckMixin");
+                case SURVEYOR_STRUCTURES -> List.of("SurveyorStructureMixin");
                 case WATER_SPAWNS -> List.of("WaterAnimalMixin");
                 case CLIMATE -> List.of("SurfaceClimateMixin", "SurfaceTemperatureMixin", "FreezeClimateMixin",
                         "LevelClimateMixin", "ServerClimateMixin", "PortalClimateMixin");

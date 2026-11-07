@@ -28,8 +28,8 @@ public final class GenerationConfiguration {
                 // Upstream's serialized spacing is capped at 2000. IslandFieldMixin owns the actual grid.
                 t.spacing(),
                 t.terrainReliefScale(), t.archetypes(), t.ocean());
-        return new SkyIslandSettings(terrain, embedded.structureSupport(), embedded.surfaceSky(), embedded.smallSky(),
-                embedded.defaultSurface(), embedded.advanced());
+        return new SkyIslandSettings(terrain, embedded.structureSupport(), embedded.mediumGround(), embedded.smallGround(),
+                embedded.defaultSurface(), embedded.advanced(), RiverConfiguration.settings());
     }
 
     public static void load(Path directory) {
