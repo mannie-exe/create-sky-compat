@@ -1,6 +1,6 @@
 # Skyweave: Compatibility Patches
 
-Use **Create: Skyweave** for the modpack; **Skyweave modpack** or **the Skyweave modpack** is also acceptable in prose. Use **Skyweave: Compatibility Patches** for the independent compatibility mod. Preserve machine identities, including `create-skyweave`, `create_skyweave`, `skyweave-compat`, `skyweave_compat`, and Java package/class names. Put naming guidance in AGENTS.md; use the names directly in other documentation and interfaces.
+Use **Create: Skyweave** for the modpack and **Skyweave: Compatibility Patches** for the adaptation mod. **Skyweave: Resource Patches** is the shared resource-only JAR; **Skyweave: Visual Patches** is the client resource-pack ZIP. Follow the canonical [naming and artifact identity policy](../../Minecraft/create-skyweave/AGENTS.md#naming-and-artifact-identity). Preserve existing machine identities and Java packages/classes unless an authorized rename includes them; display naming does not prove a runtime identity has changed.
 
 Maintain an independently installable mod of optional terrain and compatibility adaptations.
 Keep minimum dependencies and optional adapters explicit.
