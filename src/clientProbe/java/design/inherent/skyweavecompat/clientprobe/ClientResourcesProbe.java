@@ -135,6 +135,10 @@ final class ClientResourcesProbe {
                             worldText.control(command.get("value").getAsBoolean());
                         }
                         case "unicode" -> mc.options.forceUnicodeFont().set(command.get("value").getAsBoolean());
+                        case "smooth_lighting" -> {
+                            mc.options.ambientOcclusion().set(command.get("value").getAsBoolean());
+                            mc.levelRenderer.allChanged();
+                        }
                         case "world_text_snapshot" -> {
                             if (worldText == null) throw new IllegalStateException("Expected world-text fixture marker and Iris");
                             modelReport = worldText.snapshot(command.has("remember") && command.get("remember").getAsBoolean());

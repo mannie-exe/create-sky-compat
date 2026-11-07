@@ -214,7 +214,7 @@ public record FeatureSelection(Set<Feature> active, Map<Feature, String> inactiv
                 case MACAW_LANTERN -> List.of("macaw.BridgeLanternShapeMixin", "macaw.ClipModeAccessor", "macaw.LanternRayMixin");
                 case SHADER_PATCHES -> List.of("client.ShaderAssemblyMixin");
                 case CREATE_BACKFACES -> List.of("client.CreateGlassBackfaceMixin");
-                case FUSION_BACKFACES -> List.of("client.FusionGlassBackfaceMixin");
+                case FUSION_BACKFACES -> List.of("client.FusionGlassBackfaceMixin", "client.FusionPaneBackfaceMixin");
                 case CREATE_WINDOWS -> List.of("client.CreateWindowCullingMixin");
                 case RECHISELED_GLASS -> List.of("client.RechiseledGlassCullingMixin");
                 case QUESTLOG_INTERFACE -> List.of("client.QuestDetailsMixin", "client.QuestlogBookmarkMixin");

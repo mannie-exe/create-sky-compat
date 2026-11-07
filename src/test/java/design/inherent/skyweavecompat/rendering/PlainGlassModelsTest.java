@@ -1,6 +1,7 @@
 package design.inherent.skyweavecompat.rendering;
 
 import design.inherent.skyweavecompat.client.PlainGlassModels;
+import design.inherent.skyweavecompat.client.GlassBackfaces;
 import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.Set;
@@ -13,6 +14,29 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class PlainGlassModelsTest {
+    @Test void vanillaPaneVariantsWrapAfterCompositionWithOneOwnerAndNoPartQueries() {
+        var source = (BakedModel) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{BakedModel.class},
+                (proxy, method, args) -> { throw new AssertionError("Registration must retain the complete upstream model"); });
+        var models = new HashMap<ModelResourceLocation, BakedModel>();
+        for (String id : java.util.List.of("minecraft:glass_pane", "minecraft:red_stained_glass_pane",
+                "minecraft:magenta_stained_glass_pane"))
+            for (String variant : java.util.List.of("north=true,east=false", "north=false,east=true", "inventory"))
+                models.put(new ModelResourceLocation(ResourceLocation.parse(id), variant), source);
+        var event = new ModelEvent.ModifyBakingResult(models, null, null);
+        PlainGlassModels.wrap(event, id -> PlainGlassModels.target(id, Set.of()));
+        assertTrue(models.values().stream().allMatch(model -> model == source));
+        PlainGlassModels.wrap(event, id -> PlainGlassModels.target(id, Set.of(Feature.FUSION_BACKFACES)));
+        assertTrue(models.values().stream().allMatch(model -> model == source), "Pane wrapping must wait for Fusion's later modifier pass");
+        PlainGlassModels.wrap(models, GlassBackfaces::vanillaPane);
+        var once = new HashMap<>(models);
+        for (var entry : models.entrySet()) {
+            if (entry.getKey().getVariant().equals("inventory")) assertSame(source, entry.getValue());
+            else assertInstanceOf(PlainGlassModels.class, entry.getValue());
+        }
+        PlainGlassModels.wrap(models, GlassBackfaces::vanillaPane);
+        once.forEach((id, model) -> assertSame(model, models.get(id), "Repeated registration must not duplicate backfaces"));
+    }
+
     @Test void wrapsOnlyTiledBlockStatesIncludingMultipartStatesAndRetainsOtherOwners() {
         var source = (BakedModel) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[]{BakedModel.class},
                 (proxy, method, args) -> { throw new AssertionError("Bake registration must not query models"); });

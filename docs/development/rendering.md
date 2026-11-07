@@ -14,11 +14,18 @@ backfaces decide whether its surface can also be viewed from behind.
 
 The Create hook runs after `CTModel.getQuads` has selected CT tiles. It qualifies
 Create's connected glass, window and glass-pane implementations, including their
-subclasses. The Fusion hook runs after `BaseBakedModel` processors and qualifies
-vanilla glass/panes and Rechiseled's glass pillar implementation.
+subclasses. The Fusion base-model hook runs after `BaseBakedModel` processors for vanilla
+full glass blocks and Rechiseled's glass pillar implementation. Vanilla panes use
+the same final-quad wrapper as the static families below, installed after
+`BlockModelModifierReloadListener.applyModelModifiers` finishes. This boundary
+is later than NeoForge's baking event: Fusion installs its pane-edge culler there.
+Reversing faces before that culler makes a hidden bottom edge test the neighbor
+above, and vice versa. Wrapping the completed model preserves native culling
+before adding backfaces; CT tiles and exposed top/bottom edges remain upstream-owned.
 Create's plain Tiled Glass and Tiled Glass Pane use standard cube/multipart
 models rather than `CTModel`. `PlainGlassModels` wraps only their block-state
-models at NeoForge's `ModifyBakingResult` event, after ordinary model modifiers.
+models at NeoForge's `ModifyBakingResult` event. Fusion-backed vanilla panes
+are wrapped at the later modifier boundary described above.
 It delegates native materials, render types, pane state selection and item
 transforms, then reuses the same final-quad and neighbor-contact policy. Inventory
 models remain untouched. Registration also admits vanilla Tinted Glass under
@@ -103,7 +110,9 @@ reverse winding/normal can make mesh batching discard the new face. Review nativ
 lighting and translucent sorting alongside model/UV evidence.
 
 Before updating Create or Fusion, inspect the exact output methods, CT-data
-ownership, modifier dispatch, render-type handling and vertex format. Recheck
+ownership, modifier dispatch, render-type handling and vertex format. Confirm
+Fusion's modifier pass still follows the baking event and runs before state-model
+lookup publication; its pane culler must see original face directions. Recheck
 neighbor-model queries, reentry suppression, boundary rectangles, split attributes
 and compact-position/depth precision, including chunk-edge rebuilds and reloads. Update pins,
 selection gates, metadata, package checks and native evidence together. Retire a

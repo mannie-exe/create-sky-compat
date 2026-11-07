@@ -7,6 +7,7 @@ import java.util.List;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.state.BlockState;
 
 /** Copies final model output, retaining the caller's native neighbor-cull group. */
@@ -16,13 +17,19 @@ public final class GlassBackfaces {
 
     private GlassBackfaces() {}
 
+    public static boolean vanillaPane(ResourceLocation id) {
+        return id.getNamespace().equals("minecraft")
+                && (id.getPath().equals("glass_pane") || id.getPath().endsWith("_stained_glass_pane"));
+    }
+
     public static boolean fusionTarget(BlockState state) {
         if (state == null) return false;
         var id = BuiltInRegistries.BLOCK.getKey(state.getBlock());
         if (id.getNamespace().equals("minecraft")) {
             String path = id.getPath();
-            return path.equals("glass") || path.equals("glass_pane")
-                    || path.endsWith("_stained_glass") || path.endsWith("_stained_glass_pane");
+            // Pane modifiers must cull original edges before their normals are reversed.
+            // PlainGlassModels owns those complete models after Fusion's composition.
+            return path.equals("glass") || path.endsWith("_stained_glass");
         }
         // Metadata selection loads Fusion only. Do not resolve optional Rechiseled classes here.
         for (Class<?> type = state.getBlock().getClass(); type != null; type = type.getSuperclass())

@@ -2,11 +2,13 @@ package design.inherent.skyweavecompat.client;
 
 import design.inherent.skyweavecompat.Feature;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -43,7 +45,11 @@ public final class PlainGlassModels extends BakedModelWrapper<BakedModel> {
     }
 
     public static void wrap(ModelEvent.ModifyBakingResult event, Predicate<ResourceLocation> target) {
-        event.getModels().replaceAll((id, model) -> target.test(id.id())
+        wrap(event.getModels(), target);
+    }
+
+    public static void wrap(Map<ModelResourceLocation, BakedModel> models, Predicate<ResourceLocation> target) {
+        models.replaceAll((id, model) -> target.test(id.id())
                 && !id.getVariant().equals("inventory") && !(model instanceof PlainGlassModels)
                 ? new PlainGlassModels(model) : model);
     }

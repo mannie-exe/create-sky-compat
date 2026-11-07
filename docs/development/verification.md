@@ -496,6 +496,39 @@ settings remain authoritative, including its explicit DH cache opt-out.
 
 ## Glass backfaces and shared surfaces
 
+### Connected pane edges
+
+The pane-edge correction was checked with Minecraft 1.21.1 / NeoForge 21.1.265,
+Fusion 1.3.16, Create 6.0.10, Macaw's Windows 2.4.2, Sodium 0.8.13 and
+Iris 1.8.14-beta.1 on macOS ARM64 / Java 21.0.13. Candidate SHA-256:
+`416c3dc5c1d9f470f52f2f2f5da7f9a310a5439ba225b4fbb8da30dd181a3d59`.
+The loaded client contained exactly one Compat artifact; runtime model inspection
+confirmed the completed-model wrapper.
+
+Five-wide, three-high red and magenta pane walls each leaked six internal
+horizontal cap quads before the correction and zero afterward. Above-angle
+captures confirm the strip disappears with shaders off and with Complementary
+Unbound r5.9.3 + Euphoria 1.10.5 + Skyweave 0.1.0. Create oak and Macaw red
+mosaic pane controls retain zero internal caps. Native queries preserve exposed
+outer caps, different-color boundaries and the uncovered arm of a partial
+vertical connection. Resource reload retains the wrapper and corrected culling.
+
+A separate resource-only A/B confirms inconsistent center-strip AO in
+Midnighttigger's pane models; Visual Patches corrects the property spelling.
+The reported dark vertical bands at **joins between blocks** were not clearly
+reproduced in this fixture, so the center-strip finding does not establish their
+cause. The owner subsequently reviewed this candidate with the corrected Visual
+Patches pack in the personal client and confirmed that the reported pane appearance
+was correct. That acceptance does not extend the controlled fixture's coverage.
+
+The candidate passes `./gradlew --no-daemon check build clientProbeJar`
+(179 Java tests plus tooling, upstream and packaging checks). This pass used the
+isolated full-pack client; the earlier minimum/server matrix below was not rerun
+for this candidate. Evidence and staging corrections are retained privately in
+`.git/pane-seams/`; personal instances were not changed.
+
+### Shared-surface qualification
+
 Native checks target Minecraft 1.21.1 / NeoForge 21.1.264, Create 6.0.10,
 Fusion 1.3.16, Rechiseled 1.2.6 / Rechiseled Create 1.1.1, Sodium 0.8.13 and
 Iris 1.8.14-beta.1+mc1.21.1. The host is macOS ARM64 with Java 21.0.13.
