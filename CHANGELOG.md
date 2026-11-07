@@ -2,6 +2,16 @@
 
 Generated from Git history. Player-facing release summaries are in [release notes](RELEASE_NOTES.md).
 
+## v0.23.0 · 2026-11-07
+
+### Features
+
+- **terrain:** Migrate to Sky Archipelago 1.4 ([855cd93](https://github.com/mannie-exe/skyweave-compat/commit/855cd93a9695d738f3260ee55bff93a0e0fd4786))
+
+### Documentation
+
+- Align patch artifact naming ([1c1f364](https://github.com/mannie-exe/skyweave-compat/commit/1c1f36460980eca5e1830ba1f5108ee99e6b8db8))
+
 ## v0.22.1 · 2026-11-06
 
 ### Fixes
