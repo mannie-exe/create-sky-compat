@@ -2,6 +2,12 @@
 
 Generated from Git history. Player-facing release summaries are in [release notes](RELEASE_NOTES.md).
 
+## v0.23.1 · 2026-11-07
+
+### Fixes
+
+- **rendering:** Preserve connected pane edge culling ([486d8ea](https://github.com/mannie-exe/skyweave-compat/commit/486d8ea67691f779a145907e11e24729987dd111))
+
 ## v0.23.0 · 2026-11-07
 
 ### Features

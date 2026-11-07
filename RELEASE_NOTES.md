@@ -1,31 +1,20 @@
-# Skyweave: Compatibility Patches 0.23.0
+# Skyweave: Compatibility Patches 0.23.1
 
-Skyweave Islands now targets **Sky Archipelago 1.4**. Native exterior shaping,
-rivers, lakes and water-archetype profiles replace the superseded taper and water
-backends. Sparse displaced clusters, varied elevations, independent NOISE/HOLLOW
-interiors, island-relative geology, ores and large iron/copper veins remain.
-Floating ocean extensions stay opt-in; the global ocean stays disabled.
+Preserve connected-pane edge culling before adding interior backfaces. Fusion now
+finishes its pane modifiers before Compat wraps Minecraft's pane models, so
+stacked panes no longer expose horizontal strips at their shared edges. Connected
+textures, exposed edges and different-material boundaries retain their native
+behavior. The existing Fusion backface switch controls this repair; no new setting
+is required.
 
-Ancient Cities fit inside islands with configurable exterior burial and separate
-core/floor checks. Bounded, piece-aware clearance reuses vanilla's Beardifier
-without excavating a single rectangular hall. It retains the island shell,
-foundations, authored water beds and existing HOLLOW room. Nearby ordinary and
-Sky Villages may coexist. Cave-biome physical queries retain island ownership;
-water-structure lookup supports floating water hosts with the global ocean off.
+This is a client rendering correction. Terrain generation, saved worlds, LODs and
+other adaptations are unchanged. Pair it with Create: Skyweave 0.3.1 for the separate
+Visual Patches correction to connected-pane lighting.
 
-An optional Surveyor adaptation ignores invalid structure starts before they
-reach its map recorder. Generation, interior and ocean startup readers now reject
-duplicate JSON keys just as the configuration editor does. River/lake controls
-use the native codec and the existing nested configuration form.
+Native checks cover red and magenta pane walls, Create and Macaw controls, partial
+connections, different-color boundaries, resource reload and shaders off/on. The
+owner also accepted the combined changes in the playing client. See
+[verification](docs/development/verification.md#connected-pane-edges) for the exact
+fixture and remaining coverage limits.
 
-**Use a fresh world for the new generator.** Existing marked saves reject an
-incompatible generation identity. Keep their original mod/settings or preserve
-those saves before creating another world; no automatic terrain or LOD migration
-is provided. Other integrations retain their independent switches and side gates.
-
-Completed single-column queries can be substantially slower than the previous
-generator; bulk filling uses native snapshots. Targeted checks do not establish
-ore scarcity, aquatic progression or complete native biome-locate discovery.
-See [verification](docs/development/verification.md) for exact tested artifacts,
-native cases and limits, and [configuration](docs/configuration.md) for settings
-and application timing. Previous release: [0.22.1](docs/releases/0.22.1.md).
+Previous release: [0.23.0](docs/releases/0.23.0.md).
